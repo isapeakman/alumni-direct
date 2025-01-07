@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, Object> handleNotValidException(MethodArgumentNotValidException e) {
         LinkedHashMap<String, Object> map = new LinkedHashMap<>();
-        map.put("code", HttpStatus.INTERNAL_SERVER_ERROR);
+        map.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
         map.put("data", Collections.emptyMap());
         map.put("message", e.getBindingResult().getFieldError().getDefaultMessage());
         return map;
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
         if (e instanceof BusinessException) {
             map.put("code", ((BusinessException) e).getCode());
         } else {
-            map.put("code", HttpStatus.INTERNAL_SERVER_ERROR);
+            map.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         map.put("data", Collections.emptyMap());
         map.put("message", e.getMessage());
