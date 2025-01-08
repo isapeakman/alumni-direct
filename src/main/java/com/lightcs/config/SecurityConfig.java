@@ -36,7 +36,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())  // 禁用 CSRF
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/login").permitAll()  // 公开访问
+//                        .requestMatchers("/user/login").permitAll()  // 公开访问
                         .anyRequest().authenticated()  // 其他接口需认证
                 )
                 .addFilterBefore(headerFilter, UsernamePasswordAuthenticationFilter.class); // 添加 HeaderFilter到 UsernamePasswordAuthenticationFilter 之前
@@ -46,7 +46,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         // 不拦截的请求路径
-        return (web) -> web.ignoring().requestMatchers("/user/login");
+        return (web) -> web.ignoring().requestMatchers("/user/login", "/user/register");
     }
 
     @Bean
