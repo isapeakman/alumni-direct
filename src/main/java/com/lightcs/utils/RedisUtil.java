@@ -657,5 +657,14 @@ public class RedisUtil {
         }
     }
 
+    /**
+     * 查找所有匹配给定模式 pattern 的 key
+     *
+     * @param pattern
+     * @return
+     */
+    public Set<String> getKeys(String pattern) {
+        return redisTemplate.keys(pattern);
+    }
 }
 

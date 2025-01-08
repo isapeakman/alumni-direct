@@ -28,4 +28,13 @@ public class CurrentUserUtil {
         throw new BusinessException(NOT_LOGIN_ERROR);
     }
 
+    /**
+     * 获取当前用户Id
+     *
+     * @return 用户Id
+     */
+    public static Integer getCurrentUserId() {
+        return getCurrentUserVO().getUserId();
+    }
+
 }

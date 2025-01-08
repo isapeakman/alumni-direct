@@ -11,5 +11,8 @@ public interface UserConstant {
      * 默认昵称前缀
      */
     String DEFAULT_NICKNAME_PREFIX = "user_";
-    String DEFAULT_USER_AVATAR = "https://lightcs";
+    String DEFAULT_USER_AVATAR = "https://img.picui.cn/free/2025/01/08/677e2af7b7510.png";
+
+    String UPDATE_SUCCESS = "更新成功";
+    String DELETE_SUCCESS = "删除成功";
 }

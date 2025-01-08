@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.mapper.UserMapper;
+import com.lightcs.model.UserRequest;
 import com.lightcs.model.pojo.User;
 import com.lightcs.model.vo.UserVO;
 import com.lightcs.service.UserService;
@@ -23,8 +24,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 import static com.lightcs.constants.RedisConstant.TOKEN_PREFIX;
 import static com.lightcs.constants.UserConstant.DEFAULT_NICKNAME_PREFIX;
+import static com.lightcs.constants.UserConstant.DEFAULT_USER_AVATAR;
 import static com.lightcs.enums.ErrorCode.*;
 
 @Service
@@ -56,6 +60,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .userAccount(userAccount)
                 .userPassword(encodePassword)
                 .nickname(nickname)
+                .userAvatar(DEFAULT_USER_AVATAR)
                 .build();
         int res = userMapper.insert(user);
         ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "注册失败");
@@ -140,6 +145,71 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         UserVO userVO = new UserVO();
         BeanUtil.copyProperties(user, userVO);
         return userVO;
+    }
+
+    @Override
+    public void update(UserRequest userRequest) {
+        Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+
+
+        int count = userMapper.updateById(User.builder()
+                .userId(currentUserId)
+                .userAvatar(userRequest.getUserAvatar())
+                .nickname(userRequest.getNickname()).build());
+        ThrowUtils.throwIf(count == 0, OPERATION_ERROR, "更新失败");
+    }
+
+    @Override
+    public void resetPassword(String oldPassword, String newPassword) {
+        Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+        // 获取当前用户
+        User user = getCurrentUser();
+        // 校验旧密码
+        boolean matches = passwordEncoder.matches(oldPassword, user.getUserPassword());
+        ThrowUtils.throwIf(!matches, PARAMS_ERROR, "旧密码错误");
+        // 更新密码
+        String encodePassword = passwordEncoder.encode(newPassword);
+        int count = userMapper.updateById(User.builder().userId(currentUserId).userPassword(encodePassword).build());
+        ThrowUtils.throwIf(count == 0, OPERATION_ERROR, "更新失败");
+    }
+
+    @Override
+    public void modifyAccount(String oldAccount, String newAccount) {
+        Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+        // 获取当前用户
+        User user = getCurrentUser();
+        // 校验旧账号
+        ThrowUtils.throwIf(!oldAccount.equals(user.getUserAccount()), PARAMS_ERROR, "旧账号错误");
+        // 校验新账号是否已存在
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("user_account", newAccount);
+        queryWrapper.eq("is_delete", 0);
+        Long count = userMapper.selectCount(queryWrapper);
+        ThrowUtils.throwIf(count > 0, PARAMS_ERROR, "新账号已存在");
+        // 更新账号
+        int res = userMapper.updateById(User.builder().userId(currentUserId).userAccount(newAccount).build());
+        ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "更新失败");
+    }
+
+    @Override
+    public void delete() {
+        Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+        // 获取当前用户
+        User user = getCurrentUser();
+        // 删除用户
+        int res = userMapper.updateById(User.builder().userId(currentUserId).isDelete(1).build());
+        ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "删除失败");
+        // 删除所有设备的会话
+//        String token = (String) redisUtil.get(TOKEN_PREFIX + currentUserId + ":" + UserAgentUtil.getUserAgent());
+//        redisUtil.del(TOKEN_PREFIX + token);
+//        redisUtil.del(TOKEN_PREFIX + currentUserId + ":" + UserAgentUtil.getUserAgent());
+        // 获取所有设备的 token
+        Set<String> tokenKeys = redisUtil.getKeys(TOKEN_PREFIX + currentUserId + ":*");
+        for (String tokenKey : tokenKeys) {
+            String token = (String) redisUtil.get(tokenKey);
+            redisUtil.del(TOKEN_PREFIX + token);
+            redisUtil.del(tokenKey);
+        }
     }
 
 
