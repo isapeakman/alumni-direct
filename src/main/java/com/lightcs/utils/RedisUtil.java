@@ -97,6 +97,16 @@ public class RedisUtil {
 
     }
 
+    public boolean del(String key) {
+        try {
+            redisTemplate.delete(key);
+            return true;
+        } catch (Exception e) {
+            log.error(key, e);
+            return false;
+        }
+    }
+
     /**
      * 普通缓存放入并设置时间
      *
