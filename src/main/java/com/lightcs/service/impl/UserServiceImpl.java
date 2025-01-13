@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.mapper.UserMapper;
-import com.lightcs.model.UserRequest;
+import com.lightcs.model.dto.UserRequest;
 import com.lightcs.model.pojo.User;
 import com.lightcs.model.vo.UserVO;
 import com.lightcs.service.UserService;

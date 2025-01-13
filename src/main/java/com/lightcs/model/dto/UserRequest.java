@@ -1,4 +1,4 @@
-package com.lightcs.model;
+package com.lightcs.model.dto;
 
 import lombok.Data;
 

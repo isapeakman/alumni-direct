@@ -1,7 +1,7 @@
 package com.lightcs.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.lightcs.model.UserRequest;
+import com.lightcs.model.dto.UserRequest;
 import com.lightcs.model.pojo.User;
 import com.lightcs.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletResponse;
