@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lightcs.mapper.JobMapper">
+
+    <select id="selectCards" resultType="com.lightcs.model.vo.JobCardVO">
+        SELECT title,job_type,location,
+        CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED) AS min_salary,
+        CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary
+        FROM job
+        <where>
+            <if test="title != null and title != ''">
+                AND title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="jobType != null">
+                AND job_type = #{jobType}
+            </if>
+            <if test="location != null and location!=''">
+                AND location like #{location}
+            </if>
+            <if test="minSalary != null">
+                AND CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) &gt;= #{minSalary}
+            </if>
+            <if test="maxSalary != null">
+                AND CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED) &lt;= #{maxSalary}
+            </if>
+        </where>
+    </select>
+</mapper>

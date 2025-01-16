@@ -105,15 +105,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public boolean userLogout() {
+    public void userLogout() {
         // 获取当前用户
         UserVO userVO = CurrentUserUtil.getCurrentUserVO();
         // 移除当前登录设备用户的 token
         String deleteToken = (String) redisUtil.get(TOKEN_PREFIX + userVO.getUserId() + ":" + UserAgentUtil.getUserAgent());
         ThrowUtils.throwIf(StringUtils.isBlank(deleteToken), NOT_LOGIN_ERROR, "用户未登录");
         boolean del = redisUtil.del(TOKEN_PREFIX + deleteToken);
-        boolean del1 = redisUtil.del(TOKEN_PREFIX + userVO.getUserId() + ":" + UserAgentUtil.getUserAgent());
-        return del && del1;
+        redisUtil.del(TOKEN_PREFIX + userVO.getUserId() + ":" + UserAgentUtil.getUserAgent());
+        ThrowUtils.throwIf(!del, OPERATION_ERROR, "登出失败");
     }
 
     /**
@@ -171,6 +171,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String encodePassword = passwordEncoder.encode(newPassword);
         int count = userMapper.updateById(User.builder().userId(currentUserId).userPassword(encodePassword).build());
         ThrowUtils.throwIf(count == 0, OPERATION_ERROR, "更新失败");
+        // 删除所有设备的会话
+        removeUserSession(currentUserId);
     }
 
     @Override
@@ -203,6 +205,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 //        String token = (String) redisUtil.get(TOKEN_PREFIX + currentUserId + ":" + UserAgentUtil.getUserAgent());
 //        redisUtil.del(TOKEN_PREFIX + token);
 //        redisUtil.del(TOKEN_PREFIX + currentUserId + ":" + UserAgentUtil.getUserAgent());
+        removeUserSession(currentUserId);
+    }
+
+    /**
+     * 删除所有设备的会话
+     *
+     * @param currentUserId 当前用户id
+     */
+    private void removeUserSession(Integer currentUserId) {
         // 获取所有设备的 token
         Set<String> tokenKeys = redisUtil.getKeys(TOKEN_PREFIX + currentUserId + ":*");
         for (String tokenKey : tokenKeys) {

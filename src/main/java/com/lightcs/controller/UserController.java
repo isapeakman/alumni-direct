@@ -1,6 +1,7 @@
 package com.lightcs.controller;
 
-import com.lightcs.model.UserRequest;
+import com.lightcs.exception.ThrowUtils;
+import com.lightcs.model.dto.UserRequest;
 import com.lightcs.model.vo.UserVO;
 import com.lightcs.result.BaseResponse;
 import com.lightcs.result.ResultBuilder;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.lightcs.constants.UserConstant.DELETE_SUCCESS;
 import static com.lightcs.constants.UserConstant.UPDATE_SUCCESS;
+import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
 
 
 @RestController
@@ -28,15 +30,18 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public BaseResponse<UserVO> register(String username, String password) {
+    public BaseResponse<UserVO> register(String username, String password, String captcha) {
+        ThrowUtils.throwIf(StringUtils.isBlank(captcha), PARAMS_ERROR, "验证码不能为空");
+        // todo 验证码校验
+
         UserVO userVO = userService.userRegister(username, password);
         return ResultBuilder.success(userVO);
     }
 
     @GetMapping("/logout")
     public BaseResponse<String> logout() {
-        boolean res = userService.userLogout();
-        return ResultBuilder.success(res ? "登出成功" : "登出失败");
+        userService.userLogout();
+        return ResultBuilder.success("登出成功");
     }
 
     @GetMapping("/current")
@@ -47,6 +52,9 @@ public class UserController {
 
     @PutMapping("/update")
     public BaseResponse<String> update(@RequestBody UserRequest userRequest) {
+        if (userRequest == null) {
+            return ResultBuilder.fail("参数不能为空");
+        }
         if (StringUtils.isBlank(userRequest.getNickname()) && StringUtils.isBlank(userRequest.getUserAvatar())) {
             return ResultBuilder.fail("昵称和头像不能为空");
         }

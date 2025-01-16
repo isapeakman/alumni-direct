@@ -48,7 +48,7 @@ public class User implements Serializable {
     private String userAvatar;
 
     /**
-     * 0:admin; 1:user;
+     * 0:admin; 1:user;2:enterprise
      */
     private Integer role;
 

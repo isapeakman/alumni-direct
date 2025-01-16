@@ -9,9 +9,7 @@ import lombok.Data;
  * @Version: 1.0
  */
 @Data
-public class JobCategoryUpdate {
-    private Integer id;
-
+public class CategoryAdd {
     /**
      * 分类名
      */
@@ -26,5 +24,4 @@ public class JobCategoryUpdate {
      * 上级id
      */
     private Integer parentId;
-
 }

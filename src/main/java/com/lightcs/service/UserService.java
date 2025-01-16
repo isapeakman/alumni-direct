@@ -11,7 +11,7 @@ public interface UserService extends IService<User> {
 
     UserVO userLogin(String userAccount, String userPassword, HttpServletResponse response);
 
-    boolean userLogout();
+    void userLogout();
 
     UserVO getCurrentUserVO();
 

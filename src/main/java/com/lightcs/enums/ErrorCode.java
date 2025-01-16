@@ -2,7 +2,7 @@ package com.lightcs.enums;
 
 /**
  * @Author: peak-like
- * @Description:TODO
+ * @Description: 错误码枚举
  * @DateTime: 2024/11/26 15:31
  **/
 public enum ErrorCode {

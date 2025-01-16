@@ -5,8 +5,8 @@ import com.lightcs.model.pojo.JobCategory;
 
 /**
  * @Author: peak-like
- * @CreateTime: 2025-01-13
- * @Description: 职业分类Mapper
+ * @CreateTime: 2025-01-16
+ * @Description:
  * @Version: 1.0
  */
 
