@@ -11,8 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import static com.lightcs.constants.UserConstant.DELETE_SUCCESS;
-import static com.lightcs.constants.UserConstant.UPDATE_SUCCESS;
+import static com.lightcs.constants.Common.DELETE_SUCCESS;
+import static com.lightcs.constants.Common.UPDATE_SUCCESS;
 import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
 
 

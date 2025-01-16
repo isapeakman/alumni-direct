@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
             map.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         map.put("data", Collections.emptyMap());
-        map.put("message", e.getMessage());
+        map.put("message", e.getMessage()); //todo 后续如果不是自定义异常，可以将异常信息隐藏，返回固定的提示信息
         return map;
     }
 

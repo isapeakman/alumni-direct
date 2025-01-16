@@ -7,14 +7,17 @@ import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.vo.JobCardVO;
 import com.lightcs.result.BaseResponse;
 import com.lightcs.result.PaginationBuilder;
+import com.lightcs.result.ResultBuilder;
 import com.lightcs.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+import static com.lightcs.constants.Common.ADD_SUCCESS;
 import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
 
 /**
@@ -36,9 +39,15 @@ public class JobController {
         return "job list";
     }
 
-    @RequestMapping("/add")
-    public String add(JobAdd jobAdd) {
-        return "job add";
+    @PostMapping("/add")
+    public BaseResponse<String> add(JobAdd jobAdd) {
+        ThrowUtils.throwIf(jobAdd.getTitle().isBlank(), PARAMS_ERROR, "职位名称不能为空");
+        ThrowUtils.throwIf(jobAdd.getJobType() == null, PARAMS_ERROR, "职位类型不能为空");
+        if (jobAdd.getMinSalary() != null && jobAdd.getMaxSalary() != null) {
+            ThrowUtils.throwIf(jobAdd.getMinSalary() > jobAdd.getMaxSalary(), PARAMS_ERROR, "最小薪资不能大于最大薪资");
+        }
+        jobService.save(jobAdd);
+        return ResultBuilder.success(ADD_SUCCESS);
     }
 
     @RequestMapping("/update")

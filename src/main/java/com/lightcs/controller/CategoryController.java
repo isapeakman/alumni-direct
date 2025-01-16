@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.lightcs.constants.UserConstant.*;
+import static com.lightcs.constants.Common.*;
 import static com.lightcs.enums.ErrorCode.OPERATION_ERROR;
 import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
 

@@ -51,12 +51,6 @@ public class Job implements Serializable {
      * 薪资范围
      */
     private String salaryRange;
-
-    /**
-     * 企业id
-     */
-    private Integer companyId;
-
     /**
      * 企业名称
      */
