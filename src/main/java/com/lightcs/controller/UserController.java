@@ -6,6 +6,9 @@ import com.lightcs.model.vo.UserVO;
 import com.lightcs.result.BaseResponse;
 import com.lightcs.result.ResultBuilder;
 import com.lightcs.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import static com.lightcs.constants.Common.UPDATE_SUCCESS;
 import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
 
 
+@Tag(name = "用户操作")
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -23,12 +27,15 @@ public class UserController {
     private UserService userService;
 
     //region 用户操作
+    @Operation(summary = "用户登录")
     @PostMapping("/login")
     public BaseResponse<UserVO> login(String username, String password, HttpServletResponse response) {
+        ThrowUtils.throwIf(StringUtils.isBlank(username) || StringUtils.isBlank(password), PARAMS_ERROR, "用户名或密码不能为空");
         UserVO userVO = userService.userLogin(username, password, response);
         return ResultBuilder.success(userVO);
     }
 
+    @Operation(summary = "用户注册")
     @PostMapping("/register")
     public BaseResponse<UserVO> register(String username, String password, String captcha) {
         ThrowUtils.throwIf(StringUtils.isBlank(captcha), PARAMS_ERROR, "验证码不能为空");
@@ -38,18 +45,21 @@ public class UserController {
         return ResultBuilder.success(userVO);
     }
 
+    @Operation(summary = "用户登出")
     @GetMapping("/logout")
     public BaseResponse<String> logout() {
         userService.userLogout();
         return ResultBuilder.success("登出成功");
     }
 
+    @Operation(summary = "获取当前用户信息")
     @GetMapping("/current")
     public BaseResponse<UserVO> current() {
         UserVO userVO = userService.getCurrentUserVO();
         return ResultBuilder.success(userVO);
     }
 
+    @Operation(summary = "更新用户信息")
     @PutMapping("/update")
     public BaseResponse<String> update(@RequestBody UserRequest userRequest) {
         if (userRequest == null) {
@@ -62,6 +72,7 @@ public class UserController {
         return ResultBuilder.success(UPDATE_SUCCESS);
     }
 
+    @Operation(summary = "重置密码")
     @PutMapping("/reset")
     public BaseResponse<String> resetPassword(String oldPassword, String newPassword) {
         if (StringUtils.isBlank(oldPassword) || StringUtils.isBlank(newPassword)) {
@@ -74,6 +85,7 @@ public class UserController {
         return ResultBuilder.success(UPDATE_SUCCESS);
     }
 
+    @Operation(summary = "修改账号")
     @PutMapping("/modifyAccount")
     public BaseResponse<String> modifyAccount(String oldAccount, String newAccount, String captcha) {
         if (StringUtils.isBlank(oldAccount) || StringUtils.isBlank(newAccount)) {
@@ -92,6 +104,7 @@ public class UserController {
         return ResultBuilder.success(UPDATE_SUCCESS);
     }
 
+    @Operation(summary = "删除用户")
     @DeleteMapping("/del")
     public BaseResponse<String> delete() {
         userService.delete();

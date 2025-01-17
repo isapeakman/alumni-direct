@@ -27,8 +27,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     @Autowired
     private UserDetailsService userService;
-    @Autowired
-    private HeaderFilter headerFilter;
+//    @Autowired
+//    private HeaderFilter headerFilter;
 
 
     //基于组件的安全配置
@@ -36,17 +36,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())  // 禁用 CSRF
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/user/login").permitAll()  // 公开访问
-                        .anyRequest().authenticated()  // 其他接口需认证
+//                        .requestMatchers("/user/login","/user/register","/doc.html", "/webjars/**","/swagger-ui/**","/static/**").permitAll()  // 公开访问
+                                .anyRequest().authenticated()  // 其他接口需认证
                 )
-                .addFilterBefore(headerFilter, UsernamePasswordAuthenticationFilter.class); // 添加 HeaderFilter到 UsernamePasswordAuthenticationFilter 之前
+                .addFilterBefore(new HeaderFilter(), UsernamePasswordAuthenticationFilter.class); // 添加 HeaderFilter到过滤器链中，且在 UsernamePasswordAuthenticationFilter 之前
         return http.build();
     }
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         // 不拦截的请求路径
-        return (web) -> web.ignoring().requestMatchers("/user/login", "/user/register");
+        return (web) -> web.ignoring().requestMatchers("/user/login", "/user/register", "/doc.html", "/webjars/**", "/swagger-ui/**", "/static/**");
     }
 
     @Bean

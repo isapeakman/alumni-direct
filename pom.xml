@@ -132,6 +132,13 @@
             <artifactId>yauaa</artifactId>
             <version>6.10</version>
         </dependency>
+        <!-- knife4j 生成接口文档 -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <version>4.5.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
