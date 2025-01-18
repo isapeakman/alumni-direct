@@ -60,6 +60,10 @@ public class Job implements Serializable {
      * 创建用户
      */
     private Integer createId;
+    /**
+     * 状态  0 待审批 1待发布 2 已发布 3 关闭
+     */
+    private Integer status;
 
     /**
      * 创建时间
@@ -71,9 +75,9 @@ public class Job implements Serializable {
      */
     private Date updateTime;
     /**
-     * 状态  0 待审批 1待发布 2 已发布 3 关闭
+     * 发布时间
      */
-    private Integer status;
+    private Date publishTime;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

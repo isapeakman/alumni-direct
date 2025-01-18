@@ -46,7 +46,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         // 不拦截的请求路径
-        return (web) -> web.ignoring().requestMatchers("/user/login", "/user/register", "/doc.html", "/webjars/**", "/swagger-ui/**", "/static/**");
+        return (web) -> web.ignoring().requestMatchers("/user/login", "/user/register", "/doc.html", "/webjars/**", "/swagger-ui/**", "/static/**", "/v3/api-docs/**");
     }
 
     @Bean

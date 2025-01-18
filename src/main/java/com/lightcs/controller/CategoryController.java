@@ -8,6 +8,8 @@ import com.lightcs.model.vo.JobCategoryVO;
 import com.lightcs.result.BaseResponse;
 import com.lightcs.result.ResultBuilder;
 import com.lightcs.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,7 @@ import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
  * @Description: 职位分类
  * @Version: 1.0
  */
+@Tag(name = "职位分类")
 @RestController
 @RequestMapping("/category")
 public class CategoryController {
@@ -31,6 +34,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     //region admin
+    @Operation(summary = "添加职位分类")
     @PostMapping("/add")
     public BaseResponse<String> addJobCategory(@RequestBody CategoryAdd categoryAdd) {
         if (categoryAdd == null) {
@@ -48,6 +52,7 @@ public class CategoryController {
         return ResultBuilder.success(ADD_SUCCESS);
     }
 
+    @Operation(summary = "更新职位分类")
     @PutMapping("/update")
     public BaseResponse<String> updateJobCategory(@RequestBody CategoryUpdate categoryUpdate) {
         if (categoryUpdate == null) {
@@ -69,6 +74,7 @@ public class CategoryController {
         return ResultBuilder.success(UPDATE_SUCCESS);
     }
 
+    @Operation(summary = "删除职位分类")
     @DeleteMapping("/delete")
     public BaseResponse<String> deleteJobCategory(@RequestParam Long id) {
         if (id == null) {
@@ -81,6 +87,7 @@ public class CategoryController {
         return ResultBuilder.success(DELETE_SUCCESS);
     }
 
+    @Operation(summary = "获取职位分类列表")
     @GetMapping("/list")
     public BaseResponse<List<Category>> listJobCategory() {
         List<Category> list = categoryService.list();
@@ -90,6 +97,7 @@ public class CategoryController {
 
 
     //region user
+    @Operation(summary = "获取职位分类VO列表")
     @GetMapping("/listVO")
     public BaseResponse<List<JobCategoryVO>> listJobCategoryVO() {
         List<Category> list = categoryService.list();

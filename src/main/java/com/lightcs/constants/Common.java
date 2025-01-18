@@ -15,4 +15,10 @@ public interface Common {
     String ADD_SUCCESS = "添加成功";
     String ADD_FAIL = "添加失败";
 
+    String PUBLISH_SUCCESS = "发布成功";
+    String PUBLISH_FAIL = "发布失败";
+    String OFFLINE_SUCCESS = "下架成功";
+    String OFFLINE_FAIL = "下架失败";
+    String CLOSE_SUCCESS = "关闭成功";
+    String CLOSE_FAIL = "关闭失败";
 }
