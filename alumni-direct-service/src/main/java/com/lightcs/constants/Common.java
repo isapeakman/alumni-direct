@@ -10,6 +10,8 @@ package com.lightcs.constants;
 public interface Common {
     String DEFAULT_ORDER_BY = "update_time";
     String DEFAULT_ORDER_TYPE = "desc";
+
+    Integer ROOT_PARENT_ID = 0;//根父级id
     String UPDATE_SUCCESS = "更新成功";
     String UPDATE_FAIL = "更新失败";
     String DELETE_SUCCESS = "删除成功";

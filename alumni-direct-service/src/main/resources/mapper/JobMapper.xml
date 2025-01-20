@@ -5,7 +5,7 @@
 <mapper namespace="com.lightcs.mapper.JobMapper">
 
     <select id="selectCards" resultType="com.lightcs.model.vo.JobCardVO">
-        SELECT title,job_type,location,
+        SELECT id,title,job_type,location,
         CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED) AS min_salary,
         CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary,
         company_name,recruiter_name

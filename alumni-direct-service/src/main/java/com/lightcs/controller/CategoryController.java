@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.lightcs.constants.Common.*;
@@ -87,11 +88,11 @@ public class CategoryController {
         return ResultBuilder.success(DELETE_SUCCESS);
     }
 
-    @Operation(summary = "获取职位分类列表")
-    @GetMapping("/list")
-    public BaseResponse<List<Category>> listJobCategory() {
-        List<Category> list = categoryService.list();
-        return ResultBuilder.success(list);
+    @Operation(summary = "获取职位分类树")
+    @GetMapping("/getTree")
+    public BaseResponse<List<Map<String, Object>>> listJobCategory() {
+        List<Map<String, Object>> categoryTree = categoryService.getCategoryTree();
+        return ResultBuilder.success(categoryTree);
     }
     //endregion
 
