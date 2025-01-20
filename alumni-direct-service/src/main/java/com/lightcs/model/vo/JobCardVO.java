@@ -10,6 +10,7 @@ import lombok.Data;
  */
 @Data
 public class JobCardVO {
+    private Integer id;
     /**
      * 职位名称
      */

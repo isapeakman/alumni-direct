@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lightcs.mapper.JobApprovalRecordMapper">
+
+    <select id="selectAllJobApprovalRecords" resultType="com.lightcs.model.pojo.JobApprovalRecord">
+        SELECT
+            id,job_id,approval_user_id,note,approval_status,approval_result,approval_time,create_time
+        FROM
+            job_approval_record
+        <where>
+            <if test="approvalStatus != null">
+                AND approval_status = #{approvalStatus}
+            </if>
+            <if test="approvalResult != null">
+                AND approval_result = #{approvalResult}
+            </if>
+        </where>
+        ORDER BY ${sorter}
+    </select>
+
+
+</mapper>

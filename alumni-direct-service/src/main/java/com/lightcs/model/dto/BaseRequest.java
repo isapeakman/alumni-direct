@@ -2,6 +2,9 @@ package com.lightcs.model.dto;
 
 import lombok.Data;
 
+import static com.lightcs.constants.Common.DEFAULT_ORDER_BY;
+import static com.lightcs.constants.Common.DEFAULT_ORDER_TYPE;
+
 /**
  * @Author: peak-like
  * @CreateTime: 2025-01-16
@@ -12,6 +15,6 @@ import lombok.Data;
 public class BaseRequest {
     private Integer current = 1;
     private Integer pageSize = 10;
-    private String orderBy;
-    private String orderType;
+    private String orderBy = DEFAULT_ORDER_BY;      // 排序字段
+    private String orderType = DEFAULT_ORDER_TYPE;  // 排序方式
 }
