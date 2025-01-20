@@ -9,7 +9,8 @@ const routes = [
     },
     {
         path: '/',
-        component: Layout,
+        name: 'Home',
+        component: () => import('../views/home/index.vue'),
         redirect: '/dashboard',
         children: [
             {

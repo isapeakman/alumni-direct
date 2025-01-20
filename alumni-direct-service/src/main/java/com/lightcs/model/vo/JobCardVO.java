@@ -32,4 +32,12 @@ public class JobCardVO {
      * 最大薪资
      */
     private Integer maxSalary;
+    /**
+     * 公司名称
+     */
+    private String companyName;
+    /**
+     * 招聘者名称
+     */
+    private String recruiterName;
 }

@@ -7,7 +7,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,8 +22,12 @@ import static com.lightcs.constants.RedisConstant.TOKEN_PREFIX;
 @Slf4j
 //@Component
 public class HeaderFilter extends OncePerRequestFilter {
-    @Autowired
+    //    @Autowired
     private RedisUtil redisUtil;
+
+    public HeaderFilter(RedisUtil redisUtil) {//构造器注入
+        this.redisUtil = redisUtil;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
