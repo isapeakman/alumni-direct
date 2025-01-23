@@ -8,12 +8,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static com.lightcs.constants.RedisConstant.TOKEN_PREFIX;
+import static com.lightcs.constants.UserConstant.ADMIN;
+import static com.lightcs.constants.UserConstant.USER;
 
 /**
  * 请求头过滤器
@@ -46,8 +50,14 @@ public class HeaderFilter extends OncePerRequestFilter {
             return;
         }
         UserVO user = (UserVO) o;
+
+        // 设置角色
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole() == 0 ? ADMIN : USER);
+        ArrayList<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
+        simpleGrantedAuthorities.add(authority);
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(user, null, null);
+                new UsernamePasswordAuthenticationToken(user, null, simpleGrantedAuthorities);
+
         // 将用户信息存入上下文
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);// 给后面的UsernamePasswordAuthenticationFilter传值
         filterChain.doFilter(request, response);

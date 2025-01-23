@@ -1,4 +1,5 @@
 package com.lightcs.config;
+
 import com.lightcs.filter.HeaderFilter;
 import com.lightcs.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -28,6 +30,7 @@ import java.util.List;
  * @Description 3.1.0 版本的 SecurityConfig 配置类
  **/
 @EnableWebSecurity
+@EnableMethodSecurity           // 使注解@PreAuthorize 生效
 @Configuration
 public class SecurityConfig {
     @Autowired

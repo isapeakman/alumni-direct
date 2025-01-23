@@ -15,4 +15,7 @@ public interface UserConstant {
      * 默认头像
      */
     String DEFAULT_USER_AVATAR = "https://img.picui.cn/free/2025/01/08/677e2af7b7510.png";
+
+    String ADMIN = "ROLE_ADMIN";
+    String USER = "ROLE_USER";
 }
