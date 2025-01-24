@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lightcs.mapper.JobApplyRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.lightcs.model.pojo.JobApplyRecord">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="jobId" column="job_id" jdbcType="INTEGER"/>
+            <result property="applicantId" column="applicant_id" jdbcType="INTEGER"/>
+            <result property="resume" column="resume" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="applyTime" column="apply_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+<!--    <sql id="Base_Column_List">-->
+<!--        id,job_id,applicant_id,-->
+<!--        resume,status,apply_time-->
+<!--    </sql>-->
+    <select id="getJobApplyRecordCards" resultType="com.lightcs.model.vo.JobApplyRecordCardVO">
+        SELECT a.id, a.job_id, a.applicant_id, a.resume, a.status, a.apply_time,
+               b.name as applicantName ,DATEDIFF(yy, b.birth, GETDATE()) AS age,b.gender
+               c.school, c.major, c.degree
+        FROM alumni_direct.job_apply_record a
+        left JOIN alumni_direct.user_detail b
+        ON a.applicant_id = b.user_id
+        left join alumni_direct.education_detail c
+        ON c.user_id = a.applicant_id
+        <where>
+            <if test="jobId != null">
+                job_id = #{jobId}
+            </if>
+        </where>
+    </select>
+</mapper>

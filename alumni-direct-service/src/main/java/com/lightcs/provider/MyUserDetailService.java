@@ -24,11 +24,11 @@ public class MyUserDetailService implements UserDetailsService {
         ThrowUtils.throwIf(user == null, PARAMS_ERROR, "用户或密码错误");
         String userPassword = "{bcrypt}" + user.getUserPassword();// 加密方式为 bcrypt， 添加 {bcrypt} 前缀
 //        String userPassword =  "{noop}"+ user.getUserPassword();// 没有加密方式， 添加 {noop} 前缀
-        String userRole = user.getRole()==0? "ROLE_ADMIN" : "ROLE_USER";
+        String userRole = user.getRole()==0? "ADMIN" : "USER";    //不以这个开头
         return User.builder()
                 .username(user.getUserAccount())
                 .password(userPassword)
                 .roles(userRole)
-                .build();         //todo 注意这里判断下是否要添加 ROLE_
+                .build();
     }
 }
