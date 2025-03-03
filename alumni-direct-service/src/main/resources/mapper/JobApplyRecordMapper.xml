@@ -14,22 +14,51 @@
     </resultMap>
 
 <!--    <sql id="Base_Column_List">-->
-<!--        id,job_id,applicant_id,-->
+<!--        job_apply_record.id,job_id,applicant_id,-->
 <!--        resume,status,apply_time-->
 <!--    </sql>-->
     <select id="getJobApplyRecordCards" resultType="com.lightcs.model.vo.JobApplyRecordCardVO">
         SELECT a.id, a.job_id, a.applicant_id, a.resume, a.status, a.apply_time,
-               b.name as applicantName ,DATEDIFF(yy, b.birth, GETDATE()) AS age,b.gender
-               c.school, c.major, c.degree
-        FROM alumni_direct.job_apply_record a
-        left JOIN alumni_direct.user_detail b
-        ON a.applicant_id = b.user_id
-        left join alumni_direct.education_detail c
-        ON c.user_id = a.applicant_id
-        <where>
-            <if test="jobId != null">
-                job_id = #{jobId}
-            </if>
-        </where>
+        d.name as applicantName ,TIMESTAMPDIFF(YEAR, d.birth, CURDATE()) AS age,d.gender,
+        ed.school, ed.major, ed.degree
+        FROM job_apply_record a
+        left JOIN user_detail d ON a.applicant_id = d.user_id
+        left join (
+        SELECT user_id, school, major, degree
+        FROM education_detail
+        WHERE (user_id, degree) IN (
+        SELECT user_id, MAX(degree)
+        FROM education_detail
+        GROUP BY user_id
+        )
+        ) ed ON ed.user_id = a.applicant_id
+        WHERE a.recruiter_id = #{userId}
+        <if test="jobId != null">
+            AND a.job_id = #{jobId}
+        </if>
+        <if test="status != null">
+            AND a.status = #{status}
+        </if>
+        ORDER BY a.apply_time DESC
+    </select>
+
+    <select id="getJobApplyRecords" resultType="com.lightcs.model.vo.JobApplyRecordVO">
+        select id,
+               title,
+               job_type,
+               location,
+               CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED)  AS min_salary,
+               CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary,
+               company_name,
+               recruiter_name,
+               jar.status,
+               note,
+               apply_time,
+               resume
+        from job
+                 RIGHT JOIN (select job_id, status, note, apply_time, resume
+                             from job_apply_record
+                             where applicant_id = #{applicantId}) AS jar on jar.job_id = job.id
+
     </select>
 </mapper>

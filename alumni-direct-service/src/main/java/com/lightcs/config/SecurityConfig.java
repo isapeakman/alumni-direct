@@ -11,7 +11,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,10 +44,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())  // 禁用 CSRF
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/user/login","/user/register","/doc.html", "/webjars/**","/swagger-ui/**","/static/**").permitAll()  // 公开访问
-                                .anyRequest().authenticated()  // 其他接口需认证
+                        .requestMatchers("/user/login", "/user/register", "/doc.html", "/webjars/**", "/swagger-ui/**", "/static/**", "/v3/api-docs/**").permitAll()  // 公开访问
+                        .anyRequest().authenticated()  // 其他接口需认证
                 )
-                .addFilterBefore(new HeaderFilter(redisUtil), UsernamePasswordAuthenticationFilter.class) // 添加 HeaderFilter到过滤器链中，且在 UsernamePasswordAuthenticationFilter 之前
+                .addFilterBefore(new HeaderFilter(redisUtil), UsernamePasswordAuthenticationFilter.class)// 添加 HeaderFilter到过滤器链中，且在 UsernamePasswordAuthenticationFilter 之前
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));  // 添加跨域配置
 
         return http.build();
@@ -74,11 +73,12 @@ public class SecurityConfig {
         return source;
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        // 不拦截的请求路径
-        return (web) -> web.ignoring().requestMatchers("/user/login", "/user/register", "/doc.html", "/webjars/**", "/swagger-ui/**", "/static/**", "/v3/api-docs/**");
-    }
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {//不使用这种配置的原因是 访问/static/**的时候会被拦截
+//        // 不拦截的请求路径
+////        return (web) -> web.ignoring().requestMatchers("/user/login", "/user/register", "/doc.html", "/webjars/**", "/swagger-ui/**", "/static/**", "/v3/api-docs/**");
+//        return (web) -> web.ignoring().requestMatchers("/**");
+//    }
 
     @Bean
     AuthenticationManager authenticationManager() {

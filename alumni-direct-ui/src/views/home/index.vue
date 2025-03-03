@@ -11,28 +11,33 @@
         <div class="nav-menu">
           <el-menu mode="horizontal" :router="true">
             <el-menu-item index="/">首页</el-menu-item>
-            <el-menu-item index="/jobs">职位搜索</el-menu-item>
-            <el-menu-item index="/company">名企推荐</el-menu-item>
-            <el-menu-item index="/about">关于我们</el-menu-item>
+            <el-menu-item index="/">推荐职位</el-menu-item>
+            <el-menu-item index="/">搜索职位</el-menu-item>
+            <el-menu-item index="/">招聘会和宣讲会</el-menu-item>
           </el-menu>
         </div>
         <div class="user-actions">
           <template v-if="!isLoggedIn">
-            <el-button type="primary" @click="handleLogin">登录</el-button>
+            <el-button type="primary" @click="showLogin">登录</el-button>
             <el-button @click="handleRegister">注册</el-button>
           </template>
           <template v-else>
+            <el-button type="primary" @click="showLogin">通知</el-button>
+            <el-button type="primary" @click="showLogin">消息</el-button>
+
             <el-dropdown>
               <span class="user-profile">
-                <el-avatar :size="32" src="https://placeholder.com/32"/>
-                <span>{{ userName }}</span>
+                <span class="username">{{ userName }}</span>
+                <el-avatar :size="48" :src=avatar/>
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item>我的简历</el-dropdown-item>
                   <el-dropdown-item>投递记录</el-dropdown-item>
                   <el-dropdown-item>收藏职位</el-dropdown-item>
-                  <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
+                  <el-dropdown-item divided>招聘/内推</el-dropdown-item>
+                  <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -93,7 +98,7 @@
                 <span class="job-type">{{ getJobType(job.jobType) }}</span>
               </div>
               <div class="recruiter">
-                <el-avatar :size="24" src="https://placeholder.com/24"/>
+                <el-avatar :size="30" :src=job.recruiterAvatar/>
                 <span>{{ job.recruiterName }}·招聘者</span>
               </div>
             </el-card>
@@ -115,20 +120,6 @@
       </div>
     </div>
 
-    <!-- 名企展示 -->
-    <div class="section company-showcase">
-      <div class="section-content">
-        <h3 class="section-title">知名企业</h3>
-        <el-row :gutter="20">
-          <el-col :span="4" v-for="company in companies" :key="company.id">
-            <el-card shadow="hover" class="company-card">
-              <img :src="company.logo" :alt="company.name" class="company-logo">
-              <div class="company-name">{{ company.name }}</div>
-            </el-card>
-          </el-col>
-        </el-row>
-      </div>
-    </div>
 
     <!-- 页脚 -->
     <el-footer class="footer">
@@ -165,11 +156,7 @@
   <!-- 添加登录弹窗组件 -->
 
   <LoginDialog
-
       v-model:visible="loginDialogVisible"
-
-      @success="handleLoginSuccess"
-
   />
 
 
@@ -181,10 +168,15 @@ import {Search, Location} from '@element-plus/icons-vue'
 import LoginDialog from '@/components/LoginDialog.vue'
 import request from '@/utils/request'
 import {ElMessage} from 'element-plus'
-
+import {getJobCard} from '@/api/job'
+import {searchJob} from '@/api/job'
+// 控制登录框显示
+const loginDialogVisible = ref(false)
 // 用户相关状态
 const isLoggedIn = ref(false)
 const userName = ref('')
+const userInfo = ref(null)
+const avatar = ref('')
 const searchKeyword = ref('')
 
 // 热门标签
@@ -198,28 +190,68 @@ const companies = ref([
   // ... 其他企业数据
 ])
 
-// 登录弹窗控制
-const loginDialogVisible = ref(false)
-
-// 登录相关方法
-const handleLogin = () => {
-  // 处理登录逻辑
+// 显示登录框的方法
+const showLogin = () => {
   loginDialogVisible.value = true
-  userName.value = userData.username
-  loginDialogVisible.value = false
-  ElMessage.success('登录成功')
+}
+// 监听 localStorage 变化
+window.addEventListener('storage', (e) => {
+  if (e.key === 'token' || e.key === 'userInfo') {
+    checkLoginStatus()
+  }
+})
+
+// 检查登录状态
+const checkLoginStatus = () => {
+  const savedUserInfo = localStorage.getItem('userInfo')
+  if (savedUserInfo) {
+    try {
+      userInfo.value = JSON.parse(savedUserInfo)
+      isLoggedIn.value = true
+      console.log('用户信息:', userInfo.value)
+      avatar.value = userInfo.value.data.userAvatar
+      console.log('头像:', avatar.value)
+      userName.value = userInfo.value.data.nickname || userInfo.value.data.userAccount
+      console.log('用户名:', userName.value)
+    } catch (e) {
+      console.error('解析用户信息失败', e)
+    }
+  }
 }
 
-const handleRegister = () => {
-  // 处理注册逻辑
-}
 
+// 页面加载时检查是否有保存的用户信息
+onMounted(() => {
+  checkLoginStatus()
+})
+
+// 登出处理方法
 const handleLogout = () => {
-  // 处理登出逻辑
+  // 清除用户信息
+  userInfo.value = null
+  isLoggedIn.value = false
+  userName.value = ''
+
+  // 清除本地存储
+  localStorage.removeItem('userInfo')
+  localStorage.removeItem('token')
+
+  ElMessage.success('退出成功')
 }
 
-const handleSearch = () => {
+const handleSearch = async () => {
+  if (searchKeyword.value === '') {
+    ElMessage.error('请输入搜索内容')
+    return
+  }
   // 处理搜索逻辑
+  const response = await searchJob(searchKeyword)
+  if (response.data.code === 200) {
+    jobList.value = response.data.data.records
+    total.value = response.data.data.page.total
+  } else {
+    ElMessage.error(response.data.message || '获取职位列表失败')
+  }
 }
 
 // 职位列表相关数据
@@ -231,12 +263,7 @@ const total = ref(0)
 // 获取职位列表
 const fetchJobs = async () => {
   try {
-    const response = await request.get('/ad/job/cards', {
-      params: {
-        pageNum: currentPage.value,
-        pageSize: pageSize.value
-      }
-    })
+    const response = await getJobCard(currentPage, pageSize)
 
     if (response.data.code === 200) {
       jobList.value = response.data.data.records
@@ -278,8 +305,21 @@ const handleCurrentChange = (val) => {
   fetchJobs()
 }
 
-// 页面加载时获取数据
+// 页面加载时检查登录状态
 onMounted(() => {
+  // 检查 localStorage 中是否有用户信息和 token
+  const storedToken = localStorage.getItem('token')
+  const storedUserInfo = localStorage.getItem('userInfo')
+
+  if (storedToken && storedUserInfo) {
+    const parsedUserInfo = JSON.parse(storedUserInfo)
+    userInfo.value = parsedUserInfo
+    isLoggedIn.value = true
+    userName.value = parsedUserInfo.nickname || parsedUserInfo.userAccount
+  } else {
+    // 如果 token 或用户信息不完整，清除所有登录状态
+    handleLogout()
+  }
   fetchJobs()
 })
 </script>
@@ -308,6 +348,12 @@ onMounted(() => {
       margin: 0;
       font-size: 24px;
     }
+  }
+
+  .username {
+    color: #333;
+    font-size: 14px;
+    white-space: nowrap;
   }
 
   .nav-menu {

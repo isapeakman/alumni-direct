@@ -1,6 +1,9 @@
 package com.lightcs.model.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @Author: peak-like
@@ -9,6 +12,9 @@ import lombok.Data;
  * @Version: 1.0
  */
 @Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class JobCardVO {
     private Integer id;
     /**
@@ -37,7 +43,15 @@ public class JobCardVO {
      */
     private String companyName;
     /**
+     * 招聘者id
+     */
+    private Integer createId;
+    /**
      * 招聘者名称
      */
     private String recruiterName;
+    /**
+     * 招聘者头像
+     */
+    private String recruiterAvatar;
 }

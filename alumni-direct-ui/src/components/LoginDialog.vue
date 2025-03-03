@@ -14,49 +14,19 @@
         label-width="80px"
         class="login-form"
     >
-      <!-- 登录方式切换 -->
-      <el-radio-group v-model="loginType" class="login-type-group">
-        <el-radio-button label="phone">手机号登录</el-radio-button>
-        <el-radio-button label="email">邮箱登录</el-radio-button>
-      </el-radio-group>
 
-      <!-- 手机号登录 -->
-      <template v-if="loginType === 'phone'">
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="form.phone" placeholder="请输入手机号">
-            <template #prefix>
-              <el-icon>
-                <Iphone/>
-              </el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="验证码" prop="smsCode" v-if="!isLogin">
-          <div class="verify-code">
-            <el-input v-model="form.smsCode" placeholder="请输入验证码"/>
-            <el-button
-                type="primary"
-                :disabled="countdown > 0"
-                @click="handleSendCode"
-            >
-              {{ countdown > 0 ? `${countdown}s后重试` : '获取验证码' }}
-            </el-button>
-          </div>
-        </el-form-item>
-      </template>
 
       <!-- 邮箱登录 -->
-      <template v-else>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" placeholder="请输入邮箱">
-            <template #prefix>
-              <el-icon>
-                <Message/>
-              </el-icon>
-            </template>
-          </el-input>
+      <el-form-item label="邮箱" prop="email">
+        <el-input v-model="form.email" placeholder="请输入邮箱">
+          <template #prefix>
+            <el-icon>
+              <Message/>
+            </el-icon>
+          </template>
+        </el-input>
         </el-form-item>
-      </template>
+
 
       <!-- 密码输入 -->
       <el-form-item label="密码" prop="password">
@@ -74,6 +44,32 @@
         </el-input>
       </el-form-item>
     </el-form>
+
+    <el-form-item v-if="!isLogin" label="确认密码" prop="password">
+      <el-input
+          v-model="form.confirmPassword"
+          type="password"
+          placeholder="请确认密码"
+          show-password
+      >
+        <template #prefix>
+          <el-icon>
+            <Lock/>
+          </el-icon>
+        </template>
+      </el-input>
+    </el-form-item>
+
+    <el-form-item v-if="!isLogin" label="验证码" prop="smsCode">
+      <el-input
+          v-model="form.smsCode"
+          type="input"
+          placeholder="请输入验证码"
+          clearable
+      >
+      </el-input>
+    </el-form-item>
+
 
     <template #footer>
       <div class="dialog-footer">
@@ -95,6 +91,7 @@
 import {ref, reactive} from 'vue'
 import {Iphone, Message, Lock} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
+import {login, register} from '@/api/user'
 
 const props = defineProps({
   visible: {
@@ -106,23 +103,18 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'success'])
 
 const isLogin = ref(true)
-const loginType = ref('phone')
 const countdown = ref(0)
 const formRef = ref(null)
 
 const form = reactive({
-  phone: '',
   email: '',
   password: '',
+  confirmPassword: '',
   smsCode: ''
 })
 
 // 表单验证规则
 const rules = {
-  phone: [
-    {required: true, message: '请输入手机号', trigger: 'blur'},
-    {pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur'}
-  ],
   email: [
     {required: true, message: '请输入邮箱', trigger: 'blur'},
     {type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur'}
@@ -169,29 +161,61 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     // TODO: 调用登录/注册接口
     const data = {
-      loginType: loginType.value,
-      ...(loginType.value === 'phone'
-          ? {phone: form.phone}
-          : {email: form.email}),
+      email: form.email,
       password: form.password,
-      smsCode: form.smsCode
     }
-
+    if (!isLogin) {//注册
+      if (form.confirmPassword !== form.password) {
+        ElMessage.error('两次密码不一致')
+        return
+      }
+      data.confirmPassword = form.confirmPassword
+      data.captcha = form.smsCode
+    }
     console.log('提交数据:', data)
-    ElMessage.success(isLogin.value ? '登录成功' : '注册成功')
-    emit('success')
-    handleClose()
+    isLogin.value ? handleLogin(data) : handleRegister(data)
+
   } catch (error) {
     // 表单验证失败
   }
 }
+
+// 处理登录
+const handleLogin = async (data) => {
+  const res = await login(data)
+  console.log('登录结果:', res)
+  const token = res.headers['authorization']
+  if (res.data.code === 200) {
+    ElMessage.success('登录成功')
+    localStorage.setItem('token', token)
+    localStorage.setItem('userInfo', JSON.stringify(res.data))
+    // emit('success', res.data) // 将用户信息传递给父组件
+    handleClose()
+    // 刷新页面
+    window.location.reload()
+  } else {
+    ElMessage.error(res.data.message)
+  }
+}
+
+// 处理注册
+const handleRegister = async (data) => {
+  const res = await register(data)
+  console.log('注册结果:', res)
+  if (res.data.code === 200) {
+    ElMessage.success('注册成功')
+    handleClose()
+  } else {
+    ElMessage.error(res.data.message)
+  }
+}
+
 
 // 关闭弹窗
 const handleClose = () => {
   emit('update:visible', false)
   formRef.value?.resetFields()
   isLogin.value = true
-  loginType.value = 'phone'
 }
 </script>
 

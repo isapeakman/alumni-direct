@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.mapper.JobApprovalRecordMapper;
 import com.lightcs.mapper.JobMapper;
+import com.lightcs.mapper.UserMapper;
 import com.lightcs.model.dto.JobCardRequest;
 import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
@@ -37,6 +38,8 @@ import static com.lightcs.enums.ErrorCode.OPERATION_ERROR;
 public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobService {
     @Autowired
     private JobMapper jobMapper;
+    @Autowired
+    private UserMapper userMapper;
     @Autowired
     private JobApprovalRecordMapper jobApprovalRecordMapper;
 
@@ -102,7 +105,12 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
 
         List<JobCardVO> jobCardVOS = jobMapper.selectCards(page, cardRequest.getTitle(), cardRequest.getJobType(), cardRequest.getLocation(),
                 cardRequest.getMinSalary(), cardRequest.getMaxSalary(), STATUS_OPENED);
-
+        // 根据创建人id查询 创建人头像
+        jobCardVOS.forEach(jobCardVO -> {
+            Integer createId = jobCardVO.getCreateId();
+            String avatar = userMapper.selectAvatarById(createId);
+            jobCardVO.setRecruiterAvatar(avatar);
+        });
         page.setRecords(jobCardVOS);
         return page;
     }

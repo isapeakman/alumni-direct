@@ -8,7 +8,7 @@
         SELECT id,title,job_type,location,
         CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED) AS min_salary,
         CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary,
-        company_name,recruiter_name
+        company_name,recruiter_name,create_id
         FROM job
         <where>
             <if test="status != null">

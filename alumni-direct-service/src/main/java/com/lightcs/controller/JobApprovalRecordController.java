@@ -43,4 +43,5 @@ public class JobApprovalRecordController {
         return ResultBuilder.success(UPDATE_SUCCESS);
     }
 
+
 }

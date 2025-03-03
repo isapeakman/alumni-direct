@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * web层配置类,实现静态资源映射，将knife4j相关资源放行，保证生成的接口文档能够正常进行展示
  *
- * @author Hva
+ * @author peak-like
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -25,4 +25,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
+
+//    /**
+//     *  全局跨域配置
+//     * @param registry
+//     */
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        // 覆盖所有请求
+//        registry.addMapping("/**")
+//                // 允许发送 Cookie
+//                .allowCredentials(true)
+//                // 放行哪些域名（必须用 patterns，否则 * 会和 allowCredentials 冲突）
+//                .allowedOriginPatterns("*")
+//                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+//                .allowedHeaders("*")
+//                .exposedHeaders("*");
+//    }
 }

@@ -29,7 +29,7 @@ public class UserController {
     //region 用户操作
     @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public BaseResponse<UserVO> login(String username, String password, HttpServletResponse response) {
+    public BaseResponse<UserVO> login(@RequestParam(value = "email") String username, String password, HttpServletResponse response) {
         ThrowUtils.throwIf(StringUtils.isBlank(username) || StringUtils.isBlank(password), PARAMS_ERROR, "用户名或密码不能为空");
         UserVO userVO = userService.userLogin(username, password, response);
         return ResultBuilder.success(userVO);
@@ -37,7 +37,7 @@ public class UserController {
 
     @Operation(summary = "用户注册")
     @PostMapping("/register")
-    public BaseResponse<UserVO> register(String username, String password, String captcha) {
+    public BaseResponse<UserVO> register(@RequestParam(value = "email") String username, String password, String captcha) {
         ThrowUtils.throwIf(StringUtils.isBlank(captcha), PARAMS_ERROR, "验证码不能为空");
         // todo 验证码校验
 
