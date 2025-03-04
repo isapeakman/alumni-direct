@@ -28,7 +28,7 @@ public interface JobMapper extends BaseMapper<Job> {
      * @param status    状态
      * @return
      */
-    List<JobCardVO> selectCards(IPage<JobCardVO> page, String title, Integer jobType, String location, Integer minSalary, Integer maxSalary, Integer status);
+    List<JobCardVO> selectCards(IPage<JobCardVO> page, String title, Integer jobType, String location, Integer minSalary, Integer maxSalary, Integer status, List<Integer> ids);
 
     /**
      * 查询职位详情

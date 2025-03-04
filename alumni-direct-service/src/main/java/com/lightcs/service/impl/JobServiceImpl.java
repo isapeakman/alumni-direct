@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.mapper.JobApprovalRecordMapper;
+import com.lightcs.mapper.JobCategoryMapper;
 import com.lightcs.mapper.JobMapper;
 import com.lightcs.mapper.UserMapper;
 import com.lightcs.model.dto.JobCardRequest;
@@ -40,6 +41,8 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
     private JobMapper jobMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private JobCategoryMapper jobCategoryMapper;
     @Autowired
     private JobApprovalRecordMapper jobApprovalRecordMapper;
 
@@ -102,9 +105,19 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         Integer current = cardRequest.getCurrent();
         Integer pageSize = cardRequest.getPageSize();
         Page<JobCardVO> page = new Page<>(current, pageSize);
+        // 根据分类id查询职位
+        List<Integer> jobIdList = null;
+        if (cardRequest.getCategoryId() != null) {
+            jobIdList = jobCategoryMapper.selectJobIdByCategoryId(cardRequest.getCategoryId());
+            // 没有符合的职位
+            if (jobIdList == null || jobIdList.isEmpty()) {
+                return page;
+            }
+        }
 
+        // 查询职位卡片
         List<JobCardVO> jobCardVOS = jobMapper.selectCards(page, cardRequest.getTitle(), cardRequest.getJobType(), cardRequest.getLocation(),
-                cardRequest.getMinSalary(), cardRequest.getMaxSalary(), STATUS_OPENED);
+                cardRequest.getMinSalary(), cardRequest.getMaxSalary(), STATUS_OPENED, jobIdList);
         // 根据创建人id查询 创建人头像
         jobCardVOS.forEach(jobCardVO -> {
             Integer createId = jobCardVO.getCreateId();

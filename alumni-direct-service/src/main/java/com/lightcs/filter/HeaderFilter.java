@@ -22,7 +22,6 @@ import static com.lightcs.constants.UserConstant.USER;
 /**
  * 请求头过滤器
  */
-//@Component
 @Slf4j
 //@Component
 public class HeaderFilter extends OncePerRequestFilter {

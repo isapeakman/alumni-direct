@@ -33,4 +33,8 @@ public class JobCardRequest extends BaseRequest {
      * 最高薪资
      */
     private Integer maxSalary;
+    /**
+     * 分类id
+     */
+    private Integer categoryId;
 }
