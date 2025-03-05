@@ -7,7 +7,7 @@ import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
 import com.lightcs.model.pojo.Job;
 import com.lightcs.model.vo.JobCardVO;
-import com.lightcs.model.vo.JobVO;
+import com.lightcs.model.vo.JobDetailVO;
 
 /**
  * @Author: peak-like
@@ -46,7 +46,7 @@ public interface JobService extends IService<Job> {
      * @param id 职位id
      * @return 职位详情
      */
-    JobVO detail(Integer id);
+    JobDetailVO detail(Integer id);
 
     /**
      * 发布职位

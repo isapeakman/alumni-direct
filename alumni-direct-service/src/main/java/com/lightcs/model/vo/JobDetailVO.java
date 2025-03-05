@@ -1,18 +1,18 @@
 package com.lightcs.model.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
 
 /**
  * @Author: peak-like
- * @CreateTime: 2025-01-17
- * @Description: 职位VO
+ * @CreateTime: 2025-03-05
+ * @Description: 职位详情VO
  * @Version: 1.0
  */
-@Deprecated
 @Data
-public class JobVO {
+public class JobDetailVO {
     /**
      * 职位名称
      */
@@ -51,7 +51,16 @@ public class JobVO {
      */
     private Integer createId;
     /**
+     * 招聘者
+     */
+    private String recruiterName;
+    /**
+     * 招聘者头像
+     */
+    private String recruiterAvatar;
+    /**
      * 发布时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date publishTime;
 }

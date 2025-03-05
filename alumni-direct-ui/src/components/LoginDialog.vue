@@ -184,7 +184,8 @@ const handleSubmit = async () => {
 const handleLogin = async (data) => {
   const res = await login(data)
   console.log('登录结果:', res)
-  const token = res.headers['authorization']
+  const token = res.data.data.token
+  console.log('token:', token)
   if (res.data.code === 200) {
     ElMessage.success('登录成功')
     localStorage.setItem('token', token)

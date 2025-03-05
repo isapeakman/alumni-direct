@@ -13,8 +13,9 @@ import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
 import com.lightcs.model.pojo.Job;
 import com.lightcs.model.pojo.JobApprovalRecord;
+import com.lightcs.model.pojo.User;
 import com.lightcs.model.vo.JobCardVO;
-import com.lightcs.model.vo.JobVO;
+import com.lightcs.model.vo.JobDetailVO;
 import com.lightcs.service.JobService;
 import com.lightcs.utils.CurrentUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,10 +136,16 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
      * @return JobVO
      */
     @Override
-    public JobVO detail(Integer id) {
-        JobVO jobVO = jobMapper.detail(id, STATUS_OPENED);
-        ThrowUtils.throwIf(jobVO == null, NOT_FOUND_ERROR, "职位不存在");
-        return jobVO;
+    public JobDetailVO detail(Integer id) {
+        //查询职位详情
+        JobDetailVO jobDetailVO = jobMapper.detail(id, STATUS_OPENED);
+        ThrowUtils.throwIf(jobDetailVO == null, NOT_FOUND_ERROR, "职位不存在");
+        //获取发布人信息
+        Integer createId = jobDetailVO.getCreateId();
+        User user = userMapper.selectById(createId);
+        jobDetailVO.setRecruiterName(user.getNickname());
+        jobDetailVO.setRecruiterAvatar(user.getUserAvatar());
+        return jobDetailVO;
     }
 
     /**

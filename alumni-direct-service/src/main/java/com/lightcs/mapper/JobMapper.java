@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lightcs.model.pojo.Job;
 import com.lightcs.model.vo.JobCardVO;
-import com.lightcs.model.vo.JobVO;
+import com.lightcs.model.vo.JobDetailVO;
 
 import java.util.List;
 
@@ -37,5 +37,5 @@ public interface JobMapper extends BaseMapper<Job> {
      * @param status 职位状态
      * @return 职位详情
      */
-    JobVO detail(Integer id, Integer status);
+    JobDetailVO detail(Integer id, Integer status);
 }

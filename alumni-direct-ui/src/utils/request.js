@@ -9,8 +9,11 @@ const request = axios.create({
 // 请求拦截器
 request.interceptors.request.use(
     config => {
-        // 添加固定的 Authorization 头
-        config.headers['Authorization'] = 'QV0mjV688hQT-bZ2pfvOB4HSgVS6lfkQ'
+        // 添加 Authorization 头
+        const token = localStorage.getItem('token')
+        if (token) {
+            config.headers['Authorization'] = token
+        }
         return config
     },
     error => {
@@ -21,6 +24,7 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
     response => {
+        console.log(response)
         return response
     },
     error => {

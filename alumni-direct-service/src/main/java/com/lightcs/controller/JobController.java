@@ -6,7 +6,7 @@ import com.lightcs.model.dto.JobCardRequest;
 import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
 import com.lightcs.model.vo.JobCardVO;
-import com.lightcs.model.vo.JobVO;
+import com.lightcs.model.vo.JobDetailVO;
 import com.lightcs.result.BaseResponse;
 import com.lightcs.result.PaginationBuilder;
 import com.lightcs.result.ResultBuilder;
@@ -99,7 +99,7 @@ public class JobController {
 
     @Operation(summary = "获取职位详情")
     @GetMapping("/detail")
-    public BaseResponse<JobVO> detail(Integer id) {
+    public BaseResponse<JobDetailVO> detail(@RequestParam(value = "jobId") Integer id) {
         ThrowUtils.throwIf(id == null, PARAMS_ERROR, "职位id不能为空");
         return ResultBuilder.success(jobService.detail(id));
     }

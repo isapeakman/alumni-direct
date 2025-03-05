@@ -34,8 +34,9 @@
                 <foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
             </if>
         </where>
+        order by publish_time desc
     </select>
-    <select id="detail" resultType="com.lightcs.model.vo.JobVO">
+    <select id="detail" resultType="com.lightcs.model.vo.JobDetailVO">
         SELECT title,job_type,job_desc,location,company_name,create_id,publish_time,
         CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED) AS min_salary,
         CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary

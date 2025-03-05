@@ -5,23 +5,37 @@ const routes = [
     {
         path: '/',
         name: 'Home',
-        component: () => import('../views/home/index.vue'),
+        component: () => import('@/views/user/home/index.vue'),
         redirect: '/dashboard',
         children: [
             {
                 path: 'dashboard',
                 name: 'Dashboard',
-                component: () => import('../views/dashboard/index.vue'),
+                component: () => import('@/views/user/dashboard/index.vue'),
                 meta: {title: '控制台', icon: 'dashboard'}
             },
             {
                 path: 'recommend',
                 name: 'Recommend',
-                component: () => import('../views/recommend/index.vue'),
+                component: () => import('@/views/user/recommend/index.vue'),
                 meta: {title: '推荐职位', icon: 'recommend'}
             }
         ]
     },
+    {
+        path: '/recruitment',
+        name: 'recruitment',
+        component: () => import('@/views/recruiter/home/index.vue'),
+        redirect: '/recruitment/recruiter',
+        children: [
+            {
+                path: 'recruiter',
+                name: 'Recruiter',
+                component: () => import('@/views/recruiter/home/index.vue'),
+                meta: {title: '控制台', icon: 'recruiter'}
+            }
+        ]
+    }
 ]
 
 const router = createRouter({

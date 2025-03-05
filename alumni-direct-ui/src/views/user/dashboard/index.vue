@@ -115,12 +115,12 @@
 </template>
 
 <script setup>
-import {getJobCard} from '@/api/job'
-import {searchJob} from '@/api/job'
+import {getJobCard} from '@/api/job.js'
+import {searchJob} from '@/api/job.js'
 import {ref, computed} from 'vue'
 import {ElMessage} from 'element-plus'
 import {Search, Location} from '@element-plus/icons-vue'
-import request from '@/utils/request'
+import request from '@/utils/request.js'
 import {onMounted} from 'vue'
 // 分类相关的状态
 const categories = ref([])

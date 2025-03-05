@@ -100,7 +100,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         redisUtil.set(TOKEN_PREFIX + userVO.getUserId() + ":" + UserAgentUtil.getUserAgent(), token);// userId:设备 -> token
 
         // 返回用户信息 以及 token
-        response.setHeader("Authorization", token);
+//        response.setHeader("Authorization", token);
+        userVO.setToken(token);
         return userVO;
     }
 

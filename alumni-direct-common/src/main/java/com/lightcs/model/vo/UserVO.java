@@ -34,4 +34,8 @@ public class UserVO {
      * 0:admin; 1:user;
      */
     private Integer role;
+    /**
+     * token
+     */
+    private String token;
 }

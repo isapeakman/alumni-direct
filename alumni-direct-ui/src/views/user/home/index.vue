@@ -35,7 +35,7 @@
                   <el-dropdown-item>我的简历</el-dropdown-item>
                   <el-dropdown-item>投递记录</el-dropdown-item>
                   <el-dropdown-item>收藏职位</el-dropdown-item>
-                  <el-dropdown-item divided>招聘/内推</el-dropdown-item>
+                  <el-dropdown-item divided @click="navigateToRecruitment">招聘/内推</el-dropdown-item>
                   <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
 
                 </el-dropdown-menu>
@@ -92,7 +92,7 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue'
 import LoginDialog from '@/components/LoginDialog.vue'
-import request from '@/utils/request'
+import request from '@/utils/request.js'
 import {ElMessage} from 'element-plus'
 
 // 控制登录框显示
@@ -171,6 +171,13 @@ onMounted(() => {
     handleLogout()
   }
 })
+
+
+import router from "@/router/index.js";
+
+const navigateToRecruitment = () => {
+  router.push('/recruitment')
+}
 </script>
 
 <style lang="scss" scoped>
@@ -181,7 +188,13 @@ onMounted(() => {
 }
 
 .header {
+  position: fixed; // 固定位置
+  top: 0; // 顶部对齐
+  left: 0; // 左侧对齐
+  width: 100%; // 占满宽度
+  z-index: 1000; // 确保在其他内容之上
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: white; // 背景色，防止内容遮挡
 
   .header-content {
     max-width: 1200px;
