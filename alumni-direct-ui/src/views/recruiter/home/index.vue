@@ -1,83 +1,89 @@
 <template>
-  <!-- 顶部导航 -->
-  <el-header class="header">
-    <div class="header-content">
-      <div class="logo">
-        <router-link to="/">
-          <h1>人才招聘平台</h1>
-        </router-link>
-      </div>
-      <div class="nav-menu">
-        <el-menu mode="horizontal" :router="true" :default-active="$route.path">
-          <el-menu-item index="/dashboard">首页</el-menu-item>
-          <el-menu-item index="/recommend">推荐职位</el-menu-item>
-          <el-menu-item index="/search">搜索职位</el-menu-item>
-          <el-menu-item index="/recruitment">招聘会和宣讲会</el-menu-item>
-        </el-menu>
-      </div>
-      <div class="user-actions">
-        <template v-if="!isLoggedIn">
-          <el-button type="primary" @click="showLogin">登录</el-button>
-          <el-button @click="handleRegister">注册</el-button>
-        </template>
-        <template v-else>
-          <el-button type="primary" @click="showLogin">通知</el-button>
-          <el-button type="primary" @click="showLogin">消息</el-button>
+  <el-container>
+    <el-header>
+      <el-header class="header">
+        <div class="header-content">
+          <div class="logo">
+            <router-link to="/">
+              <h1>人才招聘平台</h1>
+            </router-link>
+          </div>
+          <div class="nav-menu">
+            <el-menu mode="horizontal" :router="true" :default-active="$route.path">
+              <el-menu-item index="/dashboard">首页</el-menu-item>
+              <el-menu-item index="/recommend">推荐职位</el-menu-item>
+              <el-menu-item index="/search">搜索职位</el-menu-item>
+              <el-menu-item index="/recruitment">招聘会和宣讲会</el-menu-item>
+            </el-menu>
+          </div>
+          <div class="user-actions">
+            <template v-if="!isLoggedIn">
+              <el-button type="primary" @click="showLogin">登录</el-button>
+              <el-button @click="handleRegister">注册</el-button>
+            </template>
+            <template v-else>
+              <el-button type="primary" @click="showLogin">通知</el-button>
+              <el-button type="primary" @click="showLogin">消息</el-button>
 
-          <el-dropdown>
+              <el-dropdown>
               <span class="user-profile">
                 <span class="username">{{ userName }}</span>
                 <el-avatar :size="48" :src="avatar"/>
               </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item>我的简历</el-dropdown-item>
-                <el-dropdown-item>投递记录</el-dropdown-item>
-                <el-dropdown-item>收藏职位</el-dropdown-item>
-                <el-dropdown-item divided @click="">求职</el-dropdown-item>
-                <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item divided @click="">求职</el-dropdown-item>
+                    <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
 
-              </el-dropdown-menu>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </template>
-          </el-dropdown>
-        </template>
-      </div>
-    </div>
-  </el-header>
+          </div>
+        </div>
+      </el-header>
+    </el-header>
+    <el-container>
+      <el-aside width="200px">
+        <!--  侧边导航栏-->
+        <el-row class="tac">
+          <el-col :span="3">
+            <el-menu
+                default-active="/recruitment/manage"
+                class="el-menu-vertical-demo"
+                router
+            >
+              <el-menu-item index="/recruitment/manage">
+                <el-icon>
+                  <icon-menu/>
+                </el-icon>
+                <span>职位管理</span>
+              </el-menu-item>
+              <el-menu-item index="3">
+                <el-icon>
+                  <document/>
+                </el-icon>
+                <span>沟通</span>
+              </el-menu-item>
+              <el-menu-item index="4">
+                <el-icon>
+                  <setting/>
+                </el-icon>
+                <span>公司主页</span>
+              </el-menu-item>
+            </el-menu>
+          </el-col>
+        </el-row>
+      </el-aside>
+      <el-main>
+        <router-view/>
+      </el-main>
+    </el-container>
+  </el-container>
+  <!-- 顶部导航 -->
 
 
-  <!--  侧边导航栏-->
-  <el-row class="tac">
-    <el-col :span="12">
-      <h5 class="mb-2">Default colors</h5>
-      <el-menu
-          default-active="2"
-          class="el-menu-vertical-demo"
-          @open="handleOpen"
-          @close="handleClose"
-      >
-        <el-menu-item index="2">
-          <el-icon>
-            <icon-menu/>
-          </el-icon>
-          <span>职位管理</span>
-        </el-menu-item>
-        <el-menu-item index="3">
-          <el-icon>
-            <document/>
-          </el-icon>
-          <span>沟通</span>
-        </el-menu-item>
-        <el-menu-item index="4">
-          <el-icon>
-            <setting/>
-          </el-icon>
-          <span>公司主页</span>
-        </el-menu-item>
-      </el-menu>
-    </el-col>
-  </el-row>
-
+  <!--  <router-view/>-->
 
   <!-- 添加登录弹窗组件 -->
 
@@ -97,9 +103,8 @@ import {
 } from '@element-plus/icons-vue'
 import {ref, onMounted, computed} from 'vue'
 import LoginDialog from '@/components/LoginDialog.vue'
-
+import router from '@/router'
 import {ElMessage} from 'element-plus'
-
 
 // 控制登录框显示
 const loginDialogVisible = ref(false)

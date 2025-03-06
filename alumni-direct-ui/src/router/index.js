@@ -26,13 +26,18 @@ const routes = [
         path: '/recruitment',
         name: 'recruitment',
         component: () => import('@/views/recruiter/home/index.vue'),
-        redirect: '/recruitment/recruiter',
+        redirect: '/recruitment/manage',
         children: [
+            // {
+            //     path: 'recruiter',
+            //     name: 'Recruiter',
+            //     component: () => import('@/views/recruiter/home/index.vue'),
+            //     meta: {title: '控制台', icon: 'recruiter'}
+            // },
             {
-                path: 'recruiter',
-                name: 'Recruiter',
-                component: () => import('@/views/recruiter/home/index.vue'),
-                meta: {title: '控制台', icon: 'recruiter'}
+                path: 'manage',
+                name: 'Manage',
+                component: () => import('@/views/recruiter/manage/index.vue')
             }
         ]
     }

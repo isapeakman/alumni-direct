@@ -9,6 +9,7 @@ package com.lightcs.constants;
 
 public interface JobConstant {
     Integer STATUS_PENDING = 0;// 待审核
+    Integer STATUS_FAIL = 4;//审核未通过
     Integer STATUS_WAITING = 1;// 待发布
     Integer STATUS_OPENED = 2;//已发布
     Integer STATUS_CLOSED = 3;//已关闭

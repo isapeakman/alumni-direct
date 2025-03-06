@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lightcs.model.pojo.Job;
 import com.lightcs.model.vo.JobCardVO;
 import com.lightcs.model.vo.JobDetailVO;
+import com.lightcs.model.vo.JobVO;
 
 import java.util.List;
 
@@ -38,4 +39,14 @@ public interface JobMapper extends BaseMapper<Job> {
      * @return 职位详情
      */
     JobDetailVO detail(Integer id, Integer status);
+
+    /**
+     * 根据用户id查询职位列表
+     *
+     * @param page
+     * @param createId
+     * @param status
+     * @return
+     */
+    List<JobVO> selectByUserId(IPage<JobVO> page, Integer createId, Integer status);
 }

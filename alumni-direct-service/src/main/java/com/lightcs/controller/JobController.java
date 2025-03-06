@@ -3,6 +3,7 @@ package com.lightcs.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.model.dto.JobCardRequest;
+import com.lightcs.model.dto.JobRequest;
 import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
 import com.lightcs.model.vo.JobCardVO;
@@ -103,6 +104,11 @@ public class JobController {
         ThrowUtils.throwIf(id == null, PARAMS_ERROR, "职位id不能为空");
         return ResultBuilder.success(jobService.detail(id));
     }
-    //endregion
 
+    //endregion
+    @Operation(summary = "获取当前招聘者的职位列表")
+    @GetMapping("/listById")
+    public BaseResponse<Map<String, Object>> listById(JobRequest jobRequest) {
+        return PaginationBuilder.build(jobService.listByCreatedId(jobRequest));
+    }
 }

@@ -10,9 +10,12 @@ import java.util.Date;
  * @Description: 职位VO
  * @Version: 1.0
  */
-@Deprecated
 @Data
 public class JobVO {
+    /**
+     * 职位id
+     */
+    private Integer id;
     /**
      * 职位名称
      */
@@ -42,14 +45,9 @@ public class JobVO {
      */
     private Integer maxSalary;
     /**
-     * 企业名称
+     * 状态  0 待审批 1待发布 2 已发布 3 关闭 4审核未通过
      */
-    private String companyName;
-
-    /**
-     * 创建用户
-     */
-    private Integer createId;
+    private Integer status;
     /**
      * 发布时间
      */

@@ -39,3 +39,15 @@ export function getJobDetail(jobId) {
         }
     })
 }
+
+export function getJobById(status, currentPage, pageSize) {
+    return request({
+        url: '/ad/job/listById',
+        method: 'get',
+        params: {
+            status: status,
+            current: currentPage,
+            pageSize: pageSize
+        }
+    })
+}

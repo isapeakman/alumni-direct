@@ -9,6 +9,7 @@ import com.lightcs.mapper.JobCategoryMapper;
 import com.lightcs.mapper.JobMapper;
 import com.lightcs.mapper.UserMapper;
 import com.lightcs.model.dto.JobCardRequest;
+import com.lightcs.model.dto.JobRequest;
 import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
 import com.lightcs.model.pojo.Job;
@@ -16,6 +17,7 @@ import com.lightcs.model.pojo.JobApprovalRecord;
 import com.lightcs.model.pojo.User;
 import com.lightcs.model.vo.JobCardVO;
 import com.lightcs.model.vo.JobDetailVO;
+import com.lightcs.model.vo.JobVO;
 import com.lightcs.service.JobService;
 import com.lightcs.utils.CurrentUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,6 +217,17 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         job.setStatus(STATUS_CLOSED);
         int res = jobMapper.update(job, queryWrapper);
         ThrowUtils.throwIf(res == 0, OPERATION_ERROR, CLOSE_FAIL);
+    }
+
+    @Override
+    public Page<JobVO> listByCreatedId(JobRequest jobRequest) {
+        Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+        Integer current = jobRequest.getCurrent();
+        Integer pageSize = jobRequest.getPageSize();
+        Page<JobVO> page = new Page<>(current, pageSize);
+        List<JobVO> currentUserJobList = jobMapper.selectByUserId(page, currentUserId, jobRequest.getStatus());
+        page.setRecords(currentUserJobList);
+        return page;
     }
 
 

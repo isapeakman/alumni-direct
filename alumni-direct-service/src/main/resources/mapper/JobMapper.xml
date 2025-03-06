@@ -8,7 +8,7 @@
         SELECT id,title,job_type,location,
         CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED) AS min_salary,
         CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary,
-        company_name,recruiter_name,create_id
+        company_name,recruiter_name,create_id,job_desc
         FROM job
         <where>
             <if test="status != null">
@@ -50,5 +50,20 @@
             </if>
         </where>
     </select>
-
+    <select id="selectByUserId" resultType="com.lightcs.model.vo.JobVO">
+        SELECT id,title,job_type,location,
+        CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED) AS min_salary,
+        CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary,
+        recruiter_name,status,job_desc
+        FROM job
+        <where>
+            <if test="createId != null">
+                AND create_id = #{createId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        order by update_time desc
+    </select>
 </mapper>

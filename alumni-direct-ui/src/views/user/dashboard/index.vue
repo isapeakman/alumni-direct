@@ -84,6 +84,7 @@
             </div>
             <div class="company">{{ job.companyName }}</div>
             <div class="info-row">
+              <p>{{ truncateText(job.jobDesc, 20) }}</p>
           <span class="location">
             <el-icon><Location/></el-icon>
             {{ job.location }}
@@ -223,6 +224,7 @@ const total = ref(0)
 
 // 获取职位列表
 const fetchJobs = async () => {
+  jobList.value = []; // Clear the job list before fetching new data
   try {
     const response = await getJobCard(currentPage.value, pageSize.value)
 
@@ -260,10 +262,15 @@ const handleSizeChange = (val) => {
   pageSize.value = val
   fetchJobs()
 }
-
+// 分页处理函数
 const handleCurrentChange = (val) => {
   currentPage.value = val
   fetchJobs()
+}
+// 截取文本
+const truncateText = (text, length) => {
+  if (text.length <= length) return text;
+  return text.substring(0, length) + '...';
 }
 </script>
 <style lang="scss" scoped>
@@ -341,7 +348,15 @@ const handleCurrentChange = (val) => {
 .job-card {
   margin-bottom: 20px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s; /* 调整过渡时间为 0.3s */
+  width: 250px; /* 固定宽度 */
+  height: 200px; /* 固定高度 */
+  position: relative; /* 为子元素的绝对定位提供参考 */
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  padding: 16px;
+  overflow: hidden; /* 确保内容不会超出卡片范围 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   &:hover {
     transform: translateY(-5px);
@@ -392,10 +407,18 @@ const handleCurrentChange = (val) => {
       gap: 4px;
     }
 
+
     .job-type {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
       padding: 2px 8px;
       background-color: #f0f2f5;
       border-radius: 4px;
+      max-width: 50%; /* 限制宽度，避免超出卡片 */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 

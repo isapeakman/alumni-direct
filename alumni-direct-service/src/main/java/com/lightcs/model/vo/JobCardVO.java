@@ -54,4 +54,8 @@ public class JobCardVO {
      * 招聘者头像
      */
     private String recruiterAvatar;
+    /**
+     * 职位描述
+     */
+    private String jobDesc;
 }
