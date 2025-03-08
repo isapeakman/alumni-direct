@@ -19,3 +19,19 @@ export function register(data) {
         }
     )
 }
+
+// 分页获取所有用户信息
+export function fetchUserData(currentPage, pageSize, username) {
+    // 构建参数对象，只包含有值的参数
+    const params = {}
+    if (username) params.username = username
+    params.current = currentPage
+    params.pageSize = pageSize
+    return request(
+        {
+            url: '/ad/user/list',
+            method: 'get',
+            params: params
+        }
+    )
+}

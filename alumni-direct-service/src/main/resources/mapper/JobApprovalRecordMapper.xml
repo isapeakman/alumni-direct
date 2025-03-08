@@ -4,7 +4,7 @@
 
     <select id="selectAllJobApprovalRecords" resultType="com.lightcs.model.pojo.JobApprovalRecord">
         SELECT
-            id,job_id,approval_user_id,note,approval_status,approval_result,approval_time,create_time
+        *
         FROM
             job_approval_record
         <where>

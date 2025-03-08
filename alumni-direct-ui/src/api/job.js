@@ -51,3 +51,61 @@ export function getJobById(status, currentPage, pageSize) {
         }
     })
 }
+
+export function getCategories(status, currentPage, pageSize) {
+    return request({
+        url: '/ad/category/getTree',
+        method: 'get',
+    })
+}
+
+// 添加职位
+export function addJob(formData) {
+    return request({
+        url: '/ad/job/add',
+        method: 'post',
+        params: formData
+    })
+}
+
+// 发布职位
+export function publish(jobId) {
+    return request({
+        url: '/ad/job/publish',
+        method: 'post',
+        params: {
+            jobId: jobId
+        }
+    })
+}
+
+// 更新职位
+export function update(job) {
+    return request({
+        url: '/ad/job/update',
+        method: 'post',
+        params: job
+    })
+}
+
+// 关闭职位
+export function closeJobById(jobId) {
+    return request({
+        url: '/ad/job/close',
+        method: 'get',
+        params: {
+            jobId: jobId
+        }
+    })
+}
+
+// 取消发布
+export function cancel(jobId) {
+    return request({
+        url: '/ad/job/offline',
+        method: 'get',
+        params: {
+            jobId: jobId
+        }
+    })
+}

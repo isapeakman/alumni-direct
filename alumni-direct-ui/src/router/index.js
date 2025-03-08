@@ -5,7 +5,7 @@ const routes = [
     {
         path: '/',
         name: 'Home',
-        component: () => import('@/views/user/home/index.vue'),
+        component: () => import('@/views/user/index.vue'),
         redirect: '/dashboard',
         children: [
             {
@@ -25,7 +25,7 @@ const routes = [
     {
         path: '/recruitment',
         name: 'recruitment',
-        component: () => import('@/views/recruiter/home/index.vue'),
+        component: () => import('@/views/recruiter/index.vue'),
         redirect: '/recruitment/manage',
         children: [
             // {
@@ -38,6 +38,25 @@ const routes = [
                 path: 'manage',
                 name: 'Manage',
                 component: () => import('@/views/recruiter/manage/index.vue')
+            }
+        ]
+    },
+    // 管理员
+    {
+        path: '/admin',
+        name: 'admin',
+        component: () => import('@/views/admin/index.vue'),
+        redirect: '/admin/user',
+        children: [
+            {
+                path: 'user',
+                name: 'User',
+                component: () => import('@/views/admin/user.vue'),
+            },
+            {
+                path: 'approval',
+                name: 'Approval',
+                component: () => import('@/views/admin/approval.vue')
             }
         ]
     }

@@ -1,66 +1,87 @@
 <template>
   <div class="job-management">
     <div class="header">
-      <el-button type="primary" @click="publishJob">发布职位</el-button>
-    </div>
-
-    <!-- 职位状态过滤器 -->
-    <div class="status-filters">
-      <el-button v-for="status in statuses" :key="status.value" @click="filterJobs(status.value)">
-        {{ status.label }}
+      <!-- 发布职位按钮 -->
+      <el-button type="primary" @click="toggleForm">
+        {{ showForm ? '取消发布' : '发布职位' }}
       </el-button>
     </div>
 
-    <!-- 职位分页 -->
-    <div class="section job-recommend">
-      <div class="section-content">
-        <el-row :gutter="20">
-          <el-col :span="7" v-for="job in jobList" :key="job.title">
-            <el-card shadow="hover" class="job-card">
-              <div class="job-header">
-                <h4 class="job-status" :style="{ color: getStatusColor(job.status) }">
-                  {{ getStatusText(job.status) }}
-                </h4>
-                <h4>{{ job.title }}</h4>
-                <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
-              </div>
-              <div class="info-row">
-                <p>{{ truncateText(job.jobDesc, 50) }}</p>
-                <span class="location">
+    <div v-if="!showForm">
+      <!-- 职位状态过滤器 -->
+      <div class="status-filters">
+        <el-button v-for="status in statuses" :key="status.value" @click="filterJobs(status.value)">
+          {{ status.label }}
+        </el-button>
+      </div>
+
+      <!-- 职位分页 -->
+      <div class="section job-recommend">
+        <div class="section-content">
+          <el-row :gutter="20">
+            <el-col :span="7" v-for="job in jobList" :key="job.title">
+              <el-card shadow="hover" class="job-card" @click="handleShowDetail(job)">
+                <div class="job-header">
+                  <h4 class="job-status" :style="{ color: getStatusColor(job.status) }">
+                    {{ getStatusText(job.status) }}
+                  </h4>
+                  <h4>{{ job.title }}</h4>
+                  <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
+                </div>
+                <div class="info-row">
+
+                  <p>{{ truncateText(job.jobDesc, 50) }}</p>
+                  <span class="location">
                 <el-icon><Location/></el-icon>
                   {{ job.location }}
                 </span>
-                <span class="job-type">{{ getJobType(job.jobType) }}</span>
-              </div>
-            </el-card>
-          </el-col>
-        </el-row>
+                  <span class="job-type">{{ getJobType(job.jobType) }}</span>
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
 
-        <!-- 分页器 -->
-        <div class="pagination-container">
-          <el-pagination
-              v-model:current-page="currentPage"
-              v-model:page-size="pageSize"
-              :total="total"
-              :page-sizes="[9, 12, 15, 18]"
-              layout="total, sizes, prev, pager, next, jumper"
-              @size-change="handleSizeChange"
-              @current-change="handleCurrentChange"
-          />
+          <!-- 分页器 -->
+          <div class="pagination-container">
+            <el-pagination
+                v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
+                :total="total"
+                :page-sizes="[9, 12, 15, 18]"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+            />
+          </div>
         </div>
       </div>
     </div>
 
+    <AddJobForm
+        v-else
+        @submit="handleJobSubmit"
+        @cancel="toggleForm"
+    />
+    <!-- 职位详情弹窗 -->
+    <JobDetailDialog
+        ref="jobDetailDialog"
+        :job="selectedJob"
+        :jobCategories="jobCategories"
+        @save="handleSaveJob"
+        @refresh="fetchJobs(currentStatus)"
+    />
+
   </div>
+
 </template>
 
 <script setup>
 import {Location} from "@element-plus/icons-vue";
-
-console.log('职位管理组件加载成功')
 import {ref, onMounted} from 'vue'
-import {getJobById} from '@/api/job'
+import {addJob, getJobById} from '@/api/job'
 import {ElMessage} from "element-plus";
+import AddJobForm from "@/views/recruiter/manage/AddJobForm.vue";
+import JobDetailDialog from "@/views/recruiter/manage/JobDetailDialog.vue";
 
 const total = ref(0)
 const jobList = ref([])
@@ -70,13 +91,56 @@ const pageSize = ref(9)
 const statuses = ref([
   {label: '全部', value: null, count: null},
   {label: '待审核', value: 0, count: 0},
-  {label: '未通过', value: 4, count: 4},
   {label: '待发布', value: 1, count: 1},
   {label: '正在招', value: 2, count: 2},
-  {label: '已关闭', value: 3, count: 3}
+  {label: '已关闭', value: 3, count: 3},
+  {label: '未通过', value: 4, count: 4},
 ])
 
+const showForm = ref(false); // 控制表单显示
+const jobDetailDialog = ref(null);
+const selectedJob = ref({});
+const currentStatus = ref(null);
+// 显示职位详情
+const handleShowDetail = async (job) => {
+  selectedJob.value = job;
+  console.log('选中的职位:', job);
+  jobDetailDialog.value.open();
+};
 
+// 保存职位修改
+const handleSaveJob = (updatedJob) => {
+  const index = jobList.value.findIndex(job => job.id === updatedJob.id);
+  if (index !== -1) {
+    jobList.value[index] = updatedJob;
+  }
+};
+// 切换表单显示状态
+const toggleForm = () => {
+  showForm.value = !showForm.value;
+};
+
+// 处理表单提交
+const handleJobSubmit = async (formData) => {
+  console.log('提交的职位数据：', formData);
+
+  // 将数组转换为逗号分隔字符串
+  const payload = {
+    ...formData,
+    categoryIds: formData.categoryIds.join(",")
+  };
+
+  const response = await addJob(payload);
+  if (response.data.code === 200) {
+    ElMessage.success('发布职位成功');
+    fetchJobs();
+  } else {
+    ElMessage.error(response.data.message || '发布职位失败');
+  }
+  toggleForm();
+};
+
+// 获取状态对应的文本
 const getStatusText = (status) => {
   const statusMap = {
     0: '待审批',
@@ -109,6 +173,7 @@ const formatSalary = (min, max) => {
   if (!max) return `${min}k以上`
   return `${min}-${max}k`
 }
+// 获取职位列表
 const fetchJobs = async (status) => {
   jobList.value = []; // 清空职位列表
   try {
@@ -124,14 +189,11 @@ const fetchJobs = async (status) => {
     ElMessage.error('获取职位列表失败')
   }
 }
-
+// 过滤职位
 const filterJobs = (status) => {
   console.log('当前过滤的职位状态:', status)
+  currentStatus.value = status
   fetchJobs(status)
-}
-
-const publishJob = () => {
-  // Logic to publish a job
 }
 
 onMounted(() => {
@@ -139,9 +201,9 @@ onMounted(() => {
 })
 const getJobType = (type) => {
   const typeMap = {
-    1: '全职',
-    2: '兼职',
-    3: '实习'
+    0: '全职',
+    1: '实习',
+    2: '兼职'
   }
   return typeMap[type] || '未知'
 }

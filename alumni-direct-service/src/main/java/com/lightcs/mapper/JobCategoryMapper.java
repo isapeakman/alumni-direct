@@ -16,4 +16,7 @@ import java.util.List;
 public interface JobCategoryMapper extends BaseMapper<JobCategory> {
     @Select("select job_id from job_category where category_id = #{categoryId}")
     List<Integer> selectJobIdByCategoryId(Integer categoryId);
+
+    @Select("select category_id from job_category where job_id = #{jobId}")
+    List<Integer> selectJobIdByJobId(Integer jobId);
 }

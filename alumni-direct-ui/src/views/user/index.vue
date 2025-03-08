@@ -36,6 +36,7 @@
                   <el-dropdown-item>投递记录</el-dropdown-item>
                   <el-dropdown-item>收藏职位</el-dropdown-item>
                   <el-dropdown-item divided @click="navigateToRecruitment">招聘/内推</el-dropdown-item>
+                  <el-dropdown-item divided @click="navigateToAdmin">管理员登录</el-dropdown-item>
                   <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
 
                 </el-dropdown-menu>
@@ -81,7 +82,6 @@
     </el-footer>
   </div>
   <!-- 添加登录弹窗组件 -->
-
   <LoginDialog
       v-model:visible="loginDialogVisible"
   />
@@ -175,8 +175,13 @@ onMounted(() => {
 
 import router from "@/router/index.js";
 
+// 跳转到招聘者页面
 const navigateToRecruitment = () => {
   router.push('/recruitment')
+}
+// 跳转到管理员页面
+const navigateToAdmin = () => {
+  router.push('/admin')
 }
 </script>
 

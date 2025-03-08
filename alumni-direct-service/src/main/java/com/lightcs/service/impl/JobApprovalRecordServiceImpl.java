@@ -36,7 +36,7 @@ public class JobApprovalRecordServiceImpl extends ServiceImpl<JobApprovalRecordM
         Integer pageSize = cardRequest.getPageSize();
         Page<JobApprovalRecord> page = new Page<>(current, pageSize);
 
-        String orderBy = cardRequest.getOrderBy().equals(DEFAULT_ORDER_BY) ? DEFAULT_ORDER_BY : "create_time";
+        String orderBy = "create_time";
         String orderType = cardRequest.getOrderType().equals(DEFAULT_ORDER_BY) ? DEFAULT_ORDER_BY : "asc";
         String sorter = orderBy + " " + orderType;
 

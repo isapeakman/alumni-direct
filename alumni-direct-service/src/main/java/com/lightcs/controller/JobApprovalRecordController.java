@@ -36,7 +36,7 @@ public class JobApprovalRecordController {
     }
     @Operation(summary = "审批职位记录")
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/judge")
+    @PostMapping("/judge")
     public BaseResponse<String> judgeJobApprovalRecord(Integer recordId,String note,Integer approvalResult) {
         ThrowUtils.throwIf(recordId == null, PARAMS_ERROR, "审批记录id不能为空");
          jobApprovalRecordService.updateRecordById(recordId,note,approvalResult);

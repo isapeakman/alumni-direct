@@ -1,5 +1,7 @@
 <template>
+
   <el-container>
+    <!-- 顶部导航 -->
     <el-header>
       <el-header class="header">
         <div class="header-content">
@@ -11,9 +13,6 @@
           <div class="nav-menu">
             <el-menu mode="horizontal" :router="true" :default-active="$route.path">
               <el-menu-item index="/dashboard">首页</el-menu-item>
-              <el-menu-item index="/recommend">推荐职位</el-menu-item>
-              <el-menu-item index="/search">搜索职位</el-menu-item>
-              <el-menu-item index="/recruitment">招聘会和宣讲会</el-menu-item>
             </el-menu>
           </div>
           <div class="user-actions">
@@ -32,7 +31,7 @@
               </span>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item divided @click="">求职</el-dropdown-item>
+                    <el-dropdown-item divided @click="navigateToUser">求职</el-dropdown-item>
                     <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
 
                   </el-dropdown-menu>
@@ -43,9 +42,9 @@
         </div>
       </el-header>
     </el-header>
+    <!--  侧边导航栏-->
     <el-container>
       <el-aside width="200px">
-        <!--  侧边导航栏-->
         <el-row class="tac">
           <el-col :span="3">
             <el-menu
@@ -80,7 +79,7 @@
       </el-main>
     </el-container>
   </el-container>
-  <!-- 顶部导航 -->
+
 
 
   <!--  <router-view/>-->
@@ -103,7 +102,7 @@ import {
 } from '@element-plus/icons-vue'
 import {ref, onMounted, computed} from 'vue'
 import LoginDialog from '@/components/LoginDialog.vue'
-import router from '@/router'
+import router from '@/router/index.js'
 import {ElMessage} from 'element-plus'
 
 // 控制登录框显示
@@ -114,7 +113,9 @@ const userName = ref('')
 const userInfo = ref(null)
 const avatar = ref('')
 
-
+const navigateToUser = () => {
+  router.push('/')
+}
 // 显示登录框的方法
 const showLogin = () => {
   loginDialogVisible.value = true

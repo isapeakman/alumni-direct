@@ -3,6 +3,7 @@ package com.lightcs.model.vo;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Author: peak-like
@@ -52,4 +53,8 @@ public class JobVO {
      * 发布时间
      */
     private Date publishTime;
+    /**
+     * 分类ids
+     */
+    private List<Integer> categoryIds;
 }

@@ -26,4 +26,22 @@ public class PaginationBuilder {
         resultMap.put("page", pageMap);
         return ResultBuilder.success(resultMap);
     }
+
+    /**
+     * 分页结果构造器: 从服务层返回的分页数据 封装成前端需要的格式
+     *
+     * @param page
+     * @param result
+     * @return
+     */
+    public static synchronized BaseResponse<Map<String, Object>> build(Page page, Object result) {
+        LinkedHashMap<String, Object> resultMap = new LinkedHashMap<>();
+        LinkedHashMap<String, Object> pageMap = new LinkedHashMap<>();
+        resultMap.put("records", result);
+        pageMap.put("total", page.getTotal());
+        pageMap.put("pageNum", page.getCurrent());
+        pageMap.put("pageSize", page.getSize());
+        resultMap.put("page", pageMap);
+        return ResultBuilder.success(resultMap);
+    }
 }

@@ -78,7 +78,10 @@ public class Job implements Serializable {
      * 发布时间
      */
     private Date publishTime;
-
+    /**
+     * 招聘人员
+     */
+    private String recruiterName;
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

@@ -42,4 +42,8 @@ public class JobAdd {
      * 企业名称
      */
     private String companyName;
+    /**
+     * 职位分类
+     */
+    private Integer[] categoryIds;
 }

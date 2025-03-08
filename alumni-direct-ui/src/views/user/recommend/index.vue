@@ -1,5 +1,7 @@
 <template>
+
   <div class="recommend-container">
+    <!--  左侧职位列表-->
     <div class="job-list" v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading">
       <!--      <el-row :gutter="20">-->
       <!--        -->
@@ -29,7 +31,7 @@
       <div class="loading-status" v-if="loading">加载中...</div>
       <div class="no-more" v-if="noMore">没有更多数据了</div>
     </div>
-
+    <!--    职位详情页-->
     <JobDetails :selectedJob="selectedJob"/>
 
   </div>

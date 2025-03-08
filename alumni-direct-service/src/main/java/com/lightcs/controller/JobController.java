@@ -42,13 +42,13 @@ public class JobController {
         ThrowUtils.throwIf(jobAdd.getJobType() == null, PARAMS_ERROR, "职位类型不能为空");
         ThrowUtils.throwIf(jobAdd.getMinSalary() == null || jobAdd.getMaxSalary() == null, PARAMS_ERROR, "薪资范围不能为空");
         ThrowUtils.throwIf(jobAdd.getMinSalary() > jobAdd.getMaxSalary(), PARAMS_ERROR, "最小薪资不能大于最大薪资");
-
+        ThrowUtils.throwIf(jobAdd.getCategoryIds() == null || jobAdd.getCategoryIds().length == 0, PARAMS_ERROR, "职位分类不能为空");
         jobService.save(jobAdd);
         return ResultBuilder.success(ADD_SUCCESS);
     }
 
     @Operation(summary = "更新职位")
-    @PutMapping("/update")
+    @PostMapping("/update")
     public BaseResponse<String> update(JobUpdate jobUpdate) {
         ThrowUtils.throwIf(jobUpdate.getId() == null, PARAMS_ERROR, "职位id不能为空");
         ThrowUtils.throwIf(jobUpdate.getTitle().isBlank(), PARAMS_ERROR, "职位名称不能为空");
@@ -61,14 +61,14 @@ public class JobController {
     }
 
     @Operation(summary = "发布职位")
-    @GetMapping("/publish")
+    @PostMapping("/publish")
     public BaseResponse<String> publish(Integer jobId) {
         ThrowUtils.throwIf(jobId == null, PARAMS_ERROR, "职位id不能为空");
         jobService.publish(jobId);
         return ResultBuilder.success(PUBLISH_SUCCESS);
     }
 
-    @Operation(summary = "下线发布职位")
+    @Operation(summary = "取消发布职位")
     @GetMapping("/offline")
     public BaseResponse<String> offline(Integer jobId) {
         ThrowUtils.throwIf(jobId == null, PARAMS_ERROR, "职位id不能为空");
