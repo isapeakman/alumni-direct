@@ -53,12 +53,45 @@
       <el-button v-if="isEditMode" type="primary" @click="handleSave">保存</el-button>
       <el-button v-if="!isEditMode&&(form.status===2)" type="info" @click="closeJob">关闭职位</el-button>
       <el-button v-if="!isEditMode&&(form.status===2)" type="warning" @click="cancelPublish">取消发布</el-button>
+
+      <!--      管理员专用-->
+      <!-- 新增审批按钮 -->
+      <el-button
+          v-if="isApprovalVisible"
+          type="primary"
+          @click="handleApprove"
+          :disabled="isApproved"
+      >
+        审批通过
+      </el-button>
+      <el-button
+          v-if="isApprovalVisible"
+          type="danger"
+          @click="handleReject"
+          :disabled="isApproved"
+      >
+        拒 绝
+      </el-button>
+      <!-- 拒绝原因输入框和确认按钮 -->
+      <div v-if="showRejectInput">
+        <el-input
+            v-model="rejectReason"
+            placeholder="请输入拒绝原因" style="margin-bottom: 10px;"
+        />
+        <el-button
+            type="danger"
+            @click="handleConfirmReject"
+        >
+          确认拒绝
+        </el-button>
+        <el-button @click="cancelReject">取消</el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
 
 <script setup>
-import {onMounted, ref, watch} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 import {cancel, closeJobById, getCategories, publish, update} from "@/api/job.js";
 import {ElMessage} from "element-plus";
 
@@ -71,6 +104,9 @@ const props = defineProps({
     type: Array,
     required: false,
   },
+  onApprove: {type: Function, required: true}, // 审批方法
+  onReject: {type: Function, required: true},  // 拒绝方法
+  userRole: {type: String, required: false}
 });
 
 const emit = defineEmits(['save']);
@@ -83,6 +119,50 @@ const defaultProps = {
   children: 'children',
   label: 'categoryName',
 };
+// 新增拒绝原因和显示状态
+const rejectReason = ref('');
+const showRejectInput = ref(false);
+
+// 取消拒绝操作
+const cancelReject = () => {
+  showRejectInput.value = false;
+  rejectReason.value = '';
+};
+
+// 确认拒绝逻辑（传递原因）
+const handleConfirmReject = async () => {
+  if (!rejectReason.value) {
+    ElMessage.warning('请填写拒绝原因');
+    return;
+  }
+  props.job.note = rejectReason.value;
+  await props.onReject({...props.job});
+  dialogVisible.value = false;
+  // 重置状态
+  showRejectInput.value = false;
+  rejectReason.value = '';
+};
+// 定义审批按钮可见性（根据业务场景调整条件）
+const isApprovalVisible = computed(() => {
+  // 审批管理页面特定角色可见
+  return props.userRole === 'admin' && showRejectInput.value === false;
+});
+
+// 是否已审批（禁用状态）
+const isApproved = computed(() => {
+  return props.job.approvalStatus === 1; // 1表示已审批
+});
+//调用用父组件的审批方法
+const handleApprove = async () => {
+  await props.onApprove(props.job); // 传递当前职位数据
+  dialogVisible.value = false;      // 关闭对话框
+};
+//调用用父组件的拒绝方法
+const handleReject = async () => {
+  showRejectInput.value = true; // 显示拒绝原因输入框
+};
+
+
 const getJobType = (type) => {
   const typeMap = {
     0: '全职',
@@ -103,6 +183,7 @@ const fetchCategories = (async () => {
 // 监听选中职位
 watch(() => props.job, (newVal) => {
   form.value = {...newVal};
+  console.log('监听到的职位数据：', form.value);
 }, {immediate: true});
 // 打开弹窗
 const open = () => {
@@ -196,4 +277,10 @@ defineExpose({open});
   pointer-events: none; /* 禁用复选框的点击事件 */
   opacity: 0.6; /* 降低复选框的透明度 */
 }
+
+/* 示例：将按钮固定在右下角 */
+#dialog-footer .el-button {
+  margin-right: 10px;
+}
+
 </style>

@@ -33,6 +33,7 @@
 import {ref, watch} from 'vue';
 import {useTabsStore} from '../store/tabs';
 import {onBeforeRouteUpdate, useRoute, useRouter} from 'vue-router';
+import {ArrowDown} from "@element-plus/icons-vue";
 
 const route = useRoute();
 const router = useRouter();

@@ -4,8 +4,8 @@ import request from "@/utils/request.js";
 export function getApprovals(approvalStatus, approvalResult, currentPage, pageSize) {
     // 构建参数对象，只包含有值的参数
     const params = {}
-    if (approvalStatus) params.approvalStatus = approvalStatus
-    if (approvalResult) params.approvalResult = approvalResult
+    if (approvalStatus != null) params.approvalStatus = approvalStatus
+    if (approvalResult != null) params.approvalResult = approvalResult
     params.current = currentPage
     params.pageSize = pageSize
     return request({
@@ -20,8 +20,8 @@ export function approveRecord(recordId, approvalStatus, note, approvalResult) {
     const params = {}
     params.recordId = recordId
     if (note) params.note = note
-    if (approvalStatus) params.approvalStatus = approvalStatus
-    if (approvalResult) params.approvalResult = approvalResult
+    if (approvalStatus != null) params.approvalStatus = approvalStatus
+    if (approvalResult != null) params.approvalResult = approvalResult
     return request({
         url: '/ad/jobApprovalRecord/judge',
         method: 'post',

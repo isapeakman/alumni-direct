@@ -2,11 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lightcs.mapper.JobApprovalRecordMapper">
 
-    <select id="selectAllJobApprovalRecords" resultType="com.lightcs.model.pojo.JobApprovalRecord">
+    <select id="selectAllJobApprovalRecords" resultType="com.lightcs.model.vo.JobApprovalRecordVO">
         SELECT
-        *
+        id, job_id, approval_user_id, note, approval_status, approval_result, approval_time, create_time, title,
+        job_type, job_desc, location,
+        CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED) AS min_salary,
+        CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary,
+        company_name, create_id
         FROM
-            job_approval_record
+        job_approval_record
         <where>
             <if test="approvalStatus != null">
                 AND approval_status = #{approvalStatus}

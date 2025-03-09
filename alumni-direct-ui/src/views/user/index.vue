@@ -32,6 +32,7 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
+                  <el-dropdown-item @click="router.push('/personalCenter')">个人中心</el-dropdown-item>
                   <el-dropdown-item>我的简历</el-dropdown-item>
                   <el-dropdown-item>投递记录</el-dropdown-item>
                   <el-dropdown-item>收藏职位</el-dropdown-item>
@@ -239,6 +240,7 @@ const navigateToAdmin = () => {
   color: white;
   padding: 40px 0 20px;
   margin-top: auto;
+
 
   .footer-content {
     max-width: 1200px;

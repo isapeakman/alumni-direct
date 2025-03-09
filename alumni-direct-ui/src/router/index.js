@@ -19,6 +19,11 @@ const routes = [
                 name: 'Recommend',
                 component: () => import('@/views/user/recommend/index.vue'),
                 meta: {title: '推荐职位', icon: 'recommend'}
+            },
+            {
+                path: 'personalCenter',
+                name: 'PersonalCenter',
+                component: () => import('@/views/user/personalCenter.vue'),
             }
         ]
     },
