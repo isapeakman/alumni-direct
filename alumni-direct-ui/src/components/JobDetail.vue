@@ -1,26 +1,53 @@
 <template>
-  <!-- 职位详情 -->
   <div class="job-details-container" v-if="selectedJob">
     <div class="job-details">
-      <h2>{{ selectedJob.title }} {{ formatSalary(selectedJob.minSalary, selectedJob.maxSalary) }}</h2>
-      <p>职位类型：{{ getJobType(selectedJob.jobType) }}</p>
-      <span>发布时间：{{ selectedJob.publishTime }}</span>
-      <h3>职位详情</h3>
-      <p>{{ selectedJob.jobDesc }}</p>
+      <!-- 标题与薪资 -->
+      <div class="job-title-row">
+        <div class="job-title">{{ selectedJob.title }}</div>
+        <div class="job-salary">{{ formatSalary(selectedJob.minSalary, selectedJob.maxSalary) }}</div>
+      </div>
 
-      <p>工作地点：{{ selectedJob.location }}</p>
-      <div>
+      <!-- 职位类型标签 -->
+      <el-tag type="info" size="small" class="job-type-tag">
+        {{ getJobType(selectedJob.jobType) }}
+      </el-tag>
+
+      <!-- 发布时间 -->
+      <div class="publish-time">
+        发布时间：{{ selectedJob.publishTime }}
+      </div>
+
+      <!-- 职位详情 -->
+      <h3 class="section-title">职位详情</h3>
+      <div class="job-desc">
+        <!-- 根据\n分段显示 -->
+        <p v-for="(line, index) in jobDescLines" :key="index" class="desc-line">
+          {{ line }}
+        </p>
+      </div>
+
+      <!-- 其他信息 -->
+      <p class="location">工作地点：
+        <el-icon>
+          <Location/>
+        </el-icon>
+        {{ selectedJob.location }}
+      </p>
+      <div class="divider-section">
         <el-divider></el-divider>
         <el-avatar :size="30" :src="selectedJob.recruiterAvatar"/>
         招聘者：{{ selectedJob.recruiterName }}
       </div>
-      <p>公司名称：{{ selectedJob.companyName }}</p>
+      <p class="company-name">公司名称：{{ selectedJob.companyName }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
 // 定义props 使值传进组件
+import {computed} from "vue";
+import {Location} from "@element-plus/icons-vue";
+
 const props = defineProps({
   selectedJob: {
     type: Object,
@@ -33,7 +60,13 @@ const formatSalary = (min, max) => {
   if (!max) return `${min}k以上`
   return `${min}-${max}k`
 }
-
+// 处理职位详情换行
+const jobDescLines = computed(() => {
+  return props.selectedJob.jobDesc
+      .split('\n')
+      .filter(line => line.trim() !== '') // 过滤空行
+      .map(line => line.trim()); // 去除多余空格
+});
 const getJobType = (type) => {
   const typeMap = {
     1: '全职',
@@ -45,22 +78,61 @@ const getJobType = (type) => {
 </script>
 
 <style scoped lang="scss">
-.job-details-container {
-  display: flex;
-  width: 58%;
-  flex-direction: column;
-  //flex: 1;
-  height: 90%; // 设置容器高度
-  overflow-y: auto; // 启用垂直滚动
-  position: fixed;
-  right: 10%;
-  top: 10%;
+.job-details {
+  padding: 20px;
+  border: 1px #c4c8d4;
+  background-color: #ffffff;
+
+  /* 标题与薪资 */
+  .job-title-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .job-title {
+      font-size: 20px;
+      color: #303133;
+      margin-right: 16px;
+    }
+
+    .job-salary {
+      font-size: 20px;
+      color: #409EFF;
+      font-weight: bold;
+    }
+  }
+
+  /* 职位类型标签 */
+  .job-type-tag {
+    margin-bottom: 12px;
+  }
+
+  /* 发布时间 */
+  .publish-time {
+    color: #909399;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* 职位详情段落 */
+  .job-desc {
+    .desc-line {
+      margin: 8px 0;
+      line-height: 1.5;
+    }
+  }
 }
 
-.job-details {
-  flex: 2;
-  padding: 20px;
-  border: 1px solid #428ef4;
-  background-color: #f9f9f9; // 添加背景色
+
+.job-details-container {
+  display: flex;
+  flex-direction: column;
+  //flex: 1;
+  width: 100%; // 设置容器宽度
+  height: 100%; // 设置容器高度
+  overflow-y: auto; // 启用垂直滚动
+  //position: fixed;
+  right: 10%;
+  top: 10%;
 }
 </style>

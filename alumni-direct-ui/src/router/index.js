@@ -11,7 +11,7 @@ const routes = [
             {
                 path: 'dashboard',
                 name: 'Dashboard',
-                component: () => import('@/views/user/dashboard/index.vue'),
+                component: () => import('@/views/user/main.vue'),
                 meta: {title: '控制台', icon: 'dashboard'}
             },
             {
@@ -36,7 +36,7 @@ const routes = [
             // {
             //     path: 'recruiter',
             //     name: 'Recruiter',
-            //     component: () => import('@/views/recruiter/home/index.vue'),
+            //     component: () => import('@/views/recruiter/home/main.vue'),
             //     meta: {title: '控制台', icon: 'recruiter'}
             // },
             {

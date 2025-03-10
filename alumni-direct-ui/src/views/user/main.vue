@@ -53,7 +53,7 @@
           <div class="sub-category-group" v-if="currentCategory.children">
             <div
                 v-for="(subList, index) in groupedSubCategories"
-                :key="index"
+                :key="main"
                 class="sub-category-row"
             >
               <div
@@ -77,7 +77,7 @@
       <h3 class="section-title">最新职位</h3>
       <el-row :gutter="20">
         <el-col :span="6" v-for="job in jobList" :key="job.title">
-          <el-card shadow="hover" class="job-card">
+          <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)">
             <div class="job-header">
               <h4>{{ job.title }}</h4>
               <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
@@ -85,7 +85,7 @@
             <div class="company">{{ job.companyName }}</div>
             <div class="info-row">
               <p>{{ truncateText(job.jobDesc, 20) }}</p>
-          <span class="location">
+              <span class="location">
             <el-icon><Location/></el-icon>
             {{ job.location }}
           </span>
@@ -96,6 +96,22 @@
               <span>{{ job.recruiterName }}·招聘者</span>
             </div>
           </el-card>
+        </el-col>
+
+        <!-- 右侧抽屉 -->
+        <el-col :span="16" class="drawer-container">
+          <el-drawer
+              v-model="drawerVisible"
+              :direction="direction"
+              :before-close="handleClose"
+              size="50%"
+              destroy-on-close
+          >
+            <template #header>
+              <h3>职位详情</h3>
+            </template>
+            <JobDetails :selectedJob="selectedJob"/>
+          </el-drawer>
         </el-col>
       </el-row>
 
@@ -116,13 +132,14 @@
 </template>
 
 <script setup>
-import {getJobCard} from '@/api/job.js'
+import {getJobCard, getJobDetail} from '@/api/job.js'
 import {searchJob} from '@/api/job.js'
 import {ref, computed} from 'vue'
 import {ElMessage} from 'element-plus'
 import {Search, Location} from '@element-plus/icons-vue'
 import request from '@/utils/request.js'
 import {onMounted} from 'vue'
+import JobDetails from '../../components/JobDetail.vue'
 // 分类相关的状态
 const categories = ref([])
 const currentCategory = ref({})
@@ -256,7 +273,32 @@ const getJobType = (type) => {
   }
   return typeMap[type] || '未知'
 }
-
+// 抽屉相关状态
+const drawerVisible = ref(false);
+const direction = ref('rtl'); // 右侧弹出
+const selectedJob = ref(null);
+// 处理职位卡片点击事件
+const handleJobClick = async (jobId) => {
+  console.log('选中的职位id', jobId)
+  drawerVisible.value = true;
+  try {
+    const response = await getJobDetail(jobId)
+    if (response.data.code === 200) {
+      selectedJob.value = response.data.data
+      console.log('选中的职位', selectedJob.value)
+    } else {
+      ElMessage.error(response.data.message || '获取职位详情失败')
+    }
+  } catch (error) {
+    console.error('获取职位详情失败：', error)
+    ElMessage.error('获取职位详情失败')
+  }
+}
+// 关闭抽屉时重置数据
+const handleClose = () => {
+  drawerVisible.value = false;
+  selectedJob.value = null;
+};
 // 分页处理函数
 const handleSizeChange = (val) => {
   pageSize.value = val
@@ -501,6 +543,21 @@ const truncateText = (text, length) => {
         background-color: #ecf5ff;
       }
     }
+  }
+}
+
+/* 覆盖抽屉默认样式 */
+:deep(.el-drawer__body) {
+  padding: 20px;
+}
+
+/* 抽屉标题样式 */
+:deep(.el-drawer__header) {
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
   }
 }
 </style>

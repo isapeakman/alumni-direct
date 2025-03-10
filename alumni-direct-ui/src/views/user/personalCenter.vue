@@ -1,117 +1,152 @@
 <template>
-  <div class="personal-center">
-    <el-card class="box-card" shadow="hover">
-      <!-- 头像设置 -->
-      <div class="user-avatar">
-        <el-upload
-            class="avatar-uploader"
-            :action="uploadUrl"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-        >
-          <img v-if="avatarUrl" :src="avatarUrl" class="avatar"/>
-          <el-icon v-else class="avatar-placeholder">
-            <Plus/>
-          </el-icon>
-        </el-upload>
-        <el-button type="primary" @click="saveAvatar">保存头像</el-button>
-      </div>
-
-      <!-- 基本信息 -->
-      <el-form ref="basicForm" :model="formData" :rules="rules" label-width="120px">
-        <h3>基本信息</h3>
-        <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="formData.nickname" placeholder="请输入昵称"/>
-        </el-form-item>
-        <el-form-item label="账户" prop="account">
-          <el-input v-model="formData.account" disabled placeholder="账户不可修改"/>
-        </el-form-item>
-        <el-form-item label="密码修改" prop="password">
-          <el-input
-              v-model="formData.password"
-              type="password"
-              placeholder="新密码（留空则不修改）"
-          />
-        </el-form-item>
-        <el-form-item label="确认密码" prop="confirmPassword">
-          <el-input v-model="formData.confirmPassword" type="password"/>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="saveBasicInfo">保存信息</el-button>
-        </el-form-item>
-      </el-form>
-
-      <!-- 求职信息 -->
-      <el-form ref="jobForm" :model="formData" label-width="120px">
-        <h3>求职意愿</h3>
-        <el-form-item label="学历" prop="education">
-          <el-select v-model="formData.education" placeholder="请选择学历">
-            <el-option label="高中及以下" value="high_school"/>
-            <el-option label="大专" value="college"/>
-            <el-option label="本科" value="bachelor"/>
-            <el-option label="硕士" value="master"/>
-            <el-option label="博士" value="phd"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="职位类型" prop="jobType">
-          <el-radio-group v-model="formData.jobType">
-            <el-radio :label="0">全职</el-radio>
-            <el-radio :label="1">实习</el-radio>
-            <el-radio :label="2">兼职</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="薪资范围" prop="salaryRange">
-          <el-input-number
-              v-model="formData.minSalary"
-              :min="0"
-              :max="100000"
-              placeholder="最低薪资"
-              style="width: 48%"
-          />
-          <el-input-number
-              v-model="formData.maxSalary"
-              :min="0"
-              :max="100000"
-              placeholder="最高薪资"
-              style="width: 48%; margin-left: 4%"
-          />
-        </el-form-item>
-        <el-form-item label="职位分类" prop="categories">
-          <el-select
-              v-model="formData.categories"
-              multiple
-              placeholder="请选择职位分类"
+  <div class="common-layout">
+    <el-container>
+      <el-aside width="200px">
+        <div class="sidebar">
+          <el-menu
+              class="sidebar-el-menu"
+              :default-active="onRoutes"
+              :background-color="sidebar.bgColor"
+              :text-color="sidebar.textColor"
+              router
           >
-            <el-option
-                v-for="category in jobCategories"
-                :key="category.id"
-                :label="category.name"
-                :value="category.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="saveJobInfo">保存求职信息</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+            <template v-for="item in menuData">
+              <template>
+                <el-menu-item :index="item.index" :key="item.index">
+                  <el-icon>
+                    <component :is="item.icon"></component>
+                  </el-icon>
+                  <template #title>{{ item.title }}</template>
+                </el-menu-item>
+              </template>
+            </template>
+          </el-menu>
+        </div>
+      </el-aside>
+      <el-main>
+        <div class="personal-center">
+          <el-card class="box-card" shadow="hover">
+            <!-- 头像与基本信息左右布局 -->
+            <el-row :gutter="20">
+              <!-- 左侧表单项 -->
+              <el-col :span="12">
+                <el-form ref="basicForm" :model="formData" :rules="rules" label-width="120px">
+                  <h3>基本信息</h3>
+                  <el-form-item label="昵称" prop="nickname">
+                    <el-input v-model="formData.nickname" placeholder="请输入昵称"/>
+                  </el-form-item>
+                  <el-form-item label="账户" prop="account">
+                    <el-input v-model="formData.account" disabled placeholder="账户不可修改"/>
+                  </el-form-item>
+                  <el-form-item label="生日" prop="birthday">
+                    <el-date-picker v-model="formData.birthday" type="date" placeholder="选择日期"/>
+                  </el-form-item>
+                  <el-form-item label="性别" prop="gender">
+                    <el-select v-model="formData.gender" placeholder="请选择性别">
+                      <el-option label="男" value="male"/>
+                      <el-option label="女" value="female"/>
+                      <el-option label="其他" value="other"/>
+                    </el-select>
+                  </el-form-item>
+                </el-form>
+              </el-col>
+
+              <!-- 右侧头像 -->
+              <el-col :span="4" class="avatar-container">
+                <div class="user-avatar">
+                  <el-upload
+                      class="avatar-uploader"
+                      :action="uploadUrl"
+                      :show-file-list="false"
+                      :on-success="handleAvatarSuccess"
+                      :before-upload="beforeAvatarUpload"
+                  >
+                    <img v-if="avatarUrl" :src="avatarUrl" class="avatar"/>
+                    <el-icon v-else class="avatar-placeholder">
+                      <Plus/>
+                    </el-icon>
+                  </el-upload>
+                  <el-button type="primary" @click="saveAvatar">保存头像</el-button>
+                </div>
+              </el-col>
+            </el-row>
+
+            <!-- 求职信息 -->
+            <el-form ref="jobForm" :model="formData" label-width="120px">
+              <h3>求职意愿</h3>
+              <el-form-item label="学历" prop="education">
+                <el-select v-model="formData.education" placeholder="请选择学历">
+                  <el-option label="高中及以下" value="high_school"/>
+                  <el-option label="大专" value="college"/>
+                  <el-option label="本科" value="bachelor"/>
+                  <el-option label="硕士" value="master"/>
+                  <el-option label="博士" value="phd"/>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="职位类型" prop="jobType">
+                <el-radio-group v-model="formData.jobType">
+                  <el-radio :label="0">全职</el-radio>
+                  <el-radio :label="1">实习</el-radio>
+                  <el-radio :label="2">兼职</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="薪资范围" prop="salaryRange">
+                <el-input-number
+                    v-model="formData.minSalary"
+                    :min="0"
+                    :max="100000"
+                    placeholder="最低薪资"
+                    style="width: 48%"
+                />
+                <el-input-number
+                    v-model="formData.maxSalary"
+                    :min="0"
+                    :max="100000"
+                    placeholder="最高薪资"
+                    style="width: 48%; margin-left: 4%"
+                />
+              </el-form-item>
+              <el-form-item label="职位分类" prop="categories">
+                <el-select
+                    v-model="formData.categories"
+                    multiple
+                    placeholder="请选择职位分类"
+                >
+                  <el-option
+                      v-for="category in jobCategories"
+                      :key="category.id"
+                      :label="category.name"
+                      :value="category.id"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="saveJobInfo">保存求职信息</el-button>
+              </el-form-item>
+            </el-form>
+          </el-card>
+        </div>
+      </el-main>
+    </el-container>
   </div>
+
 </template>
 
 <script setup>
-import {ref, reactive} from 'vue';
+import {ref, reactive, computed} from 'vue';
 import {ElMessage} from 'element-plus';
 import {Plus} from '@element-plus/icons-vue';
+import {useRoute} from "vue-router";
+import {useSidebarStore} from '../../store/sidebar';
 
-const avatarUrl = ref(''); // 初始头像
-const uploadUrl = '/api/upload'; // 模拟上传地址
+const avatarUrl = ref('http://localhost:8080/ad/static/defaultAvator.jpg'); // 初始头像
+const uploadUrl = 'localhost:8080/ad/user/update/avatar'; // 模拟上传地址
 const jobCategories = ref([ // 模拟职位分类数据
   {id: 1, name: '技术类'},
   {id: 2, name: '运营类'},
   {id: 3, name: '设计类'},
 ]);
-
+const sidebar = useSidebarStore();
 const formData = reactive({
   nickname: '',
   account: 'user@example.com',
@@ -119,6 +154,8 @@ const formData = reactive({
   confirmPassword: '',
   education: 'bachelor',
   jobType: 0,
+  birthday: null, // 生日字段
+  gender: '',     // 性别字段
   minSalary: 5000,
   maxSalary: 10000,
   categories: [1, 3],
@@ -136,6 +173,12 @@ const rules = {
       trigger: 'blur'
     },
   ],
+  birthday: [
+    {required: true, message: '请选择出生日期', trigger: 'change'}
+  ],
+  gender: [
+    {required: true, message: '请选择性别', trigger: 'change'}
+  ],
   confirmPassword: [
     {
       validator: (rule, value) => {
@@ -144,6 +187,27 @@ const rules = {
     }
   ]
 };
+const menuData = reactive([
+  {
+    title: '用户管理',
+    index: '1',
+    id: 1,
+  },
+  {
+    title: '职位审批',
+    index: '2',
+    id: 2,
+  },
+  {
+    title: '消息管理',
+    index: '3',
+    id: 3,
+  }
+])
+const route = useRoute();
+const onRoutes = computed(() => {
+  return route.path;
+});
 
 // 头像上传处理
 const beforeAvatarUpload = (rawFile) => {
@@ -197,10 +261,11 @@ const saveJobInfo = () => {
       text-align: center;
       margin-bottom: 20px;
 
+
       .avatar-uploader {
-        width: 150px;
-        height: 150px;
-        border: 1px dashed #d9d9d9;
+        width: 100px;
+        height: 100px;
+        border: 1px dashed #0f49f6;
         border-radius: 50%;
 
         .avatar {
@@ -222,5 +287,32 @@ const saveJobInfo = () => {
       padding-bottom: 10px;
     }
   }
+}
+
+.sidebar {
+  display: block;
+  /* 移除以下定位属性 */
+  // position: absolute;
+  // left: 0;
+  // top: 70px;
+  // bottom: 0;
+  width: 200px; // 显式设置宽度
+  overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 0;
+}
+
+.el-aside {
+  width: 250px; // ← 与 el-menu 的宽度一致
+}
+
+.sidebar-el-menu:not(.el-menu--collapse) {
+  width: 250px;
+}
+
+.sidebar-el-menu {
+  min-height: 100%;
 }
 </style>

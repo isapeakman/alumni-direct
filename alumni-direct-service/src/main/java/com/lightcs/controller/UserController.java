@@ -17,10 +17,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.lightcs.constants.Common.DELETE_SUCCESS;
 import static com.lightcs.constants.Common.UPDATE_SUCCESS;
@@ -118,6 +120,23 @@ public class UserController {
         userService.delete();
         return ResultBuilder.success(DELETE_SUCCESS);
     }
+
+    @Operation(summary = "修改头像")
+    @PostMapping("/update/avatar")
+    public BaseResponse<String> updateAvatar(MultipartFile avatar) {
+        if (avatar == null) {
+            return ResultBuilder.fail("头像不能为空");
+        }
+        if (avatar.getSize() > 1024 * 1024) {
+            return ResultBuilder.fail("头像大小不能超过1M");
+        }
+        if (!Objects.requireNonNull(avatar.getContentType()).startsWith("image")) {
+            return ResultBuilder.fail("文件格式不支持");
+        }
+        userService.updateAvatar(avatar);
+        return ResultBuilder.success(UPDATE_SUCCESS);
+    }
+
     //endregion
 
     @PreAuthorize("hasRole('ADMIN')")

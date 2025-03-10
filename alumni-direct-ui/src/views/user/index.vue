@@ -1,86 +1,62 @@
 <template>
   <div class="home-container">
-    <!-- 顶部导航 -->
-    <el-header class="header">
-      <div class="header-content">
-        <div class="logo">
-          <router-link to="/">
-            <h1>人才招聘平台</h1>
-          </router-link>
-        </div>
-        <div class="nav-menu">
-          <el-menu mode="horizontal" :router="true" :default-active="$route.path">
-            <el-menu-item index="/dashboard">首页</el-menu-item>
-            <el-menu-item index="/recommend">推荐职位</el-menu-item>
-            <el-menu-item index="/search">搜索职位</el-menu-item>
-            <el-menu-item index="/recruitment">招聘会和宣讲会</el-menu-item>
-          </el-menu>
-        </div>
-        <div class="user-actions">
-          <template v-if="!isLoggedIn">
-            <el-button type="primary" @click="showLogin">登录</el-button>
-            <el-button @click="handleRegister">注册</el-button>
-          </template>
-          <template v-else>
-            <el-button type="primary" @click="showLogin">通知</el-button>
-            <el-button type="primary" @click="showLogin">消息</el-button>
+    <div class="common-layout">
+      <el-container>
+        <!-- 顶部导航 -->
+        <el-header class="header">
+          <div class="header-content">
+            <div class="logo">
+              <router-link to="/">
+                <h1>校友直聘</h1>
+              </router-link>
+            </div>
+            <div class="nav-menu">
+              <el-menu mode="horizontal" :router="true" :default-active="$route.path">
+                <el-menu-item index="/dashboard">首页</el-menu-item>
+                <el-menu-item index="/recommend">推荐职位</el-menu-item>
+                <el-menu-item index="/search">搜索职位</el-menu-item>
+                <el-menu-item index="/recruitment">招聘会和宣讲会</el-menu-item>
+              </el-menu>
+            </div>
+            <div class="user-actions">
+              <template v-if="!isLoggedIn">
+                <el-button type="primary" @click="showLogin">登录</el-button>
+                <el-button @click="handleRegister">注册</el-button>
+              </template>
+              <template v-else>
+                <el-button type="primary" @click="showLogin">通知</el-button>
+                <el-button type="primary" @click="showLogin">消息</el-button>
 
-            <el-dropdown>
+                <el-dropdown>
               <span class="user-profile">
                 <span class="username">{{ userName }}</span>
                 <el-avatar :size="48" :src="avatar"/>
               </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="router.push('/personalCenter')">个人中心</el-dropdown-item>
-                  <el-dropdown-item>我的简历</el-dropdown-item>
-                  <el-dropdown-item>投递记录</el-dropdown-item>
-                  <el-dropdown-item>收藏职位</el-dropdown-item>
-                  <el-dropdown-item divided @click="navigateToRecruitment">招聘/内推</el-dropdown-item>
-                  <el-dropdown-item divided @click="navigateToAdmin">管理员登录</el-dropdown-item>
-                  <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item @click="router.push('/personalCenter')">个人中心</el-dropdown-item>
+                      <el-dropdown-item>我的简历</el-dropdown-item>
+                      <el-dropdown-item>投递记录</el-dropdown-item>
+                      <el-dropdown-item>收藏职位</el-dropdown-item>
+                      <el-dropdown-item divided @click="navigateToRecruitment">招聘/内推</el-dropdown-item>
+                      <el-dropdown-item divided @click="navigateToAdmin">管理员登录</el-dropdown-item>
+                      <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
 
-                </el-dropdown-menu>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
               </template>
-            </el-dropdown>
-          </template>
-        </div>
-      </div>
-    </el-header>
-
-    <router-view></router-view>
-
-    <!-- 页脚 -->
-    <el-footer class="footer">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h4>关于我们</h4>
-          <p>平台介绍</p>
-          <p>联系我们</p>
-          <p>加入我们</p>
-        </div>
-        <div class="footer-section">
-          <h4>求职者</h4>
-          <p>注册简历</p>
-          <p>投递记录</p>
-          <p>求职攻略</p>
-        </div>
-        <div class="footer-section">
-          <h4>企业服务</h4>
-          <p>企业入驻</p>
-          <p>企业登录</p>
-          <p>招聘服务</p>
-        </div>
-        <div class="footer-section">
-          <h4>客服热线</h4>
-          <p class="phone">400-888-8888</p>
-          <p>工作日 9:00-18:00</p>
-        </div>
-      </div>
-      <div class="copyright">
-        © 2024 人才招聘平台 版权所有
-      </div>
-    </el-footer>
+            </div>
+          </div>
+        </el-header>
+        <el-container>
+          <el-main>
+            <router-view></router-view>
+          </el-main>
+          <el-footer>Footer</el-footer>
+        </el-container>
+      </el-container>
+    </div>
   </div>
   <!-- 添加登录弹窗组件 -->
   <LoginDialog
@@ -193,11 +169,17 @@ const navigateToAdmin = () => {
   flex-direction: column;
 }
 
+.el-main {
+  margin-top: 10px; /* 假设导航栏高度为60px */
+  padding: 50px; /* 可选：添加内边距提升可读性 */
+}
+
 .header {
   position: fixed; // 固定位置
   top: 0; // 顶部对齐
   left: 0; // 左侧对齐
   width: 100%; // 占满宽度
+  height: 60px;
   z-index: 1000; // 确保在其他内容之上
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   background-color: white; // 背景色，防止内容遮挡

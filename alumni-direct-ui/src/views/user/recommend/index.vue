@@ -1,40 +1,47 @@
 <template>
+  <el-row :gutter="20">
+    <div class="recommend-container">
+      <el-col :span="8">
+        <div class="grid-content ep-bg-purple"/>
 
-  <div class="recommend-container">
-    <!--  左侧职位列表-->
-    <div class="job-list" v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading">
-      <!--      <el-row :gutter="20">-->
-      <!--        -->
-      <!--      </el-row>-->
-      <div style="width: 100%" v-for="job in jobList" :key="job.id">
-        <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)">
-          <div class="job-header">
-            <h4>{{ job.title }}</h4>
-            <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
+        <!--  左侧职位列表-->
+        <div class="job-list" v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading">
+          <div style="width: 100%" v-for="job in jobList" :key="job.id">
+            <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)" :class="{ 'active-card':selectedCardId.value === Number(job.id)
+ }">
+              <div class="job-header">
+                <h4>{{ job.title }}</h4>
+                <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
+              </div>
+              <div class="company">{{ job.companyName }}</div>
+              <div class="info-row">
+                <p>{{ truncateText(job.jobDesc, 20) }}</p>
+                <span class="location">
+            <el-icon><Location/></el-icon>
+            {{ job.location }}
+          </span>
+                <span class="job-type">{{ getJobType(job.jobType) }}</span>
+              </div>
+              <div class="recruiter">
+                <el-avatar :size="30" :src="job.recruiterAvatar"/>
+                <span>{{ job.recruiterName }}·招聘者</span>
+              </div>
+            </el-card>
           </div>
-          <div class="company">{{ job.companyName }}</div>
-          <div class="info-row">
-              <span class="location">
-                <el-icon><Location/></el-icon>
-                {{ job.location }}
-              </span>
-            <span class="job-type">{{ getJobType(job.jobType) }}</span>
-          </div>
-          <div class="recruiter">
-            <el-avatar :size="30" :src="job.recruiterAvatar"/>
-            <span>{{ job.recruiterName }}·招聘者</span>
-          </div>
-        </el-card>
-      </div>
-
-      <!-- 加载状态 -->
-      <div class="loading-status" v-if="loading">加载中...</div>
-      <div class="no-more" v-if="noMore">没有更多数据了</div>
+          <!-- 加载状态 -->
+          <div class="loading-status" v-if="loading">加载中...</div>
+          <div class="no-more" v-if="noMore">没有更多职位了</div>
+        </div>
+      </el-col>
+      <el-col :span="15">
+        <div class="grid-content ep-bg-purple"/>
+        <!--    职位详情页-->
+        <JobDetails :selectedJob="selectedJob"/>
+      </el-col>
     </div>
-    <!--    职位详情页-->
-    <JobDetails :selectedJob="selectedJob"/>
+  </el-row>
 
-  </div>
+
 </template>
 
 <script setup>
@@ -53,7 +60,7 @@ const noMore = ref(false)
 const total = ref(0)
 const selectedJob = ref(null)
 let isFirstLoad = true // 新增变量用于判断是否是第一次加载
-
+const selectedCardId = ref(null); // 记录选中的职位卡片id
 // 加载更多数据
 const loadMore = async () => {
   if (loading.value || noMore.value) return
@@ -63,14 +70,15 @@ const loadMore = async () => {
     const response = await getJobCard(currentPage.value, pageSize.value)
     if (response.data.code === 200) {
       const newJobs = response.data.data.records
-      total.value = response.data.data.total
-
+      total.value = response.data.data.page.total
       // 追加新数据而不是替换
       jobList.value = [...jobList.value, ...newJobs]
 
       // 更新页码和状态
       currentPage.value++
-      noMore.value = jobList.value.length >= total.value
+      // 计算是否无更多数据
+      noMore.value = jobList.value.length >= total.value ||
+          currentPage.value > Math.ceil(total.value / pageSize.value);
       // 如果是第一次加载，请求第一个职位的详情
       if (isFirstLoad && jobList.value.length > 0) {
         await handleJobClick(jobList.value[0].id)
@@ -84,7 +92,11 @@ const loadMore = async () => {
   }
 }
 
-
+// 截取文本
+const truncateText = (text, length) => {
+  if (text.length <= length) return text;
+  return text.substring(0, length) + '...';
+}
 // 获取职位类型
 const getJobType = (type) => {
   const typeMap = {
@@ -96,6 +108,8 @@ const getJobType = (type) => {
 }
 // 处理职位卡片点击事件
 const handleJobClick = async (jobId) => {
+  selectedCardId.value = jobId;
+  console.log('选中的职位id', jobId)
   try {
     const response = await getJobDetail(jobId)
     if (response.data.code === 200) {
@@ -124,27 +138,111 @@ onMounted(() => {
 .recommend-container {
   padding: 10px;
   display: flex;
+  background-color: #e7f0fa;
 
   .job-list {
     //max-width: 600px;
     min-width: 400px;
+    min-height: 200px;
     margin-right: 10px;
   }
 
 }
 
+.list-header {
+  color: #409eff;
+}
+
 .job-card {
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   cursor: pointer;
-  transition: all 0.3s;
-  border: 1px solid #428ef4;
+  transition: all 0.3s; /* 调整过渡时间为 0.3s */
+  width: 97%; /* 固定宽度 */
+  height: 100%; /* 固定高度 */
+  position: relative; /* 为子元素的绝对定位提供参考 */
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  padding: 10px;
+  overflow: hidden; /* 确保内容不会超出卡片范围 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* 覆盖内部 el-card__body 的 padding */
+  ::v-deep(.el-card__body) {
+    padding: 0;
+  }
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
+  &.active-card {
+    border-color: #409EFF !important; /* 使用!important确保覆盖 */
+    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
 
+    .job-header h4 {
+      color: #409EFF !important;
+    }
+  }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    h4 {
+      margin: 0;
+      font-size: 16px;
+      color: #303133;
+      //flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .salary {
+      color: #f56c6c;
+      font-weight: bold;
+      font-size: 15px;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+  }
+
+  .company {
+    color: #606266;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    color: #909399;
+    font-size: 13px;
+
+    .location {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+
+    .job-type {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      padding: 2px 8px;
+      background-color: #f0f2f5;
+      border-radius: 4px;
+      max-width: 50%; /* 限制宽度，避免超出卡片 */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 
 .loading-status, .no-more {
