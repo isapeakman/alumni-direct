@@ -56,7 +56,7 @@ public class HeaderFilter extends OncePerRequestFilter {
         simpleGrantedAuthorities.add(authority);
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(user, null, simpleGrantedAuthorities);
-
+        log.info("HeaderFilter user: {}", user.getUserId());
         // 将用户信息存入上下文
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);// 给后面的UsernamePasswordAuthenticationFilter传值
         filterChain.doFilter(request, response);
