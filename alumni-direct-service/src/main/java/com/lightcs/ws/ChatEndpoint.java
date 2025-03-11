@@ -1,15 +1,23 @@
 package com.lightcs.ws;
 
 import com.alibaba.fastjson2.JSON;
+import com.lightcs.model.pojo.ChatMessage;
 import com.lightcs.model.vo.UserVO;
+import com.lightcs.service.ChatService;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.lightcs.constants.MessageConstant.MESSAGE_TYPE_STATUS;
+import static com.lightcs.constants.MessageConstant.MESSAGE_TYPE_STATUS_SEND;
 
 /**
  * 聊天端点
@@ -20,9 +28,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatEndpoint {
 
     // 保存在线的用户，key为用户id，value为 websocket-Session 对象
-    private static final Map<String, Session> onlineUsers = new ConcurrentHashMap<>();
+    private static final Map<Integer, Session> onlineUsers = new ConcurrentHashMap<>();
     // 保存当前用户的 UserVO 对象
     private UserVO currentUserVO;
+    @Autowired
+    private ChatService chatService;
 
     /**
      * 建立websocket连接后，被调用
@@ -36,10 +46,13 @@ public class ChatEndpoint {
         log.error("已连接===========");
         if (userVO != null) {
             this.currentUserVO = userVO;
-            onlineUsers.put(String.valueOf(userVO.getUserId()), session);
+            onlineUsers.put(userVO.getUserId(), session);
             log.warn("用户 {} 上线了", userVO.getNickname());
-            // todo 将该用户未读的消息发送给该用户   是HTTP请求直接查询还是websocket发送消息
+            // todo 将该用户未接收的消息发送给该用户
+            List<ChatMessage> unSendMessages = chatService.getUnSendMessage(userVO.getUserId());
 
+            String msgToSend = JSON.toJSONString(unSendMessages);
+            session.getAsyncRemote().sendText(msgToSend);
         }
     }
 
@@ -55,20 +68,25 @@ public class ChatEndpoint {
             MessageDTO msg = JSON.parseObject(message, MessageDTO.class);
 
             // 获取消息接收方id
-            String toUserId = msg.getToId();
+            Integer toUserId = msg.getToId();
             String tempMessage = msg.getMsg();
+            Date currentTime = new Date();
 
             // 获取消息接收方用户对象的 session 对象
             Session receiveSession = onlineUsers.get(toUserId);
+            Integer status = MESSAGE_TYPE_STATUS;// 未发送
             // 接收方在线，则将消息发送给接收方
             if (receiveSession != null) {
-                String currentUserId = String.valueOf(this.currentUserVO.getUserId());
-                String messageToSend = MessageUtils.buildMessage(currentUserId, tempMessage);
-
+                Integer currentUserId = this.currentUserVO.getUserId();
+                String messageToSend = MessageUtils.buildMessage(currentUserId, tempMessage, currentTime);
                 receiveSession.getBasicRemote().sendText(messageToSend);
+                //todo 判断消息是否发送成功
+                status = MESSAGE_TYPE_STATUS_SEND;// 已发送
             }
-            // 接收方不在线
-            // todo 将消息保存到数据库中，等接收方上线后再发送
+            // 消息保存到数据库中，等接收方上线后再发送
+            msg.setStatus(status);
+            chatService.saveMessage(msg);//todo 立即同步增加网络时延，后续考虑异步处理，如定时任务、消息队列；或者是在连接断开时同步到数据库中
+
         } catch (Exception exception) {
             exception.printStackTrace();
         }

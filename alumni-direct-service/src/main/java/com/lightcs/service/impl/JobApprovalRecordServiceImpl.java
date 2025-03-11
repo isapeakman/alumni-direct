@@ -77,9 +77,10 @@ public class JobApprovalRecordServiceImpl extends ServiceImpl<JobApprovalRecordM
             isUpdated = jobMapper.updateById(Job.builder().id(jobId).status(STATUS_WAITING).build());
         } else if (Objects.equals(approvalResult, REJECTED)) {//审批未通过-->审核未通过
             isUpdated = jobMapper.updateById(Job.builder().id(jobId).status(STATUS_FAIL).build());
+            // todo 发送消息给申请人
         }
         ThrowUtils.throwIf(isUpdated == 0, OPERATION_ERROR, "更新职位状态失败");
-        // todo 发送消息
+
 
     }
 }

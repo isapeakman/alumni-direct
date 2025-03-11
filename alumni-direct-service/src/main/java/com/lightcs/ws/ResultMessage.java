@@ -1,6 +1,9 @@
 package com.lightcs.ws;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @Author: peak-like
@@ -10,6 +13,8 @@ import lombok.Data;
  */
 @Data
 public class ResultMessage {
-    private String fromId;
+    private Integer fromId;
     private Object message;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date time;
 }

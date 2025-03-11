@@ -2,6 +2,8 @@ package com.lightcs.ws;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @Author: peak-like
  * @CreateTime: 2025-03-11
@@ -10,8 +12,9 @@ import lombok.Data;
  */
 @Data
 public class MessageDTO {
-    private String fromId;
-    private String toId;
+    private Integer fromId;
+    private Integer toId;
     private String msg;
-    private String time;
+    private Date time;
+    private Integer status;
 }

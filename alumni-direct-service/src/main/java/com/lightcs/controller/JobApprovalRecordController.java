@@ -22,7 +22,6 @@ import java.util.Map;
 import static com.lightcs.constants.Common.UPDATE_SUCCESS;
 import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
 
-// todo 职位审批记录
 @Tag(name = "职位审批记录")
 @RestController
 @RequestMapping("/jobApprovalRecord")

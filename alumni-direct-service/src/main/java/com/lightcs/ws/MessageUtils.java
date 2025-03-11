@@ -2,6 +2,8 @@ package com.lightcs.ws;
 
 import com.alibaba.fastjson2.JSON;
 
+import java.util.Date;
+
 /**
  * @Author: peak-like
  * @CreateTime: 2025-03-11
@@ -10,10 +12,11 @@ import com.alibaba.fastjson2.JSON;
  */
 
 public class MessageUtils {
-    public static String buildMessage(String fromId, String message) {
+    public static String buildMessage(Integer fromId, String message, Date date) {
         ResultMessage resultMessage = new ResultMessage();
         resultMessage.setFromId(fromId);
         resultMessage.setMessage(message);
+        resultMessage.setTime(date);
         return JSON.toJSONString(resultMessage);
     }
 }
