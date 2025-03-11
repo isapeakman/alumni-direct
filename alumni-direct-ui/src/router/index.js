@@ -24,6 +24,11 @@ const routes = [
                 path: 'personalCenter',
                 name: 'PersonalCenter',
                 component: () => import('@/views/user/personalCenter.vue'),
+            },
+            {
+                path: 'wsTest',
+                name: 'WsTest',
+                component: () => import('../views/ws.vue'),
             }
         ]
     },

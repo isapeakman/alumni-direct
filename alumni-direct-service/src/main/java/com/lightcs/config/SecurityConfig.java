@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/login", "/user/register",
                                 "/doc.html", "/webjars/**", "/swagger-ui/**",
-                                "/static/**", "/v3/api-docs/**", "/ws/**").permitAll()  // 公开访问
+                                "/static/**", "/v3/api-docs/**", "/**").permitAll()  // 公开访问
                         .anyRequest().authenticated()  // 其他接口需认证
                 )
                 .addFilterBefore(new HeaderFilter(redisUtil), UsernamePasswordAuthenticationFilter.class)// 添加 HeaderFilter到过滤器链中，且在 UsernamePasswordAuthenticationFilter 之前

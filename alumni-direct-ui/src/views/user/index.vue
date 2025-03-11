@@ -15,7 +15,7 @@
                 <el-menu-item index="/dashboard">首页</el-menu-item>
                 <el-menu-item index="/recommend">推荐职位</el-menu-item>
                 <el-menu-item index="/search">搜索职位</el-menu-item>
-                <el-menu-item index="/recruitment">招聘会和宣讲会</el-menu-item>
+                <el-menu-item index="/wsTest">招聘会和宣讲会</el-menu-item>
               </el-menu>
             </div>
             <div class="user-actions">
