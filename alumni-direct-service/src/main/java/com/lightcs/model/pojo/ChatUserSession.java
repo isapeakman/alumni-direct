@@ -3,7 +3,10 @@ package com.lightcs.model.pojo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -14,6 +17,9 @@ import java.io.Serializable;
  */
 @TableName(value = "chat_user_session")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ChatUserSession implements Serializable {
     /**
      * 发起人ID

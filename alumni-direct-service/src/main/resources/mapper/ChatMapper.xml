@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lightcs.mapper.ChatMapper">
+    <insert id="insertUserSession">
+        insert into chat_user_session(user_id, contact_id, session_id)
+        values (#{userId}, #{contactId}, #{sessionId}),
+               (#{contactId}, #{userId}, #{sessionId})
+    </insert>
+
+    <select id="getSessionList" resultType="com.lightcs.model.pojo.ChatSession">
+        select session_id,last_message,last_receive_time from chat_session where session_id in
+        <foreach collection='sessionIdList' item='sessionId' open='(' separator=',' close=')'>#{sessionId}</foreach>
+    </select>
+
+</mapper>

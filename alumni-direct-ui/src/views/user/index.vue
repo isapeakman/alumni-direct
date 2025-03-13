@@ -39,9 +39,8 @@
                       <el-dropdown-item>投递记录</el-dropdown-item>
                       <el-dropdown-item>收藏职位</el-dropdown-item>
                       <el-dropdown-item divided @click="navigateToRecruitment">招聘/内推</el-dropdown-item>
-                      <el-dropdown-item divided @click="navigateToAdmin">管理员登录</el-dropdown-item>
+                      <el-dropdown-item v-if="role===0" divided @click="navigateToAdmin">管理员登录</el-dropdown-item>
                       <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
-
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -79,6 +78,7 @@ const isLoggedIn = ref(false)
 const userName = ref('')
 const userInfo = ref(null)
 const avatar = ref('')
+const role = ref(null)
 
 
 // 显示登录框的方法
@@ -98,12 +98,14 @@ const checkLoginStatus = () => {
   if (savedUserInfo) {
     try {
       userInfo.value = JSON.parse(savedUserInfo)
+      console.log('用户信息:', userInfo.value)
       isLoggedIn.value = true
       console.log('用户信息:', userInfo.value)
       avatar.value = userInfo.value.data.userAvatar
       console.log('头像:', avatar.value)
       userName.value = userInfo.value.data.nickname || userInfo.value.data.userAccount
       console.log('用户名:', userName.value)
+      role.value = userInfo.value.data.role
     } catch (e) {
       console.error('解析用户信息失败', e)
     }

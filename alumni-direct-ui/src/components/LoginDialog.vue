@@ -156,7 +156,6 @@ const switchLoginType = () => {
 // 提交表单
 const handleSubmit = async () => {
   if (!formRef.value) return
-
   try {
     await formRef.value.validate()
     // TODO: 调用登录/注册接口
@@ -164,7 +163,7 @@ const handleSubmit = async () => {
       email: form.email,
       password: form.password,
     }
-    if (!isLogin) {//注册
+    if (!isLogin.value) {//注册
       if (form.confirmPassword !== form.password) {
         ElMessage.error('两次密码不一致')
         return

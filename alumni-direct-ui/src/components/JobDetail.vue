@@ -5,6 +5,9 @@
       <div class="job-title-row">
         <div class="job-title">{{ selectedJob.title }}</div>
         <div class="job-salary">{{ formatSalary(selectedJob.minSalary, selectedJob.maxSalary) }}</div>
+        <el-button type="primary" plain @click="goChat(selectedJob.createId,selectedJob.title)" class="apply-button">
+          发起聊天
+        </el-button>
       </div>
 
       <!-- 职位类型标签 -->
@@ -47,6 +50,7 @@
 // 定义props 使值传进组件
 import {computed} from "vue";
 import {Location} from "@element-plus/icons-vue";
+import router from "@/router/index.js";
 
 const props = defineProps({
   selectedJob: {
@@ -54,6 +58,16 @@ const props = defineProps({
     required: true
   }
 })
+const goChat = (createId, title) => {
+  console.log("创建者是", createId)
+  router.push({
+    path: "/wsTest",
+    query: {
+      createId: createId,
+      title: title
+    }
+  })
+}
 // 工具函数
 const formatSalary = (min, max) => {
   if (!min && !max) return '薪资面议'
@@ -99,6 +113,7 @@ const getJobType = (type) => {
       font-size: 20px;
       color: #409EFF;
       font-weight: bold;
+      margin-right: 100px;
     }
   }
 

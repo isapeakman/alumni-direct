@@ -15,8 +15,8 @@ public class MessageUtils {
     public static String buildMessage(Integer fromId, String message, Date date) {
         ResultMessage resultMessage = new ResultMessage();
         resultMessage.setFromId(fromId);
-        resultMessage.setMessage(message);
-        resultMessage.setTime(date);
+        resultMessage.setMessageContent(message);
+        resultMessage.setSendTime(date);
         return JSON.toJSONString(resultMessage);
     }
 }

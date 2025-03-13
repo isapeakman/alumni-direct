@@ -1,6 +1,7 @@
 package com.lightcs.service;
 
 import com.lightcs.model.pojo.ChatMessage;
+import com.lightcs.model.vo.ChatSessionVO;
 import com.lightcs.ws.MessageDTO;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,5 +21,12 @@ public interface ChatService {
 
     List<ChatMessage> getUnSendMessage(Integer concatId);
 
-    List<ChatMessage> getMessageHistory(Integer userId, Integer contactId, Date historyTime);
+    List<ChatMessage> getMessageHistory(String sessionId, Date historyTime);
+
+    /**
+     * 获取会话列表
+     *
+     * @return
+     */
+    List<ChatSessionVO> getSessionList();
 }

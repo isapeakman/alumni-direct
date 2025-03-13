@@ -1,7 +1,8 @@
 package com.lightcs.ws;
 
 import com.alibaba.fastjson2.JSON;
-import com.lightcs.model.pojo.ChatMessage;
+import com.lightcs.enums.ErrorCode;
+import com.lightcs.exception.ThrowUtils;
 import com.lightcs.model.vo.UserVO;
 import com.lightcs.service.ChatService;
 import jakarta.websocket.*;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,8 +31,13 @@ public class ChatEndpoint {
     private static final Map<Integer, Session> onlineUsers = new ConcurrentHashMap<>();
     // 保存当前用户的 UserVO 对象
     private UserVO currentUserVO;
+    //    @Autowired // 不能注入，因为 每个ChatEndpoint都是一个新的对象，不是单例，这些对象不受spring管理，无法注入
+    private static ChatService chatService;// 静态变量，当Spring创建单例的 ChatEndpoint 对象时进行注入，所有ChatEndpoint对象共享一个chatService对象
+
     @Autowired
-    private ChatService chatService;
+    public void setChatService(ChatService chatService) {
+        ChatEndpoint.chatService = chatService;
+    }
 
     /**
      * 建立websocket连接后，被调用
@@ -41,19 +46,31 @@ public class ChatEndpoint {
      */
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
-        // 1.将当前用户的 session 对象保存到 onlineUsers 中
-        UserVO userVO = (UserVO) config.getUserProperties().get("user");
-        log.error("已连接===========");
-        if (userVO != null) {
+        try {
+            // 1.将当前用户的 session 对象保存到 onlineUsers 中
+            UserVO userVO = (UserVO) config.getUserProperties().get("user");
+            ThrowUtils.throwIf(userVO == null, ErrorCode.NOT_LOGIN_ERROR, "用户未登录");
             this.currentUserVO = userVO;
+            if (onlineUsers.containsKey(userVO.getUserId())) {
+                // 如果当前用户已经在线，则关闭之前的连接
+                Session oldSession = onlineUsers.get(userVO.getUserId());
+                try {
+                    oldSession.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             onlineUsers.put(userVO.getUserId(), session);
             log.warn("用户 {} 上线了", userVO.getNickname());
-            // todo 将该用户未接收的消息发送给该用户
-            List<ChatMessage> unSendMessages = chatService.getUnSendMessage(userVO.getUserId());
-
-            String msgToSend = JSON.toJSONString(unSendMessages);
-            session.getAsyncRemote().sendText(msgToSend);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        // todo 将该用户未接收的消息发送给该用户
+//        List<ChatMessage> unSendMessages = chatService.getUnSendMessage(userVO.getUserId());
+//
+//        String msgToSend = JSON.toJSONString(unSendMessages);
+//        session.getAsyncRemote().sendText(msgToSend);
+
     }
 
     /**
@@ -69,7 +86,7 @@ public class ChatEndpoint {
 
             // 获取消息接收方id
             Integer toUserId = msg.getToId();
-            String tempMessage = msg.getMsg();
+            String tempMessage = msg.getMessageContent();
             Date currentTime = new Date();
 
             // 获取消息接收方用户对象的 session 对象
@@ -84,7 +101,9 @@ public class ChatEndpoint {
                 status = MESSAGE_TYPE_STATUS_SEND;// 已发送
             }
             // 消息保存到数据库中，等接收方上线后再发送
+            msg.setFromId(this.currentUserVO.getUserId());
             msg.setStatus(status);
+            msg.setTime(currentTime);
             chatService.saveMessage(msg);//todo 立即同步增加网络时延，后续考虑异步处理，如定时任务、消息队列；或者是在连接断开时同步到数据库中
 
         } catch (Exception exception) {

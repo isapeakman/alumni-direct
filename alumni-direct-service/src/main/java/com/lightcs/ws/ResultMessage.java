@@ -14,7 +14,7 @@ import java.util.Date;
 @Data
 public class ResultMessage {
     private Integer fromId;
-    private Object message;
+    private Object messageContent;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date time;
+    private Date sendTime;
 }

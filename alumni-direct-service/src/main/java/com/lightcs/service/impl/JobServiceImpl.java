@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -220,6 +221,7 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         // 更新职位状态为已发布
         Job job = new Job();
         job.setStatus(STATUS_OPENED);
+        job.setPublishTime(new Date());
         int res = jobMapper.update(job, queryWrapper);
         ThrowUtils.throwIf(res == 0, OPERATION_ERROR, PUBLISH_FAIL);
     }

@@ -36,6 +36,15 @@ export function fetchUserData(currentPage, pageSize, username) {
     )
 }
 
+export function getUserInfo(userId) {
+    return request(
+        {
+            url: '/ad/user/current',
+            method: 'get',
+            params: userId
+        }
+    )
+}
 // 修改头像
 export function updateAvatar() {
     // 构建参数对象，只包含有值的参数

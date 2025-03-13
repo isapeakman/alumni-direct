@@ -14,7 +14,7 @@ import java.util.Date;
 public class MessageDTO {
     private Integer fromId;
     private Integer toId;
-    private String msg;
+    private String messageContent;
     private Date time;
     private Integer status;
 }
