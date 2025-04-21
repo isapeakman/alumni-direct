@@ -82,6 +82,10 @@ public class Job implements Serializable {
      * 招聘人员
      */
     private String recruiterName;
+    /**
+     * 0 普通用户 1 校友用户
+     */
+    private Integer isAlumni;
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

@@ -61,7 +61,7 @@ const props = defineProps({
 const goChat = (createId, title) => {
   console.log("创建者是", createId)
   router.push({
-    path: "/wsTest",
+    path: "/chat",
     query: {
       createId: createId,
       title: title

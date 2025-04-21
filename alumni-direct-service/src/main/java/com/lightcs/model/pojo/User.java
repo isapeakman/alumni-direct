@@ -64,7 +64,10 @@ public class User implements Serializable {
      */
     @TableLogic(value = "0", delval = "1")//逻辑删除, 0未删除 1已删除
     private Integer isDelete;
-
+    /**
+     * 0:普通用户 1:校友用户
+     */
+    private Integer isAlumni;
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 

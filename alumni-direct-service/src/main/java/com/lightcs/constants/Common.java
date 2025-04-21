@@ -25,4 +25,5 @@ public interface Common {
     String OFFLINE_FAIL = "下架失败";
     String CLOSE_SUCCESS = "关闭成功";
     String CLOSE_FAIL = "关闭失败";
+    String APPLY_SUCCESS = "申请成功";
 }

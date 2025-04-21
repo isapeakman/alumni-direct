@@ -17,33 +17,23 @@ const routes = [
             {
                 path: 'recommend',
                 name: 'Recommend',
-                component: () => import('@/views/user/recommend/index.vue'),
+                component: () => import('@/views/user/job-recommend.vue'),
                 meta: {title: '推荐职位', icon: 'recommend'}
             },
             {
                 path: 'personalCenter',
                 name: 'PersonalCenter',
-                component: () => import('@/views/user/personalCenter.vue'),
-            },
-            {
-                path: 'wsTest',
-                name: 'WsTest',
-                component: () => import('../views/ws.vue'),
+                component: () => import('@/views/user/person-center.vue'),
             },
             {
                 path: 'fair',
                 name: 'fair',
-                component: () => import('../views/user/fair.vue'),
+                component: () => import('../views/user/job-fair.vue'),
             },
             {
-                path: 'bbb',
-                name: 'bbb',
-                component: () => import('../views/admin/bbb.vue'),
-            },
-            {
-                path: 'eee',
-                name: 'eee',
-                component: () => import('../views/user/eee.vue'),
+                path: 'chat',
+                name: 'Chat',
+                component: () => import('../views/chat.vue'),
             },
         ]
     },
@@ -62,8 +52,18 @@ const routes = [
             {
                 path: 'manage',
                 name: 'Manage',
-                component: () => import('@/views/recruiter/manage/index.vue')
-            }
+                component: () => import('@/views/recruiter/job-manage.vue')
+            },
+            {
+                path: 'auth',
+                name: 'Auth',
+                component: () => import('../views/recruiter/alumni-auth.vue'),
+            },
+            {
+                path: 'auth/success',
+                name: 'AuthSuccess',
+                component: () => import('../views/recruiter/alumni-auth-success.vue'),
+            },
         ]
     },
     // 管理员
@@ -76,22 +76,22 @@ const routes = [
             {
                 path: 'user',
                 name: 'User',
-                component: () => import('@/views/admin/user.vue'),
+                component: () => import('@/views/admin/manage-user.vue'),
             },
             {
                 path: 'approval',
                 name: 'Approval',
-                component: () => import('@/views/admin/approval.vue')
+                component: () => import('@/views/admin/manage-job.vue')
             },
             {
-                path: 'ccc',
-                name: 'ccc',
-                component: () => import('@/views/admin/ccc.vue')
+                path: 'auth',
+                name: 'AuthApproval',
+                component: () => import('@/views/admin/manage-auth.vue')
             },
             {
                 path: 'fair',
                 name: 'Fair',
-                component: () => import('../views/admin/fair-manage.vue'),
+                component: () => import('../views/admin/manage-fair.vue'),
             }
         ]
     }

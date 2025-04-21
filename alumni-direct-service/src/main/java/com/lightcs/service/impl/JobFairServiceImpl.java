@@ -1,8 +1,9 @@
-package com.lightcs.service;
+package com.lightcs.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lightcs.mapper.JobFairMapper;
 import com.lightcs.model.pojo.JobFair;
+import com.lightcs.service.JobFairService;
 import org.springframework.stereotype.Service;
 
 /**

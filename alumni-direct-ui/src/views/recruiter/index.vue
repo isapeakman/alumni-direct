@@ -58,13 +58,13 @@
                 </el-icon>
                 <span>职位管理</span>
               </el-menu-item>
-              <el-menu-item index="/wsTest">
+              <el-menu-item index="/recruitment/chat">
                 <el-icon>
                   <document/>
                 </el-icon>
                 <span>沟通</span>
               </el-menu-item>
-              <el-menu-item index="4">
+              <el-menu-item index="/recruitment/auth">
                 <el-icon>
                   <setting/>
                 </el-icon>

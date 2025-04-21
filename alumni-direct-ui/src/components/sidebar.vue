@@ -71,7 +71,7 @@ const menuData = [
   },
   {
     title: '身份审核',
-    index: '/admin/ccc',
+    index: '/admin/auth',
     icon: 'ccc',
     id: 3,
   },

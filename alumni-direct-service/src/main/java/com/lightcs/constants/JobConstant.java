@@ -20,4 +20,6 @@ public interface JobConstant {
     // 审批结果
     Integer REJECTED = 0;//已驳回
     Integer PASS = 1;//通过
+    Integer IS_ALUMNI = 1;//校友
+    Integer NOT_ALUMNI = 0;//非校友
 }

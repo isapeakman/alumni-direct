@@ -78,10 +78,10 @@
 <script setup>
 import {Location} from "@element-plus/icons-vue";
 import {ref, onMounted} from 'vue'
-import {addJob, getJobById} from '@/api/job'
+import {addJob, getJobById} from '@/api/job.js'
 import {ElMessage} from "element-plus";
-import AddJobForm from "@/views/recruiter/manage/AddJobForm.vue";
-import JobDetailDialog from "@/views/recruiter/manage/JobDetailDialog.vue";
+import AddJobForm from "@/components/AddJobForm.vue";
+import JobDetailDialog from "@/components/JobDetailDialog.vue";
 
 const total = ref(0)
 const jobList = ref([])

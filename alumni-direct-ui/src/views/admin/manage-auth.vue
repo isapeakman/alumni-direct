@@ -15,31 +15,34 @@
 
     <el-table :data="paginatedRecords" style="width: 100%">
       <el-table-column prop="id" label="申请ID" width="80"></el-table-column>
-      <el-table-column prop="name" label="姓名" width="100"></el-table-column>
-      <el-table-column prop="studentId" label="学号" width="120"></el-table-column>
-      <el-table-column prop="enrollmentYear" label="入学年份" width="100"></el-table-column>
-      <el-table-column prop="graduationYear" label="毕业年份" width="100"></el-table-column>
-      <el-table-column prop="major" label="专业" width="180"></el-table-column>
-      <el-table-column prop="contact" label="联系方式" width="150"></el-table-column>
-
-      <el-table-column label="认证材料" width="120">
+      <el-table-column prop="userId" label="申请人ID" width="100"></el-table-column>
+      <el-table-column prop="applyTime" label="申请时间" width="150">
         <template #default="{ row }">
-          <el-button @click="viewMaterials(row)" type="text">查看材料</el-button>
+          {{ formatDate(row.applyTime) }}
         </template>
       </el-table-column>
-
-      <el-table-column label="状态" width="120">
+      <el-table-column label="详细资料" width="120">
+        <template #default="{ row }">
+          <el-button type="text" @click="showDetailDialog(row)">查看详细资料</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column prop="approvalStatus" label="审批状态" width="120">
         <template #default="{ row }">
           <span :style="{ color: getStatusColor(row) }">
             {{ getStatusText(row) }}
           </span>
         </template>
       </el-table-column>
-
+      <el-table-column prop="note" label="审批意见" width="200"></el-table-column>
+      <el-table-column prop="approvalTime" label="审批时间" width="150">
+        <template #default="{ row }">
+          {{ formatDate(row.approvalTime) }}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="180">
         <template #default="{ row }">
           <el-button
-              v-if="row.status === 0"
+              v-if="row.approvalStatus === 0"
               type="success"
               size="small"
               @click="approve(row)"
@@ -47,18 +50,16 @@
             通过
           </el-button>
           <el-button
-              v-if="row.status === 0"
+              v-if="row.approvalStatus === 0"
               type="danger"
               size="small"
               @click="showRejectDialog(row)"
           >
             拒绝
           </el-button>
-          <span v-if="row.status !== 0">已处理</span>
+          <span v-if="row.approvalStatus !== 0">已处理</span>
         </template>
       </el-table-column>
-
-      <el-table-column prop="rejectReason" label="拒绝原因" width="200"></el-table-column>
     </el-table>
 
     <el-pagination
@@ -103,63 +104,37 @@
         <el-button type="primary" @click="confirmReject">确认拒绝</el-button>
       </template>
     </el-dialog>
+
+    <!-- 详细资料对话框 -->
+    <el-dialog v-model="detailDialogVisible" title="详细资料" width="50%">
+      <div class="detail-preview">
+        <p>姓名: {{ currentDetail.name }}</p>
+        <p>学号: {{ currentDetail.studentId }}</p>
+        <p>入学年份: {{ formatDate(currentDetail.yearAdmission) }}</p>
+        <p>毕业年份: {{ formatDate(currentDetail.yearGraduated) }}</p>
+        <p>专业: {{ currentDetail.major }}</p>
+        <p>联系方式: {{ currentDetail.phone }}</p>
+        <div class="material-thumbs">
+          <el-image
+              v-for="(img, index) in getMaterials(currentDetail)"
+              :key="index"
+              :src="img.url"
+              :preview-src-list="getMaterials(currentDetail).map(m => m.url)"
+              style="width: 100px; height: 100px; margin-right: 10px;"
+          ></el-image>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import {ref, computed, onMounted} from 'vue'
 import {ElMessage} from 'element-plus'
+import {approveAuth, getApproval} from '@/api/auth.js'
 
 // 模拟数据
-const mockRecords = [
-  {
-    id: 1,
-    name: '张三',
-    studentId: '2015101010',
-    enrollmentYear: '2015',
-    graduationYear: '2019',
-    major: '计算机学院 软件工程专业',
-    contact: '13800138000',
-    materials: [
-      {name: '学生证.jpg', url: 'https://dummyimage.com/600x400/eee/999'},
-      {name: '毕业证.jpg', url: 'https://dummyimage.com/600x400/eee/999'}
-    ],
-    status: 0, // 0: 待审核, 1: 已审核
-    result: null, // 0: 拒绝, 1: 通过
-    rejectReason: ''
-  },
-  {
-    id: 2,
-    name: '李四',
-    studentId: '2016102020',
-    enrollmentYear: '2016',
-    graduationYear: '2020',
-    major: '经济学院 金融学专业',
-    contact: 'li.si@example.com',
-    materials: [
-      {name: '学生证.pdf', url: 'https://example.com/student.pdf'},
-      {name: '学位证.jpg', url: 'https://dummyimage.com/600x400/eee/999'}
-    ],
-    status: 1,
-    result: 1,
-    rejectReason: ''
-  },
-  {
-    id: 3,
-    name: '王五',
-    studentId: '2017103030',
-    enrollmentYear: '2017',
-    graduationYear: '2021',
-    major: '文学院 汉语言文学专业',
-    contact: '13900139000',
-    materials: [
-      {name: '学生证.jpg', url: 'https://dummyimage.com/600x400/eee/999'}
-    ],
-    status: 1,
-    result: 0,
-    rejectReason: '提供的学生证照片不清晰，无法辨认学号信息'
-  }
-]
+const mockRecords = []
 
 const records = ref([])
 const currentPage = ref(1)
@@ -178,11 +153,18 @@ const currentMaterials = ref([])
 const rejectDialogVisible = ref(false)
 const rejectReason = ref('')
 const currentRejectRecord = ref(null)
+const detailDialogVisible = ref(false)
+const currentDetail = ref({})
 
 // 初始化数据
-const initData = () => {
-  records.value = [...mockRecords]
-  totalRecords.value = records.value.length
+const initData = async () => {
+  try {
+    const response = await getApproval(currentPage.value, pageSize.value);
+    records.value = response.data.data.records;
+    totalRecords.value = response.data.data.page.total;
+  } catch (error) {
+    ElMessage.error('获取认证列表失败');
+  }
 }
 
 // 过滤记录
@@ -193,9 +175,9 @@ const filteredRecords = computed(() => {
 
   return records.value.filter(record => {
     const statusMatch = selectedFilter.value.status === null ||
-        record.status === selectedFilter.value.status
+        record.approvalStatus === selectedFilter.value.status
     const resultMatch = selectedFilter.value.result === null ||
-        record.result === selectedFilter.value.result
+        record.approvalResult === selectedFilter.value.result
     return statusMatch && resultMatch
   })
 })
@@ -211,16 +193,21 @@ const paginatedRecords = computed(() => {
 const handleFilterChange = (option) => {
   selectedFilter.value = option
   currentPage.value = 1
+  initData()
 }
 
 // 处理分页变化
 const handlePageChange = (page) => {
   currentPage.value = page
+  initData()
 }
 
 // 查看材料
 const viewMaterials = (record) => {
-  currentMaterials.value = record.materials
+  currentMaterials.value = [
+    {name: '认证材料1', url: record.certification},
+    {name: '认证材料2', url: record.certification2}
+  ].filter(material => material.url);
   materialDialogVisible.value = true
 }
 
@@ -230,16 +217,10 @@ const downloadMaterial = (material) => {
   // 实际项目中这里应该是调用下载API
 }
 
-// 获取状态颜色
-const getStatusColor = (row) => {
-  if (row.status === 0) return '#FF9900' // 待审批：橙色
-  return row.result === 1 ? '#2ecc71' : '#e74c3c' // 通过/拒绝
-}
-
-// 获取状态文本
-const getStatusText = (row) => {
-  if (row.status === 0) return '待审批'
-  return row.result === 1 ? '已通过' : '未通过'
+// 显示详细资料对话框
+const showDetailDialog = (record) => {
+  currentDetail.value = record
+  detailDialogVisible.value = true
 }
 
 // 显示拒绝对话框
@@ -257,21 +238,67 @@ const confirmReject = () => {
   }
 
   const record = currentRejectRecord.value
-  record.status = 1
-  record.result = 0
-  record.rejectReason = rejectReason.value
+  record.approvalResult = 0
+  record.note = rejectReason.value
+  record.approvalTime = new Date().toISOString()
 
+  // 实际项目中这里应该是调用更新API
+  const response = approveAuth(record.id, record.note, record.approvalResult)
+  if (response.data.code !== 200) {
+    ElMessage.error('审批失败')
+    return
+  }
   ElMessage.success('已拒绝该申请')
   rejectDialogVisible.value = false
+  initData()
 }
 
 // 审批通过
-const approve = (record) => {
-  record.status = 1
-  record.result = 1
-  record.rejectReason = ''
+const approve = async (record) => {
+  record.approvalResult = 1
+  record.note = '资料齐全，符合要求'
 
+  // 实际项目中这里应该是调用更新API
+
+  const response = await approveAuth(record.id, record.note, record.approvalResult)
+  if (response.data.code !== 200) {
+    ElMessage.error('审批失败')
+    return
+  }
   ElMessage.success('已通过该申请')
+  // 更新记录
+  initData()
+}
+
+// 格式化日期
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+}
+
+// 获取状态颜色
+const getStatusColor = (row) => {
+  if (row.approvalStatus === 0) return '#FF9900' // 待审批：橙色
+  return row.approvalResult === 1 ? '#2ecc71' : '#e74c3c' // 通过/拒绝
+}
+
+// 获取状态文本
+const getStatusText = (row) => {
+  if (row.approvalStatus === 0) return '待审批'
+  return row.approvalResult === 1 ? '已通过' : '未通过'
+}
+
+// 获取审批结果文本
+const getApprovalResultText = (row) => {
+  return row.approvalResult === 1 ? '通过' : '未通过'
+}
+
+// 获取材料
+const getMaterials = (record) => {
+  return [
+    {name: '认证材料1', url: record.certification},
+    {name: '认证材料2', url: record.certification2}
+  ].filter(material => material.url);
 }
 
 onMounted(() => {
@@ -313,5 +340,14 @@ h2 {
   justify-content: center;
   height: 100%;
   gap: 10px;
+}
+
+.material-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.detail-preview {
+  padding: 20px;
 }
 </style>

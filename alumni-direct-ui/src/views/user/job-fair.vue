@@ -7,19 +7,19 @@
         <el-carousel-item v-for="(fair, index) in upcomingFairs" :key="index">
           <div class="carousel-item">
             <div class="fair-info">
-              <h3 class="fair-name">{{ fair.name }}</h3>
+              <h3 class="fair-name">{{ job.name }}</h3>
               <p class="fair-time">
                 <i class="el-icon-time"></i>
-                {{ fair.startTime }}~{{ fair.endTime }}
+                {{ job.startTime }}~{{ job.endTime }}
               </p>
               <p class="fair-location">
                 <i class="el-icon-location"></i>
-                {{ fair.location }}
+                {{ job.location }}
               </p>
-              <p class="fair-desc">{{ fair.description }}</p>
+              <p class="fair-desc">{{ job.description }}</p>
             </div>
             <div class="fair-image">
-              <img :src="fair.imageUrl" :alt="fair.name"/>
+              <img :src="job.imageUrl" :alt="job.name"/>
             </div>
           </div>
         </el-carousel-item>
@@ -36,18 +36,18 @@
             class="history-card"
         >
           <div class="card-image">
-            <img :src="fair.imageUrl" :alt="fair.name"/>
+            <img :src="job.imageUrl" :alt="job.name"/>
           </div>
           <div class="card-content">
-            <h3 class="card-title">{{ fair.name }}</h3>
+            <h3 class="card-title">{{ job.name }}</h3>
             <p class="card-date">
               <i class="el-icon-date"></i>
-              {{ fair.startTime }}~{{ fair.endTime }}
+              {{ job.startTime }}~{{ job.endTime }}
             </p>
             <el-button
                 size="mini"
                 class="details-btn"
-                @click="viewFairDetails(fair.id)"
+                @click="viewFairDetails(job.id)"
             >
               查看详情
             </el-button>

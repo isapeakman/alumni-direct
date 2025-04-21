@@ -1,38 +1,23 @@
-package com.lightcs.model.pojo;
-
+package com.lightcs.model.vo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 用户校友认证审批表
- *
- * @TableName user_certification_approval
+ * @Author: peak-like
+ * @CreateTime: 2025-04-21
+ * @Description:
+ * @Version: 1.0
  */
-@TableName(value = "user_certification_approval")
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserCertificationApproval implements Serializable {
+public class AuthVO {
     /**
      * 主键
      */
-    @TableId
     private Integer id;
-
-    /**
-     * 申请人ID
-     */
-    private Integer userId;
 
     /**
      * 认证材料
@@ -48,11 +33,6 @@ public class UserCertificationApproval implements Serializable {
      * 申请时间
      */
     private Date applyTime;
-
-    /**
-     * 审核人ID
-     */
-    private Integer approvalUserId;
 
     /**
      * 审批状态:0未审批 1 已审批
@@ -72,17 +52,8 @@ public class UserCertificationApproval implements Serializable {
     /**
      * 审批时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date approvalTime;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
 
     /**
      * 真实姓名
@@ -95,13 +66,15 @@ public class UserCertificationApproval implements Serializable {
     private String studentId;
 
     /**
-     * 入学年份
+     * 入学时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date yearAdmission;
 
     /**
-     * 毕业年份
+     * 毕业时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date yearGraduated;
 
     /**

@@ -65,7 +65,7 @@ import {ref, computed, onMounted} from 'vue'
 import {ElMessage} from 'element-plus'
 import {approveRecord, getApprovals} from "@/api/jobApproval.js";
 import {Search, View} from "@element-plus/icons-vue";
-import JobDetailDialog from "@/views/recruiter/manage/JobDetailDialog.vue";
+import JobDetailDialog from "@/components/JobDetailDialog.vue";
 
 const records = ref([])
 const currentPage = ref(1)
