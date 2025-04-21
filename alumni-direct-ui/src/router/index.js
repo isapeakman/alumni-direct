@@ -29,7 +29,22 @@ const routes = [
                 path: 'wsTest',
                 name: 'WsTest',
                 component: () => import('../views/ws.vue'),
-            }
+            },
+            {
+                path: 'fair',
+                name: 'fair',
+                component: () => import('../views/user/fair.vue'),
+            },
+            {
+                path: 'bbb',
+                name: 'bbb',
+                component: () => import('../views/admin/bbb.vue'),
+            },
+            {
+                path: 'eee',
+                name: 'eee',
+                component: () => import('../views/user/eee.vue'),
+            },
         ]
     },
     {
@@ -67,6 +82,16 @@ const routes = [
                 path: 'approval',
                 name: 'Approval',
                 component: () => import('@/views/admin/approval.vue')
+            },
+            {
+                path: 'ccc',
+                name: 'ccc',
+                component: () => import('@/views/admin/ccc.vue')
+            },
+            {
+                path: 'fair',
+                name: 'Fair',
+                component: () => import('../views/admin/fair-manage.vue'),
             }
         ]
     }

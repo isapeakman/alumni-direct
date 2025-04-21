@@ -15,7 +15,7 @@
                 <el-menu-item index="/dashboard">首页</el-menu-item>
                 <el-menu-item index="/recommend">推荐职位</el-menu-item>
                 <el-menu-item index="/search">搜索职位</el-menu-item>
-                <el-menu-item index="/wsTest">招聘会和宣讲会</el-menu-item>
+                <el-menu-item index="/fair">招聘会和宣讲会</el-menu-item>
               </el-menu>
             </div>
             <div class="user-actions">
@@ -25,7 +25,7 @@
               </template>
               <template v-else>
                 <el-button type="primary" @click="showLogin">通知</el-button>
-                <el-button type="primary" @click="showLogin">消息</el-button>
+                <el-button type="primary" @click="router.push('/wsTest')">消息</el-button>
 
                 <el-dropdown>
               <span class="user-profile">
@@ -35,9 +35,9 @@
                   <template #dropdown>
                     <el-dropdown-menu>
                       <el-dropdown-item @click="router.push('/personalCenter')">个人中心</el-dropdown-item>
-                      <el-dropdown-item>我的简历</el-dropdown-item>
+                      <!--                      <el-dropdown-item>我的简历</el-dropdown-item>-->
                       <el-dropdown-item>投递记录</el-dropdown-item>
-                      <el-dropdown-item>收藏职位</el-dropdown-item>
+                      <!--                      <el-dropdown-item>收藏职位</el-dropdown-item>-->
                       <el-dropdown-item divided @click="navigateToRecruitment">招聘/内推</el-dropdown-item>
                       <el-dropdown-item v-if="role===0" divided @click="navigateToAdmin">管理员登录</el-dropdown-item>
                       <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>

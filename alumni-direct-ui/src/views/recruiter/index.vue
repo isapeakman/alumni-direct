@@ -58,7 +58,7 @@
                 </el-icon>
                 <span>职位管理</span>
               </el-menu-item>
-              <el-menu-item index="3">
+              <el-menu-item index="/wsTest">
                 <el-icon>
                   <document/>
                 </el-icon>
@@ -68,7 +68,7 @@
                 <el-icon>
                   <setting/>
                 </el-icon>
-                <span>公司主页</span>
+                <span>身份认证</span>
               </el-menu-item>
             </el-menu>
           </el-col>

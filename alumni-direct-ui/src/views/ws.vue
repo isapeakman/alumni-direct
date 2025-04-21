@@ -41,6 +41,10 @@
           </div>
         </div>
       </div>
+      <!-- 新增投递简历按钮 -->
+      <div class="resume-button">
+        <el-button type="success" @click="submitResume">投递简历</el-button>
+      </div>
       <div class="chat-input">
         <el-input
             v-model="sendMessage.messageContent"

@@ -48,7 +48,16 @@
                       <el-option label="其他" value="other"/>
                     </el-select>
                   </el-form-item>
+                  <el-form-item label="自我介绍" prop="selfIntroduction">
+                    <el-input
+                        v-model="formData.selfIntroduction"
+                        type="textarea"
+                        :rows="4"
+                        placeholder="请输入自我介绍"
+                    />
+                  </el-form-item>
                 </el-form>
+                <el-button type="primary" @click="saveJobInfo">保存个人信息</el-button>
               </el-col>
 
               <!-- 右侧头像 -->
@@ -74,15 +83,15 @@
             <!-- 求职信息 -->
             <el-form ref="jobForm" :model="formData" label-width="120px">
               <h3>求职意愿</h3>
-              <el-form-item label="学历" prop="education">
-                <el-select v-model="formData.education" placeholder="请选择学历">
-                  <el-option label="高中及以下" value="high_school"/>
-                  <el-option label="大专" value="college"/>
-                  <el-option label="本科" value="bachelor"/>
-                  <el-option label="硕士" value="master"/>
-                  <el-option label="博士" value="phd"/>
-                </el-select>
-              </el-form-item>
+              <!--              <el-form-item label="学历" prop="education">-->
+              <!--                <el-select v-model="formData.education" placeholder="请选择学历">-->
+              <!--                  <el-option label="高中及以下" value="high_school"/>-->
+              <!--                  <el-option label="大专" value="college"/>-->
+              <!--                  <el-option label="本科" value="bachelor"/>-->
+              <!--                  <el-option label="硕士" value="master"/>-->
+              <!--                  <el-option label="博士" value="phd"/>-->
+              <!--                </el-select>-->
+              <!--              </el-form-item>-->
               <el-form-item label="职位类型" prop="jobType">
                 <el-radio-group v-model="formData.jobType">
                   <el-radio :label="0">全职</el-radio>
@@ -142,8 +151,8 @@ import {useSidebarStore} from '../../store/sidebar';
 const avatarUrl = ref('http://localhost:8080/ad/static/defaultAvator.jpg'); // 初始头像
 const uploadUrl = 'localhost:8080/ad/user/update/avatar'; // 模拟上传地址
 const jobCategories = ref([ // 模拟职位分类数据
-  {id: 1, name: '技术类'},
-  {id: 2, name: '运营类'},
+  {id: 1, name: '算法'},
+  {id: 2, name: '销售'},
   {id: 3, name: '设计类'},
 ]);
 const sidebar = useSidebarStore();

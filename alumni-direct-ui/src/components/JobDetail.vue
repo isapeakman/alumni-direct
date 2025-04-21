@@ -6,7 +6,7 @@
         <div class="job-title">{{ selectedJob.title }}</div>
         <div class="job-salary">{{ formatSalary(selectedJob.minSalary, selectedJob.maxSalary) }}</div>
         <el-button type="primary" plain @click="goChat(selectedJob.createId,selectedJob.title)" class="apply-button">
-          发起聊天
+          发起沟通
         </el-button>
       </div>
 
@@ -83,9 +83,9 @@ const jobDescLines = computed(() => {
 });
 const getJobType = (type) => {
   const typeMap = {
-    1: '全职',
-    2: '实习',
-    3: '兼职'
+    0: '全职',
+    1: '实习',
+    2: '兼职'
   }
   return typeMap[type] || '未知'
 }

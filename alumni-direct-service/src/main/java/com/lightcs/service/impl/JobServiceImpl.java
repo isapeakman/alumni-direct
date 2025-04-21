@@ -173,11 +173,12 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         // 查询职位卡片
         List<JobCardVO> jobCardVOS = jobMapper.selectCards(page, cardRequest.getTitle(), cardRequest.getJobType(), cardRequest.getLocation(),
                 cardRequest.getMinSalary(), cardRequest.getMaxSalary(), STATUS_OPENED, jobIdList);
-        // 根据创建人id查询 创建人头像
+        // 根据创建人id查询 创建人
         jobCardVOS.forEach(jobCardVO -> {
             Integer createId = jobCardVO.getCreateId();
-            String avatar = userMapper.selectAvatarById(createId);
-            jobCardVO.setRecruiterAvatar(avatar);
+            User user = userMapper.selectById(createId);
+            jobCardVO.setRecruiterAvatar(user.getUserAvatar());
+            jobCardVO.setRecruiterName(user.getNickname());
         });
         page.setRecords(jobCardVOS);
         return page;

@@ -1,6 +1,7 @@
 package com.lightcs.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lightcs.exception.BusinessException;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.model.dto.JobCardRequest;
 import com.lightcs.model.dto.JobRequest;
@@ -12,8 +13,10 @@ import com.lightcs.result.BaseResponse;
 import com.lightcs.result.PaginationBuilder;
 import com.lightcs.result.ResultBuilder;
 import com.lightcs.service.JobService;
+import com.lightcs.utils.CurrentUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,7 @@ import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
 @Tag(name = "职位操作")
 @RestController
 @RequestMapping("/job")
+@Slf4j
 public class JobController {
     @Autowired
     private JobService jobService;
@@ -93,7 +97,14 @@ public class JobController {
         if (jobCardRequest.getMinSalary() != null && jobCardRequest.getMaxSalary() != null) {
             ThrowUtils.throwIf(jobCardRequest.getMinSalary() > jobCardRequest.getMaxSalary(), PARAMS_ERROR, "最小薪资不能大于最大薪资");
         }
-
+        try {
+            Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+        } catch (BusinessException e) {
+            log.info("未登录");
+            //todo 待验证 未登录，只让查询 第一页的数据
+            jobCardRequest.setCurrent(1);
+            jobCardRequest.setPageSize(10);
+        }
         Page<JobCardVO> data = jobService.selectCards(jobCardRequest);
         return PaginationBuilder.build(data);
     }

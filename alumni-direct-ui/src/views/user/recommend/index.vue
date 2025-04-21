@@ -100,9 +100,9 @@ const truncateText = (text, length) => {
 // 获取职位类型
 const getJobType = (type) => {
   const typeMap = {
-    1: '全职',
-    2: '实习',
-    3: '兼职'
+    0: '全职',
+    1: '实习',
+    2: '兼职'
   }
   return typeMap[type] || '未知'
 }

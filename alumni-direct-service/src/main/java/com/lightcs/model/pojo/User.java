@@ -1,9 +1,6 @@
 package com.lightcs.model.pojo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 
 import java.io.Serializable;
@@ -65,6 +62,7 @@ public class User implements Serializable {
     /**
      * 0 未删除 1已删除
      */
+    @TableLogic(value = "0", delval = "1")//逻辑删除, 0未删除 1已删除
     private Integer isDelete;
 
     @TableField(exist = false)

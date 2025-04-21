@@ -110,6 +110,7 @@ public class ChatEndpoint {
             exception.printStackTrace();
         }
     }
+    //todo 文件传输
 
     /**
      * 断开 websocket 连接时被调用

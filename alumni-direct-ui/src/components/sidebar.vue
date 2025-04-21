@@ -70,10 +70,16 @@ const menuData = [
     id: 2,
   },
   {
-    title: '消息管理',
-    index: '/admin/message',
-    icon: 'Message',
+    title: '身份审核',
+    index: '/admin/ccc',
+    icon: 'ccc',
     id: 3,
+  },
+  {
+    title: '活动管理',
+    index: '/admin/fair',
+    icon: 'Message',
+    id: 4,
   }
 ]
 const route = useRoute();
