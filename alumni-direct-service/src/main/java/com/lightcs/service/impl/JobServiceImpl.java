@@ -108,6 +108,7 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
 
         Long isExist = jobMapper.selectCount(queryWrapper);
         ThrowUtils.throwIf(isExist == 0, NOT_FOUND_ERROR, "更新职位不存在");
+        //todo 职位分类这里没有全删除后添加
 
         // 构造Job
         Integer minSalary = jobUpdate.getMinSalary();

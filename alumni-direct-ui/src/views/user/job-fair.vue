@@ -7,19 +7,19 @@
         <el-carousel-item v-for="(fair, index) in upcomingFairs" :key="index">
           <div class="carousel-item">
             <div class="fair-info">
-              <h3 class="fair-name">{{ job.name }}</h3>
+              <h3 class="fair-name">{{ fair.name }}</h3>
               <p class="fair-time">
                 <i class="el-icon-time"></i>
-                {{ job.startTime }}~{{ job.endTime }}
+                {{ fair.startTime }}~{{ fair.endTime }}
               </p>
               <p class="fair-location">
                 <i class="el-icon-location"></i>
-                {{ job.location }}
+                {{ fair.location }}
               </p>
-              <p class="fair-desc">{{ job.description }}</p>
+              <p class="fair-desc">{{ fair.description }}</p>
             </div>
             <div class="fair-image">
-              <img :src="job.imageUrl" :alt="job.name"/>
+              <img :src="fair.imageUrl" :alt="fair.name"/>
             </div>
           </div>
         </el-carousel-item>
@@ -36,18 +36,18 @@
             class="history-card"
         >
           <div class="card-image">
-            <img :src="job.imageUrl" :alt="job.name"/>
+            <img :src="fair.imageUrl" :alt="fair.name"/>
           </div>
           <div class="card-content">
-            <h3 class="card-title">{{ job.name }}</h3>
+            <h3 class="card-title">{{ fair.name }}</h3>
             <p class="card-date">
               <i class="el-icon-date"></i>
-              {{ job.startTime }}~{{ job.endTime }}
+              {{ fair.startTime }}~{{ fair.endTime }}
             </p>
             <el-button
                 size="mini"
                 class="details-btn"
-                @click="viewFairDetails(job.id)"
+                @click="viewFairDetails(fair.id)"
             >
               查看详情
             </el-button>
@@ -69,6 +69,7 @@ const pastFairs = ref([]);
 const fetchFairs = async () => {
   try {
     const response = await getFairCards() // 假设后端API路径为 /api/fairs
+
     if (response.data.code === 200) {
       const fairs = response.data.data.records;
       // 将前三条记录作为轮播图数据

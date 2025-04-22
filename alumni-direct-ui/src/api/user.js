@@ -60,3 +60,37 @@ export function updateAvatar() {
         }
     )
 }
+
+// 修改用户信息
+export function update(formData) {
+    // 构建参数对象，只包含有值的参数
+    return request(
+        {
+            url: '/ad/user/update',
+            method: 'post',
+            data: formData
+        }
+    )
+}
+
+// 获取用户的意向信息
+export function getIntention() {
+    return request(
+        {
+            url: '/ad/user/intention/get',
+            method: 'get',
+        }
+    )
+}
+
+// 保存用户的意向信息
+export function saveIntention(formData) {
+    // 构建参数对象，只包含有值的参数
+    return request(
+        {
+            url: '/ad/user/intention/save',
+            method: 'post',
+            data: formData
+        }
+    )
+}

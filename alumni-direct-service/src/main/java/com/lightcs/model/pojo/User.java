@@ -1,6 +1,7 @@
 package com.lightcs.model.pojo;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.io.Serializable;
@@ -68,6 +69,21 @@ public class User implements Serializable {
      * 0:普通用户 1:校友用户
      */
     private Integer isAlumni;
+
+    /**
+     * 0:男; 1:女; 2未知
+     */
+    private Integer gender;
+    /**
+     * 生日
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date birth;
+    /**
+     * 自我介绍
+     */
+    private String introduction;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 

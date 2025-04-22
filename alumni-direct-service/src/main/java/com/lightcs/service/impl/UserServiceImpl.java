@@ -162,8 +162,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         int count = userMapper.updateById(User.builder()
                 .userId(currentUserId)
-                .userAvatar(userRequest.getUserAvatar())
-                .nickname(userRequest.getNickname()).build());
+                .nickname(userRequest.getNickname())
+                .birth(userRequest.getBirth())
+                .gender(userRequest.getGender())
+                .introduction(userRequest.getIntroduction())
+                .build()
+        );
         ThrowUtils.throwIf(count == 0, OPERATION_ERROR, "更新失败");
     }
 

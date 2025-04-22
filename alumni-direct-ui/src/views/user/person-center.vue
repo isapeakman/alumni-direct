@@ -36,28 +36,28 @@
                     <el-input v-model="formData.nickname" placeholder="请输入昵称"/>
                   </el-form-item>
                   <el-form-item label="账户" prop="account">
-                    <el-input v-model="formData.account" disabled placeholder="账户不可修改"/>
+                    <el-input v-model="formData.userAccount" disabled placeholder="账户不可修改"/>
                   </el-form-item>
                   <el-form-item label="生日" prop="birthday">
-                    <el-date-picker v-model="formData.birthday" type="date" placeholder="选择日期"/>
+                    <el-date-picker v-model="formData.birth" type="date" placeholder="选择日期"/>
                   </el-form-item>
                   <el-form-item label="性别" prop="gender">
                     <el-select v-model="formData.gender" placeholder="请选择性别">
-                      <el-option label="男" value="male"/>
-                      <el-option label="女" value="female"/>
-                      <el-option label="其他" value="other"/>
+                      <el-option label="男" value="0"/>
+                      <el-option label="女" value="1"/>
+                      <el-option label="未知" value="2"/>
                     </el-select>
                   </el-form-item>
                   <el-form-item label="自我介绍" prop="selfIntroduction">
                     <el-input
-                        v-model="formData.selfIntroduction"
+                        v-model="formData.introduction"
                         type="textarea"
                         :rows="4"
                         placeholder="请输入自我介绍"
                     />
                   </el-form-item>
                 </el-form>
-                <el-button type="primary" @click="saveJobInfo">保存个人信息</el-button>
+                <el-button type="primary" @click="saveBasicInfo">保存个人信息</el-button>
               </el-col>
 
               <!-- 右侧头像 -->
@@ -83,51 +83,40 @@
             <!-- 求职信息 -->
             <el-form ref="jobForm" :model="formData" label-width="120px">
               <h3>求职意愿</h3>
-              <!--              <el-form-item label="学历" prop="education">-->
-              <!--                <el-select v-model="formData.education" placeholder="请选择学历">-->
-              <!--                  <el-option label="高中及以下" value="high_school"/>-->
-              <!--                  <el-option label="大专" value="college"/>-->
-              <!--                  <el-option label="本科" value="bachelor"/>-->
-              <!--                  <el-option label="硕士" value="master"/>-->
-              <!--                  <el-option label="博士" value="phd"/>-->
-              <!--                </el-select>-->
-              <!--              </el-form-item>-->
-              <el-form-item label="职位类型" prop="jobType">
-                <el-radio-group v-model="formData.jobType">
+              <el-form-item label="职位类型" prop="type">
+                <el-radio-group v-model="formData.type">
                   <el-radio :label="0">全职</el-radio>
                   <el-radio :label="1">实习</el-radio>
                   <el-radio :label="2">兼职</el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item label="薪资范围" prop="salaryRange">
+              <el-form-item label="薪资范围(单位:K)" prop="salaryRange">
                 <el-input-number
                     v-model="formData.minSalary"
                     :min="0"
                     :max="100000"
                     placeholder="最低薪资"
-                    style="width: 48%"
+                    style="width: 38%"
                 />
                 <el-input-number
                     v-model="formData.maxSalary"
                     :min="0"
                     :max="100000"
                     placeholder="最高薪资"
-                    style="width: 48%; margin-left: 4%"
+                    style="width: 38%; margin-left: 4%"
                 />
               </el-form-item>
-              <el-form-item label="职位分类" prop="categories">
-                <el-select
-                    v-model="formData.categories"
-                    multiple
-                    placeholder="请选择职位分类"
-                >
-                  <el-option
-                      v-for="category in jobCategories"
-                      :key="category.id"
-                      :label="category.name"
-                      :value="category.id"
-                  />
-                </el-select>
+              <el-form-item label="职位分类" prop="categoryId">
+                <el-tree
+                    ref="treeRef"
+                    :data="jobCategories"
+                    show-checkbox
+                    node-key="id"
+                    :props="defaultProps"
+                    @check="handleCategoryCheck"
+                    :default-checked-keys="formData.categoryId"
+                    class="horizontal-tree"
+                />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" @click="saveJobInfo">保存求职信息</el-button>
@@ -138,37 +127,35 @@
       </el-main>
     </el-container>
   </div>
-
 </template>
 
 <script setup>
-import {ref, reactive, computed} from 'vue';
+import {ref, computed, onMounted} from 'vue';
 import {ElMessage} from 'element-plus';
 import {Plus} from '@element-plus/icons-vue';
 import {useRoute} from "vue-router";
 import {useSidebarStore} from '../../store/sidebar';
+import {getIntention, getUserInfo, saveIntention, update} from "@/api/user.js";
+import {getCategories} from "@/api/job.js";
 
 const avatarUrl = ref('http://localhost:8080/ad/static/defaultAvator.jpg'); // 初始头像
 const uploadUrl = 'localhost:8080/ad/user/update/avatar'; // 模拟上传地址
-const jobCategories = ref([ // 模拟职位分类数据
-  {id: 1, name: '算法'},
-  {id: 2, name: '销售'},
-  {id: 3, name: '设计类'},
-]);
+const jobCategories = ref([]); // 职位分类数据
 const sidebar = useSidebarStore();
-const formData = reactive({
+const formData = ref({
   nickname: '',
-  account: 'user@example.com',
-  password: '',
-  confirmPassword: '',
-  education: 'bachelor',
-  jobType: 0,
-  birthday: null, // 生日字段
-  gender: '',     // 性别字段
-  minSalary: 5000,
-  maxSalary: 10000,
-  categories: [1, 3],
+  userAccount: 'user@example.com',
+  birth: null, // 生日字段
+  gender: '2',     // 确保性别字段是字符串类型
+  userAvatar: '',
+  createTime: null,
+  introduction: '',
+  minSalary: null, // 添加 minSalary 属性
+  maxSalary: null, // 添加 maxSalary 属性
+  type: null,   // 添加 Type 属性
+  categoryId: [],  // 添加 categories 属性
 });
+const treeRef = ref(null);
 
 const rules = {
   nickname: [
@@ -196,23 +183,7 @@ const rules = {
     }
   ]
 };
-const menuData = reactive([
-  {
-    title: '用户管理',
-    index: '1',
-    id: 1,
-  },
-  {
-    title: '职位审批',
-    index: '2',
-    id: 2,
-  },
-  {
-    title: '消息管理',
-    index: '3',
-    id: 3,
-  }
-])
+
 const route = useRoute();
 const onRoutes = computed(() => {
   return route.path;
@@ -242,20 +213,95 @@ const handleAvatarSuccess = (response, uploadFile) => {
   }
 };
 
-// 保存方法
+// 保存用户基本信息
 const saveBasicInfo = async () => {
   try {
-    await basicForm.value.validate();
     // 模拟提交
+    const response = await update(formData.value);
+    if (response.data.code !== 200) {
+      ElMessage.error('保存失败：' + response.data.message);
+      return;
+    }
     ElMessage.success('基本信息已保存');
+    await fetchUserBasicInfo();
   } catch (error) {
     console.log('表单验证失败:', error);
   }
 };
 
-const saveJobInfo = () => {
-  ElMessage.success('求职信息已保存');
+// 获取求职意愿
+const fetchJobInfo = async () => {
+  const response = await getIntention();
+  if (response.data.code !== 200) {
+    ElMessage.error('获取求职意愿失败');
+    return;
+  }
+  const intention = response.data.data[0]; // 假设返回的是一个数组，取第一个元素
+  console.log('求职意愿:', intention);
+  formData.value = {
+    ...formData.value,
+    ...intention,
+    categoryId: intention.categoryId || [] // 确保 categoryId 是数组
+  };
 };
+
+// 保存求职意愿
+const saveJobInfo = async () => {
+  const response = await saveIntention(formData.value);
+  if (response.data.code !== 200) {
+    ElMessage.error('保存求职意愿失败');
+    return;
+  }
+  ElMessage.success('求职意愿已保存');
+  await fetchJobInfo();
+};
+
+// 获取用户基本信息
+const fetchUserBasicInfo = async () => {
+  const response = await getUserInfo();
+  if (response.data.code !== 200) {
+    ElMessage.error('获取用户信息失败');
+    return;
+  }
+  formData.value = {...formData.value, ...response.data.data};
+  // 确保 gender 是字符串类型
+  formData.value.gender = formData.value.gender.toString();
+  console.log('用户基本信息:', formData);
+};
+
+// 获取职位分类
+const fetchCategories = async () => {
+  const response = await getCategories();
+  // 格式化数据，确保每个节点包含 id 和 name 字段
+  jobCategories.value = response.data.data.map(category => ({
+    id: category.id,
+    categoryName: category.categoryName,
+    children: category.children || []
+  }));
+  console.log('职位分类数据:', jobCategories.value);
+};
+
+const defaultProps = {
+  children: 'children',
+  label: 'categoryName',
+};
+
+const handleCategoryCheck = (checkedNodes) => {
+  console.log('选中的节点:', checkedNodes);
+  const tree = treeRef.value.getCheckedNodes();
+  console.log('选中的节点:', tree);
+  if (Array.isArray(tree) && tree.length > 0) {
+    formData.value.categoryId = tree.map(node => node.id);
+  } else {
+    formData.value.categoryId = [];
+  }
+};
+
+onMounted(() => {
+  fetchUserBasicInfo();
+  fetchJobInfo();
+  fetchCategories();
+});
 </script>
 
 <style scoped lang="scss">
@@ -269,7 +315,6 @@ const saveJobInfo = () => {
     .user-avatar {
       text-align: center;
       margin-bottom: 20px;
-
 
       .avatar-uploader {
         width: 100px;
@@ -300,11 +345,6 @@ const saveJobInfo = () => {
 
 .sidebar {
   display: block;
-  /* 移除以下定位属性 */
-  // position: absolute;
-  // left: 0;
-  // top: 70px;
-  // bottom: 0;
   width: 200px; // 显式设置宽度
   overflow-y: auto;
 }
@@ -323,5 +363,27 @@ const saveJobInfo = () => {
 
 .sidebar-el-menu {
   min-height: 100%;
+}
+
+/* 水平树形结构样式 */
+.horizontal-tree {
+  /* 强制所有节点水平排列 */
+  .el-tree-node {
+    display: inline-flex !important;
+    margin-right: 15px;
+    vertical-align: top;
+  }
+
+  /* 子节点水平排列 + 换行 */
+  .el-tree-node__children {
+    display: inline-flex !important;
+    flex-wrap: wrap;
+    margin-left: 0 !important;
+  }
+
+  /* 调整复选框样式 */
+  .el-checkbox {
+    margin-right: 5px;
+  }
 }
 </style>

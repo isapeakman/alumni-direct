@@ -70,7 +70,7 @@ public class UserController {
     }
 
     @Operation(summary = "更新用户信息")
-    @PutMapping("/update")
+    @PostMapping("/update")
     public BaseResponse<String> update(@RequestBody UserRequest userRequest) {
         if (userRequest == null) {
             return ResultBuilder.fail("参数不能为空");
@@ -78,12 +78,16 @@ public class UserController {
         if (StringUtils.isBlank(userRequest.getNickname()) && StringUtils.isBlank(userRequest.getUserAvatar())) {
             return ResultBuilder.fail("昵称和头像不能为空");
         }
+        if (StringUtils.isNotBlank(userRequest.getNickname()) && userRequest.getNickname().length() > 20) {
+            return ResultBuilder.fail("昵称长度不能超过20");
+        }
+
         userService.update(userRequest);
         return ResultBuilder.success(UPDATE_SUCCESS);
     }
 
     @Operation(summary = "重置密码")
-    @PutMapping("/reset")
+    @PostMapping("/reset")
     public BaseResponse<String> resetPassword(String oldPassword, String newPassword) {
         if (StringUtils.isBlank(oldPassword) || StringUtils.isBlank(newPassword)) {
             return ResultBuilder.fail("密码不能为空");
@@ -96,7 +100,7 @@ public class UserController {
     }
 
     @Operation(summary = "修改账号")
-    @PutMapping("/modifyAccount")
+    @PostMapping("/modifyAccount")
     public BaseResponse<String> modifyAccount(String oldAccount, String newAccount, String captcha) {
         if (StringUtils.isBlank(oldAccount) || StringUtils.isBlank(newAccount)) {
             return ResultBuilder.fail("账号不能为空");
@@ -115,7 +119,7 @@ public class UserController {
     }
 
     @Operation(summary = "删除用户")
-    @DeleteMapping("/del")
+    @PostMapping("/del")
     public BaseResponse<String> delete() {
         userService.delete();
         return ResultBuilder.success(DELETE_SUCCESS);
