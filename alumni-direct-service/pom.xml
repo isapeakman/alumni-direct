@@ -35,6 +35,12 @@
             <artifactId>alumni-direct-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.4.3</version>
+        </dependency>
     </dependencies>
 
     <build>

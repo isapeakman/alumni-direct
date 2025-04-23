@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.lightcs.exception.BusinessException;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.mapper.UserMapper;
 import com.lightcs.model.dto.UserRequest;
@@ -17,7 +16,6 @@ import com.lightcs.utils.TokenUtil;
 import com.lightcs.utils.UserAgentUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import nl.basjes.shaded.org.springframework.util.ResourceUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,10 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
@@ -238,34 +233,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     @Transactional
-    public void updateAvatar(MultipartFile avatar) {
+    public void updateAvatar(String avatar) {
 
-        String savePath;
-        // 上传头像
-        try {
-            File path = new File(ResourceUtils.getURL("classpath:").getPath());
-            if (!path.exists()) {
-                path = new File("");
-            }
-            File upload = new File(path.getAbsolutePath(), "static/images/" + avatar.getOriginalFilename());
-            if (!upload.exists()) {
-                upload.mkdirs();
-                System.out.println(upload.getAbsolutePath());
-            }
-
-            avatar.transferTo(upload);
-
-            // 5. 构造存储路径（前端访问路径）
-            savePath = "localhost:8080/ad/static/image/" + avatar.getOriginalFilename();
-
-        } catch (IOException e) {
-            log.error("{}", e.getMessage());
-            throw new BusinessException("上传头像失败");
-        }
+//        String savePath;
+//        // 上传头像
+//        try {
+//            File path = new File(ResourceUtils.getURL("classpath:").getPath());
+//            if (!path.exists()) {
+//                path = new File("");
+//            }
+//            File upload = new File(path.getAbsolutePath(), "static/images/" + avatar.getOriginalFilename());
+//            if (!upload.exists()) {
+//                upload.mkdirs();
+//                System.out.println(upload.getAbsolutePath());
+//            }
+//
+//            avatar.transferTo(upload);
+//
+//            // 5. 构造存储路径（前端访问路径）
+//            savePath = "localhost:8080/ad/static/image/" + avatar.getOriginalFilename();
+//
+//        } catch (IOException e) {
+//            log.error("{}", e.getMessage());
+//            throw new BusinessException("上传头像失败");
+//        }
         // 获取当前用户
         Integer currentUserId = CurrentUserUtil.getCurrentUserId();
         // 更新头像
-        int res = userMapper.updateById(User.builder().userId(currentUserId).userAvatar(savePath).build());
+        int res = userMapper.updateById(User.builder().userId(currentUserId).userAvatar(avatar).build());
         ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "更新失败");
     }
 

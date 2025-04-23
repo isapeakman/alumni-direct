@@ -65,10 +65,10 @@
                 <div class="user-avatar">
                   <el-upload
                       class="avatar-uploader"
-                      :action="uploadUrl"
                       :show-file-list="false"
                       :on-success="handleAvatarSuccess"
                       :before-upload="beforeAvatarUpload"
+                      :http-request="customUpload"
                   >
                     <img v-if="avatarUrl" :src="avatarUrl" class="avatar"/>
                     <el-icon v-else class="avatar-placeholder">
@@ -135,11 +135,12 @@ import {ElMessage} from 'element-plus';
 import {Plus} from '@element-plus/icons-vue';
 import {useRoute} from "vue-router";
 import {useSidebarStore} from '../../store/sidebar';
-import {getIntention, getUserInfo, saveIntention, update} from "@/api/user.js";
-import {getCategories} from "@/api/job.js";
+import {getIntention, getUserInfo, saveIntention, update, updateAvatar} from "@/api/user.js";
+import {uploadFile} from "@/api/file.js";
+import {getCategories} from "@/api/job.js"; // 引入文件上传方法
 
 const avatarUrl = ref('http://localhost:8080/ad/static/defaultAvator.jpg'); // 初始头像
-const uploadUrl = 'localhost:8080/ad/user/update/avatar'; // 模拟上传地址
+const uploadUrl = 'localhost:8080/ad/file/upload'; // 模拟上传地址
 const jobCategories = ref([]); // 职位分类数据
 const sidebar = useSidebarStore();
 const formData = ref({
@@ -206,10 +207,43 @@ const beforeAvatarUpload = (rawFile) => {
 
 const handleAvatarSuccess = (response, uploadFile) => {
   if (response.code === 200) {
-    avatarUrl.value = response.data.url;
+    avatarUrl.value = response.data;
+    formData.value.userAvatar = response.data; // 将上传地址存储到 formData
     ElMessage.success('头像上传成功！');
   } else {
     ElMessage.error('上传失败：' + response.message);
+  }
+};
+
+// 自定义上传逻辑
+const customUpload = async (options) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', options.file); // 将文件添加到 FormData 中
+    const response = await uploadFile(formData); // 调用文件上传接口
+    if (response.data.code === 200) {
+      options.onSuccess(response.data); // 上传成功回调
+    } else {
+      options.onError(response.data.message); // 上传失败回调
+    }
+  } catch (error) {
+    options.onError('上传失败，请稍后重试'); // 捕获异常并触发失败回调
+  }
+};
+
+// 保存头像
+const saveAvatar = async () => {
+  try {
+    console.log('保存头像:', formData.value.userAvatar);
+    const response = await updateAvatar({userAvatar: formData.value.userAvatar});
+    if (response.data.code === 200) {
+      ElMessage.success('头像保存成功');
+      await fetchUserBasicInfo(); // 刷新用户信息
+    } else {
+      ElMessage.error('保存失败：' + response.data.message);
+    }
+  } catch (error) {
+    ElMessage.error('保存失败，请稍后重试');
   }
 };
 
@@ -266,6 +300,8 @@ const fetchUserBasicInfo = async () => {
   formData.value = {...formData.value, ...response.data.data};
   // 确保 gender 是字符串类型
   formData.value.gender = formData.value.gender.toString();
+  // 头像地址
+  avatarUrl.value = response.data.data.userAvatar;
   console.log('用户基本信息:', formData);
 };
 

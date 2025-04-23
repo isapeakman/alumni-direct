@@ -7,3 +7,12 @@ export function uploadFile(formData) {
         data: formData
     })
 }
+
+export function downloadFile(fileName) {
+    return request({
+        url: '/ad/file/download',
+        method: 'get',
+        params: {fileName},
+        responseType: 'blob'
+    })
+}

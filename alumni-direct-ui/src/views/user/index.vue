@@ -125,8 +125,11 @@ const checkLoginStatus = () => {
 
 
 // 页面加载时检查是否有保存的用户信息
-onMounted(() => {
+onMounted(async () => {
   checkLoginStatus()
+  // 保证右上角头像正常刷新
+  const response = await getUserInfo()
+  avatar.value = response.data.data.userAvatar;
 })
 
 // 登出处理方法
@@ -164,6 +167,7 @@ onMounted(() => {
 
 
 import router from "@/router/index.js";
+import {getUserInfo} from "@/api/user.js";
 
 // 跳转到招聘者页面
 const navigateToRecruitment = () => {

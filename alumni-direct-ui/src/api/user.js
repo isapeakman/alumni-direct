@@ -46,17 +46,12 @@ export function getUserInfo(userId) {
     )
 }
 // 修改头像
-export function updateAvatar() {
-    // 构建参数对象，只包含有值的参数
-    const params = {}
-    if (username) params.username = username
-    params.current = currentPage
-    params.pageSize = pageSize
+export function updateAvatar(userAvatar) {
     return request(
         {
-            url: '/ad/user/list',
-            method: 'get',
-            params: params
+            url: '/ad/user/update/avatar',
+            method: 'post',
+            params: userAvatar
         }
     )
 }
