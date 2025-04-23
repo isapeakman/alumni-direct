@@ -14,6 +14,7 @@ import com.lightcs.model.vo.JobApplyRecordVO;
  */
 public interface JobApplyRecordService extends IService<JobApplyRecord> {
 
+    @Deprecated
     Page<JobApplyRecordCardVO> getJobApplyRecordCards(JobApplyRecordCardRequest jobId);
 
     /**
@@ -23,8 +24,18 @@ public interface JobApplyRecordService extends IService<JobApplyRecord> {
      * @param status   状态
      * @param note     备注
      */
+    @Deprecated
     void judgeJobApplyRecord(Integer recordId, Integer status, String note);
 
 
-    Page<JobApplyRecordVO> getJobApplyRecords(Integer current, Integer pageSize, Integer status);
+    void saveJobApplyRecord(JobApplyRecord jobApplyRecord);
+
+    /**
+     * 获取当前用户的职位申请记录
+     *
+     * @param current  当前页码
+     * @param pageSize 每页大小
+     * @return 职位申请记录列表
+     */
+    Page<JobApplyRecordVO> getJobApplyRecords(Integer current, Integer pageSize);
 }

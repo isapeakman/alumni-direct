@@ -43,22 +43,25 @@
     </select>
 
     <select id="getJobApplyRecords" resultType="com.lightcs.model.vo.JobApplyRecordVO">
-        select id,
+        select id               as job_id,
                title,
                job_type,
                location,
-               CAST(SUBSTRING_INDEX(salary_range, '-', 1) AS UNSIGNED)  AS min_salary,
-               CAST(SUBSTRING_INDEX(salary_range, '-', -1) AS UNSIGNED) AS max_salary,
+               job_desc,
+               min_salary,
+               max_salary,
                company_name,
                recruiter_name,
-               jar.status,
-               note,
+               user.user_avatar as recruiter_avatar,
+               job.status,
+               publish_time,
                apply_time,
                resume
         from job
-                 RIGHT JOIN (select job_id, status, note, apply_time, resume
+                 RIGHT JOIN (select job_id, apply_time, resume
                              from job_apply_record
                              where applicant_id = #{applicantId}) AS jar on jar.job_id = job.id
-
+                 LEFT JOIN user on job.create_id = user.user_id
+        order by apply_time desc
     </select>
 </mapper>

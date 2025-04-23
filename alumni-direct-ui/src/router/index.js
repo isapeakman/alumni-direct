@@ -26,6 +26,11 @@ const routes = [
                 component: () => import('@/views/user/person-center.vue'),
             },
             {
+                path: 'apply',
+                name: 'Apply',
+                component: () => import('@/views/user/job-apply-record.vue'),
+            },
+            {
                 path: 'fair',
                 name: 'fair',
                 component: () => import('../views/user/job-fair.vue'),

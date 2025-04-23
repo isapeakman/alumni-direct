@@ -109,3 +109,15 @@ export function cancel(jobId) {
         }
     })
 }
+
+// 获取当前用户职位申请记录
+export function getJobApplyRecord(currentPage, pageSize) {
+    return request({
+        url: '/ad/job/apply/get',
+        method: 'get',
+        params: {
+            current: currentPage,
+            pageSize: pageSize
+        }
+    })
+}

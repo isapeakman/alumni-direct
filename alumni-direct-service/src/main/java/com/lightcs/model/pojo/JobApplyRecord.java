@@ -42,14 +42,6 @@ public class JobApplyRecord implements Serializable {
      * 简历附件
      */
     private String resume;
-    /**
-     * 描述信息
-     */
-    private String note;
-    /**
-     * 申请状态 0 已申请 1 已接收 2 已拒绝
-     */
-    private Integer status;
 
     /**
      * 申请时间

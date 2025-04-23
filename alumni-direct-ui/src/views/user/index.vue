@@ -36,7 +36,7 @@
                     <el-dropdown-menu>
                       <el-dropdown-item @click="router.push('/personalCenter')">个人中心</el-dropdown-item>
                       <!--                      <el-dropdown-item>我的简历</el-dropdown-item>-->
-                      <el-dropdown-item>投递记录</el-dropdown-item>
+                      <el-dropdown-item @click="router.push('/apply')">投递记录</el-dropdown-item>
                       <!--                      <el-dropdown-item>收藏职位</el-dropdown-item>-->
                       <el-dropdown-item divided @click="navigateToRecruitment">招聘/内推</el-dropdown-item>
                       <el-dropdown-item v-if="role===0" divided @click="navigateToAdmin">管理员登录</el-dropdown-item>

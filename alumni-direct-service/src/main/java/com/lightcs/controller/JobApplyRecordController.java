@@ -22,7 +22,7 @@ import static com.lightcs.constants.Common.UPDATE_SUCCESS;
 
 @Tag(name = "职位申请记录")
 @RestController
-@RequestMapping("/jobApplyRecord")
+@RequestMapping("/job/apply")
 public class JobApplyRecordController {
 
     @Autowired
@@ -30,6 +30,7 @@ public class JobApplyRecordController {
 
 
     //<editor-fold desc="招聘者">
+    @Deprecated
     @Operation(summary = "获取用户申请卡片")
     @GetMapping("/cards")
     public BaseResponse<Map<String, Object>> getJobApplyRecordCards(JobApplyRecordCardRequest cardRequest) {
@@ -45,6 +46,7 @@ public class JobApplyRecordController {
      * @param note     备注
      * @return
      */
+    @Deprecated
     @Operation(summary = "接收或拒绝申请卡片")
     @GetMapping("/judge")
     public BaseResponse<String> judgeJobApplyRecord(Integer recordId, Integer status, String note) {
@@ -54,9 +56,9 @@ public class JobApplyRecordController {
 
     //</editor-fold>
     @Operation(summary = "获取当前用户职位申请记录")
-    @GetMapping("/records")
-    public BaseResponse<Map<String, Object>> getJobApplyRecords(Integer status, Integer current, Integer pageSize) {
-        Page<JobApplyRecordVO> jobApplyRecords = jobApplyRecordService.getJobApplyRecords(status, current, pageSize);
+    @GetMapping("/get")
+    public BaseResponse<Map<String, Object>> getJobApplyRecords(Integer current, Integer pageSize) {
+        Page<JobApplyRecordVO> jobApplyRecords = jobApplyRecordService.getJobApplyRecords(current, pageSize);
         return PaginationBuilder.build(jobApplyRecords);
     }
 

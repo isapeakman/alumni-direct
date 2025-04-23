@@ -23,6 +23,13 @@ public class CurrentUserUtil {
     public static UserVO getCurrentUserVO() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication.getPrincipal() instanceof String) {
+                // 说明是匿名用户
+                if ("anonymousUser".equals(authentication.getPrincipal())) {
+                    throw new BusinessException(NOT_LOGIN_ERROR);
+                }
+                return null;
+            }
             return (UserVO) authentication.getPrincipal();
         }
         throw new BusinessException(NOT_LOGIN_ERROR);

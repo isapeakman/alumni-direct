@@ -22,11 +22,10 @@ public interface JobApplyRecordMapper extends BaseMapper<JobApplyRecord> {
      * 获取当前用户的申请记录
      *
      * @param page
-     * @param status
      * @param applicantId
      * @return
      */
-    List<JobApplyRecordVO> getJobApplyRecords(Page<JobApplyRecordVO> page, Integer status, Integer applicantId);
+    List<JobApplyRecordVO> getJobApplyRecords(Page<JobApplyRecordVO> page, Integer applicantId);
 }
 
 

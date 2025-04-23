@@ -14,6 +14,7 @@ import com.lightcs.utils.CurrentUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 import static com.lightcs.enums.ErrorCode.OPERATION_ERROR;
@@ -49,16 +50,47 @@ public class JobApplyRecordServiceImpl extends ServiceImpl<JobApplyRecordMapper,
         Long isExist = jobApplyRecordMapper.selectCount(queryWrapper);
         ThrowUtils.throwIf(isExist == 0, PARAMS_ERROR, "记录不存在");
         //构建对象
-        JobApplyRecord jobApplyRecord = JobApplyRecord.builder().id(recordId).status(status).note(note).build();
-        int res = jobApplyRecordMapper.updateById(jobApplyRecord);
-        ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "修改记录失败");
+//        JobApplyRecord jobApplyRecord = JobApplyRecord.builder().id(recordId).status(status).note(note).build();
+//        int res = jobApplyRecordMapper.updateById(jobApplyRecord);
+//        ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "修改记录失败");
+    }
+
+    /**
+     * 保存职位申请记录
+     *
+     * @param jobApplyRecord
+     */
+    @Override
+    public void saveJobApplyRecord(JobApplyRecord jobApplyRecord) {
+        Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+        // 申请记录已存在
+        QueryWrapper<JobApplyRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("job_id", jobApplyRecord.getJobId());
+        queryWrapper.eq("user_id", currentUserId);
+        JobApplyRecord record = jobApplyRecordMapper.selectOne(queryWrapper);
+        // 如果存在则只修改申请时间和简历附件，相当于重复申请
+        if (record != null) {
+            record.setApplyTime(new Date());
+            record.setResume(jobApplyRecord.getResume());
+            int res = jobApplyRecordMapper.updateById(record);
+            ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "申请失败");
+            return;
+        }
+        // 不存在则插入
+
+        // 构建对象
+        jobApplyRecord.setApplyTime(new Date());
+        jobApplyRecord.setApplicantId(currentUserId);
+        int res = jobApplyRecordMapper.insert(jobApplyRecord);
+        ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "申请失败");
     }
 
     @Override
-    public Page<JobApplyRecordVO> getJobApplyRecords(Integer current, Integer pageSize, Integer status) {
+    public Page<JobApplyRecordVO> getJobApplyRecords(Integer current, Integer pageSize) {
+        // 获取当前用户的ID
         Integer currentUserId = CurrentUserUtil.getCurrentUserId();
         Page<JobApplyRecordVO> page = new Page<>(current, pageSize);
-        List<JobApplyRecordVO> records = jobApplyRecordMapper.getJobApplyRecords(page, status, currentUserId);
+        List<JobApplyRecordVO> records = jobApplyRecordMapper.getJobApplyRecords(page, currentUserId);
         page.setRecords(records);
         return page;
     }
