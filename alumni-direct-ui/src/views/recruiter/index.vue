@@ -58,7 +58,7 @@
                 </el-icon>
                 <span>职位管理</span>
               </el-menu-item>
-              <el-menu-item index="/chat">
+              <el-menu-item index="/recruitment/chat">
                 <el-icon>
                   <document/>
                 </el-icon>

@@ -71,6 +71,7 @@ public class UserVO implements Serializable {
      * 自我介绍
      */
     private String introduction;
+    private Date lastLoginTime;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

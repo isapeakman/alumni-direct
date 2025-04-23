@@ -1,7 +1,6 @@
 package com.lightcs.model.dto;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * @Author: peak-like
@@ -9,9 +8,11 @@ import lombok.EqualsAndHashCode;
  * @Description:
  * @Version: 1.0
  */
-@EqualsAndHashCode(callSuper = true)
+
 @Data
-public class JobCardRequest extends BaseRequest {
+public class JobCardRequest {
+    private Integer current = 1;
+    private Integer pageSize = 8;
     /**
      * 职位名称
      */

@@ -3,6 +3,7 @@ package com.lightcs.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lightcs.exception.ThrowUtils;
+import com.lightcs.model.dto.UserRegisterRequest;
 import com.lightcs.model.dto.UserRequest;
 import com.lightcs.model.pojo.User;
 import com.lightcs.model.vo.UserVO;
@@ -10,6 +11,7 @@ import com.lightcs.result.BaseResponse;
 import com.lightcs.result.PaginationBuilder;
 import com.lightcs.result.ResultBuilder;
 import com.lightcs.service.UserService;
+import com.lightcs.service.VerifyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,7 +21,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,11 +36,16 @@ import static com.lightcs.enums.ErrorCode.PARAMS_ERROR;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private VerifyService verifyService;
 
     //region 用户操作
     @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public BaseResponse<UserVO> login(@RequestParam(value = "email") String username, String password, HttpServletResponse response) {
+    public BaseResponse<UserVO> login(@RequestBody UserRegisterRequest userRegisterRequest, HttpServletResponse response) {
+        ThrowUtils.throwIf(userRegisterRequest == null, PARAMS_ERROR, "参数不能为空");
+        String username = userRegisterRequest.getEmail();
+        String password = userRegisterRequest.getPassword();
         ThrowUtils.throwIf(StringUtils.isBlank(username) || StringUtils.isBlank(password), PARAMS_ERROR, "用户名或密码不能为空");
         UserVO userVO = userService.userLogin(username, password, response);
         return ResultBuilder.success(userVO);
@@ -47,10 +53,16 @@ public class UserController {
 
     @Operation(summary = "用户注册")
     @PostMapping("/register")
-    public BaseResponse<UserVO> register(@RequestParam(value = "email") String username, String password, String captcha) {
+    public BaseResponse<UserVO> register(@RequestBody UserRegisterRequest userRegisterRequest) {
+        ThrowUtils.throwIf(userRegisterRequest == null, PARAMS_ERROR, "参数不能为空");
+        String username = userRegisterRequest.getEmail();
+        String password = userRegisterRequest.getPassword();
+        String captcha = userRegisterRequest.getCaptcha();
+        ThrowUtils.throwIf(StringUtils.isBlank(username) || StringUtils.isBlank(password), PARAMS_ERROR, "用户名或密码不能为空");
         ThrowUtils.throwIf(StringUtils.isBlank(captcha), PARAMS_ERROR, "验证码不能为空");
-        // todo 验证码校验
-
+        //  验证码校验
+        ThrowUtils.throwIf(!verifyService.doVerify(username, captcha), PARAMS_ERROR, "验证码错误");
+        // 注册
         UserVO userVO = userService.userRegister(username, password);
         return ResultBuilder.success(userVO);
     }
@@ -156,18 +168,31 @@ public class UserController {
         }
         Page<User> page = new Page<>(current, pageSize);
         List<User> users = userService.list(page, queryWrapper);
-        List<UserVO> userVOS = new ArrayList<>();
-        users.forEach(user -> {
-            UserVO userVO = new UserVO();
-            userVO.setUserId(user.getUserId());
-            userVO.setUserAccount(user.getUserAccount());
-            userVO.setNickname(user.getNickname());
-            userVO.setUserAvatar(user.getUserAvatar());
-            userVO.setCreateTime(user.getCreateTime());
-            userVO.setRole(user.getRole());
-            userVOS.add(userVO);
-        });
-
-        return PaginationBuilder.build(page, userVOS);
+//        List<UserVO> userVOS = new ArrayList<>();
+//        users.forEach(user -> {
+//            UserVO userVO = new UserVO();
+//            userVO.setUserId(user.getUserId());
+//            userVO.setUserAccount(user.getUserAccount());
+//            userVO.setNickname(user.getNickname());
+//            userVO.setUserAvatar(user.getUserAvatar());
+//            userVO.setCreateTime(user.getCreateTime());
+//            userVO.setRole(user.getRole());
+//            userVOS.add(userVO);
+//        });
+        // 对于管理员 直接返回 用户全部信息
+        page.setRecords(users);
+        return PaginationBuilder.build(page);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "禁用用户")
+    @PostMapping("/disable")
+    public BaseResponse<String> disable(Integer userId, Integer status) {
+        if (userId == null) {
+            return ResultBuilder.fail("用户id不能为空");
+        }
+        userService.disableUser(userId, status);
+        return ResultBuilder.success("禁用成功");
+    }
+
 }

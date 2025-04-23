@@ -2,8 +2,10 @@ package com.lightcs.controller;
 
 import com.lightcs.result.BaseResponse;
 import com.lightcs.result.ResultBuilder;
+import com.lightcs.service.VerifyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,15 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/captcha")
 public class CaptchaController {
-    /**
-     * todo 注册和修改邮箱时生成并发送验证码到新邮箱
-     *
-     * @return
-     */
+    @Autowired
+    private VerifyService verifyService;
+
     @Operation(summary = "发送邮箱验证码")
     @GetMapping("/email")
-    public BaseResponse<String> generateCaptcha() {
-        // todo 生成验证码
-        return ResultBuilder.success("1234");
+    public BaseResponse<String> generateCaptcha(String email) {
+        verifyService.sendVerifyCode(email);
+        return ResultBuilder.success("验证码已发送，请注意查收");
     }
 }

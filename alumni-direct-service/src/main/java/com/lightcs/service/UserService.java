@@ -25,4 +25,6 @@ public interface UserService extends IService<User> {
     void delete();
 
     void updateAvatar(MultipartFile avatar);
+
+    void disableUser(Integer userId, Integer status);
 }

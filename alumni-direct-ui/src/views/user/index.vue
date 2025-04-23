@@ -20,12 +20,11 @@
             </div>
             <div class="user-actions">
               <template v-if="!isLoggedIn">
-                <el-button type="primary" @click="showLogin">登录</el-button>
-                <el-button @click="handleRegister">注册</el-button>
+                <el-button type="primary" @click="showLogin(false)">登录</el-button>
+                <el-button @click="showLogin(true)">注册</el-button>
               </template>
               <template v-else>
-                <el-button type="primary" @click="showLogin">通知</el-button>
-                <el-button type="primary" @click="router.push('/wsTest')">消息</el-button>
+                <el-button type="primary" @click="router.push('/chat')">消息</el-button>
 
                 <el-dropdown>
               <span class="user-profile">
@@ -60,19 +59,21 @@
   <!-- 添加登录弹窗组件 -->
   <LoginDialog
       v-model:visible="loginDialogVisible"
+      :is-login="isLogin"
   />
-
-
 </template>
 
 <script setup>
 import {ref, onMounted, computed} from 'vue'
 import LoginDialog from '@/components/LoginDialog.vue'
+import RegisterDialog from '@/components/RegisterDialog.vue' // 确保正确导入 RegisterDialog 组件
 import request from '@/utils/request.js'
 import {ElMessage} from 'element-plus'
 
 // 控制登录框显示
 const loginDialogVisible = ref(false)
+const RegisterDialogVisible = ref(false) // 确保初始化为 false
+
 // 用户相关状态
 const isLoggedIn = ref(false)
 const userName = ref('')
@@ -80,11 +81,21 @@ const userInfo = ref(null)
 const avatar = ref('')
 const role = ref(null)
 
+// 控制登录/注册模式
+const isLogin = ref(true)
 
 // 显示登录框的方法
-const showLogin = () => {
+const showLogin = (isRegister = false) => {
   loginDialogVisible.value = true
+  isLogin.value = !isRegister
 }
+
+// 显示注册框的方法
+const showRegister = () => {
+  RegisterDialogVisible.value = true // 确保正确设置为 true
+  console.log(RegisterDialogVisible.value)
+}
+
 // 监听 localStorage 变化
 window.addEventListener('storage', (e) => {
   if (e.key === 'token' || e.key === 'userInfo') {

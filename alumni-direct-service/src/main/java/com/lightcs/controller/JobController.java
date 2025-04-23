@@ -101,9 +101,12 @@ public class JobController {
             Integer currentUserId = CurrentUserUtil.getCurrentUserId();
         } catch (BusinessException e) {
             log.info("未登录");
-            //只让查询 第一页的数据
-            jobCardRequest.setCurrent(1);
-            jobCardRequest.setPageSize(8);
+            Integer current = jobCardRequest.getCurrent();
+            Integer pageSize = jobCardRequest.getPageSize();
+            // 如果没有登录，则无法查询其他页的数据
+            if (current != 1 || pageSize != 8) {
+                return PaginationBuilder.build(new Page<>());
+            }
         }
         Page<JobCardVO> data = jobService.selectCards(jobCardRequest);
         return PaginationBuilder.build(data);

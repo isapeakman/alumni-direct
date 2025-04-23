@@ -61,13 +61,22 @@
     </el-form-item>
 
     <el-form-item v-if="!isLogin" label="验证码" prop="smsCode">
-      <el-input
-          v-model="form.smsCode"
-          type="input"
-          placeholder="请输入验证码"
-          clearable
-      >
-      </el-input>
+      <div class="verify-code">
+        <el-input
+            v-model="form.smsCode"
+            type="input"
+            placeholder="请输入验证码"
+            clearable
+        >
+        </el-input>
+        <el-button
+            type="primary"
+            :disabled="countdown > 0"
+            @click="handleSendCode"
+        >
+          {{ countdown > 0 ? `${countdown}秒后重新发送` : '发送验证码' }}
+        </el-button>
+      </div>
     </el-form-item>
 
 
@@ -88,13 +97,18 @@
 </template>
 
 <script setup>
-import {ref, reactive} from 'vue'
-import {Iphone, Message, Lock} from '@element-plus/icons-vue'
-import {ElMessage} from 'element-plus'
-import {login, register} from '@/api/user'
+import {ref, reactive, watch} from 'vue'
+import {Lock, Message} from "@element-plus/icons-vue";
+import {sendCaptcha} from "@/api/captcha.js";
+import {ElMessage} from "element-plus";
+import {login, registerUser} from "@/api/user.js";
 
 const props = defineProps({
   visible: {
+    type: Boolean,
+    required: true
+  },
+  isLogin: { // 接收父组件传递的 isLogin 值
     type: Boolean,
     required: true
   }
@@ -102,7 +116,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'success'])
 
-const isLogin = ref(true)
+// 初始化 isLogin 状态为 props.isLogin
+const isLogin = ref(props.isLogin)
+
+// 监听 props.isLogin 变化，确保 isLogin 始终与父组件同步
+watch(() => props.isLogin, (newVal) => {
+  isLogin.value = newVal
+})
+
 const countdown = ref(0)
 const formRef = ref(null)
 
@@ -132,8 +153,13 @@ const rules = {
 // 发送验证码
 const handleSendCode = async () => {
   try {
-    await formRef.value.validateField('phone')
+    await formRef.value.validateField('email')
     // TODO: 调用发送验证码接口
+    const res = await sendCaptcha({email: form.email})
+    if (res.data.code !== 200) {
+      ElMessage.error(res.data.message)
+      return
+    }
     countdown.value = 60
     const timer = setInterval(() => {
       countdown.value--
@@ -141,7 +167,7 @@ const handleSendCode = async () => {
         clearInterval(timer)
       }
     }, 1000)
-    ElMessage.success('验证码已发送')
+    ElMessage.success(res.data.data || '验证码已发送')
   } catch (error) {
     // 验证失败
   }
@@ -172,7 +198,7 @@ const handleSubmit = async () => {
       data.captcha = form.smsCode
     }
     console.log('提交数据:', data)
-    isLogin.value ? handleLogin(data) : handleRegister(data)
+    isLogin.value ? await handleLogin(data) : await handleRegister(data)
 
   } catch (error) {
     // 表单验证失败
@@ -200,7 +226,7 @@ const handleLogin = async (data) => {
 
 // 处理注册
 const handleRegister = async (data) => {
-  const res = await register(data)
+  const res = await registerUser(data)
   console.log('注册结果:', res)
   if (res.data.code === 200) {
     ElMessage.success('注册成功')

@@ -30,11 +30,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.lightcs.constants.RedisConstant.TOKEN_PREFIX;
-import static com.lightcs.constants.UserConstant.DEFAULT_NICKNAME_PREFIX;
-import static com.lightcs.constants.UserConstant.DEFAULT_USER_AVATAR;
+import static com.lightcs.constants.UserConstant.*;
 import static com.lightcs.enums.ErrorCode.*;
 
 @Service
@@ -90,6 +91,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.eq("user_account", userAccount);
         queryWrapper.eq("is_delete", 0);
         User user = userMapper.selectOne(queryWrapper);
+        ThrowUtils.throwIf(user == null, NOT_FOUND_ERROR, "用户不存在");
+
+        // 校验是否被禁用，禁用无法登录
+        ThrowUtils.throwIf(checkUserIsBanned(user), NOT_FOUND_ERROR, "用户已被禁用");
 
         // 生成 token
         String token = TokenUtil.generateToken(24);
@@ -108,6 +113,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 返回用户信息 以及 token
 //        response.setHeader("Authorization", token);
+        // 更新用户上次的登录时间
+        userMapper.updateById(User.builder()
+                .userId(user.getUserId())
+                .lastLoginTime(new Date())
+                .build());
+
         userVO.setToken(token);
         return userVO;
     }
@@ -258,6 +269,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "更新失败");
     }
 
+    @Override
+    public void disableUser(Integer userId, Integer status) {
+        // 禁用用户是否存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId);
+        User user = userMapper.selectOne(queryWrapper);
+        ThrowUtils.throwIf(user == null, NOT_FOUND_ERROR, "用户不存在");
+        // 设置用户禁用
+        int res = userMapper.updateById(User.builder().userId(userId).status(status).build());
+        ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "操作失败");
+        //清空禁用用户 会话缓存
+        removeUserSession(userId);
+    }
+
     /**
      * 删除所有设备的会话
      *
@@ -273,5 +298,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
     }
 
+    private boolean checkUserIsBanned(User user) {
+        return Objects.equals(user.getStatus(), BANNED);
+    }
 
 }

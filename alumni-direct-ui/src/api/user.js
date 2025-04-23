@@ -5,17 +5,17 @@ export function login(data) {
         {
             url: '/ad/user/login',
             method: 'post',
-            params: data
+            data: data
         }
     )
 }
 
-export function register(data) {
+export function registerUser(data) {
     return request(
         {
             url: '/ad/user/register',
             method: 'post',
-            params: data
+            data: data
         }
     )
 }
@@ -91,6 +91,20 @@ export function saveIntention(formData) {
             url: '/ad/user/intention/save',
             method: 'post',
             data: formData
+        }
+    )
+}
+
+export function disableUser(userId, status) {
+    // 构建参数对象，只包含有值的参数
+    return request(
+        {
+            url: '/ad/user/disable',
+            method: 'post',
+            params: {
+                userId: userId,
+                status: status
+            }
         }
     )
 }

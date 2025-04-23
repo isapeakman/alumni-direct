@@ -22,7 +22,8 @@
       <el-table-column prop="createTime" label="创建时间" width="180"></el-table-column>
       <el-table-column label="操作" width="180">
         <template #default="{ row }">
-          <el-button type="danger" @click="banUser(row)">禁用</el-button>
+          <el-button v-if="row.status===0" type="danger" @click="banUser(row,1)">禁用</el-button>
+          <el-button v-else type="success" @click="banUser(row,0)">启用</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -41,7 +42,7 @@
 import {ref, reactive, computed, onMounted} from 'vue';
 import {ElMessage} from 'element-plus';
 
-import {fetchUserData} from '../../api/user.js';
+import {disableUser, fetchUserData} from '../../api/user.js';
 
 const users = ref([])
 const searchQuery = ref(null)
@@ -86,8 +87,16 @@ const editUser = (user) => {
   // 编辑用户逻辑
 }
 
-const banUser = (user) => {
+const banUser = async (user, status) => {
+  console.log('禁用用户:', user)
   // 禁用用户逻辑
+  const response = await disableUser(user.userId, status);
+  if (response.data.code === 200) {
+    ElMessage.success('禁用成功')
+    fetchUsers() // 刷新用户列表
+  } else {
+    ElMessage.error(response.data.message)
+  }
 }
 
 

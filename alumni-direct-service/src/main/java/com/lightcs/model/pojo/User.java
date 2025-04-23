@@ -2,7 +2,10 @@ package com.lightcs.model.pojo;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -51,8 +54,23 @@ public class User implements Serializable {
     private Integer role;
 
     /**
+     * 0:男; 1:女; 2未知
+     */
+    private Integer gender;
+    /**
+     * 生日
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date birth;
+    /**
+     * 自我介绍
+     */
+    private String introduction;
+
+    /**
      *
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
     /**
@@ -66,23 +84,18 @@ public class User implements Serializable {
     @TableLogic(value = "0", delval = "1")//逻辑删除, 0未删除 1已删除
     private Integer isDelete;
     /**
+     * 上次登录时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date lastLoginTime;
+    /**
      * 0:普通用户 1:校友用户
      */
     private Integer isAlumni;
-
     /**
-     * 0:男; 1:女; 2未知
+     * 0 正常 1 禁用
      */
-    private Integer gender;
-    /**
-     * 生日
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date birth;
-    /**
-     * 自我介绍
-     */
-    private String introduction;
+    private Integer status;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

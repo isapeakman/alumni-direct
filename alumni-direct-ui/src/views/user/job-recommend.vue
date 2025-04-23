@@ -61,34 +61,45 @@ const total = ref(0)
 const selectedJob = ref(null)
 let isFirstLoad = true // 新增变量用于判断是否是第一次加载
 const selectedCardId = ref(null); // 记录选中的职位卡片id
+const isAuthenticated = ref(false); // 用户是否登录状态
+// 监听登录状态变化
+
+
 // 加载更多数据
 const loadMore = async () => {
-  if (loading.value || noMore.value) return
+  if (loading.value || noMore.value) return;
 
-  loading.value = true
+  loading.value = true;
   try {
-    const response = await getJobCard(currentPage.value, pageSize.value)
+    const response = await getJobCard(currentPage.value, pageSize.value);
     if (response.data.code === 200) {
-      const newJobs = response.data.data.records
-      total.value = response.data.data.page.total
+      const newJobs = response.data.data.records;
+      total.value = response.data.data.page.total;
+
+      // 如果用户未登录，限制最多显示八条记录
+      if (!isAuthenticated.value) {
+        newJobs.splice(8); // 截取前八条记录
+      }
+
       // 追加新数据而不是替换
-      jobList.value = [...jobList.value, ...newJobs]
+      jobList.value = [...jobList.value, ...newJobs];
 
       // 更新页码和状态
-      currentPage.value++
+      currentPage.value++;
       // 计算是否无更多数据
       noMore.value = jobList.value.length >= total.value ||
           currentPage.value > Math.ceil(total.value / pageSize.value);
+
       // 如果是第一次加载，请求第一个职位的详情
       if (isFirstLoad && jobList.value.length > 0) {
-        await handleJobClick(jobList.value[0].id)
-        isFirstLoad = false
+        await handleJobClick(jobList.value[0].id);
+        isFirstLoad = false;
       }
     }
   } catch (error) {
-    console.error('获取职位列表失败：', error)
+    console.error('获取职位列表失败：', error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 

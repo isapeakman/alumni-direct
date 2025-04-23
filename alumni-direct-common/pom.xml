@@ -47,6 +47,11 @@
             <artifactId>yauaa</artifactId>
             <version>6.10</version>
         </dependency>
+        <!-- 邮箱发送 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

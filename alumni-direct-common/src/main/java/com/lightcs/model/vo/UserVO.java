@@ -38,4 +38,8 @@ public class UserVO {
      * token
      */
     private String token;
+    /**
+     * 用户状态 0:正常 1:禁用
+     */
+    private Integer status;
 }

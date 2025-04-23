@@ -69,6 +69,11 @@ const routes = [
                 name: 'AuthSuccess',
                 component: () => import('../views/recruiter/alumni-auth-success.vue'),
             },
+            {
+                path: 'chat',
+                name: 'RChat',
+                component: () => import('../views/chat.vue'),
+            },
         ]
     },
     // 管理员
