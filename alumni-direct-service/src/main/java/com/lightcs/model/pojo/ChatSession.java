@@ -37,6 +37,10 @@ public class ChatSession implements Serializable {
      * 上次接收时间
      */
     private Date lastReceiveTime;
+    /**
+     * 当前会话求职的职位ID
+     */
+    private Integer jobId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

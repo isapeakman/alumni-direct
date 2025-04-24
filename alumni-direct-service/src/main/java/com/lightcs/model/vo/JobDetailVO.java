@@ -14,6 +14,10 @@ import java.util.Date;
 @Data
 public class JobDetailVO {
     /**
+     * 职位id
+     */
+    private Integer id;
+    /**
      * 职位名称
      */
     private String title;

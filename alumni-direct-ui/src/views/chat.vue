@@ -159,7 +159,8 @@ const isJobSeekerChat = computed(() => route.path === '/chat');
 const createId = route.query.createId;
 const title = route.query.title;
 const recruiterName = route.query.recruiterName;
-
+const jobId = route.query.jobId; // 添加 jobId 参数
+const currentJobId = ref(jobId); // 使用 ref 来存储 jobId
 console.log('createId:', createId);
 console.log('title:', title);
 
@@ -329,29 +330,43 @@ const fetchConversations = async () => {
       lastMessage: conv.lastMessage,
       lastReceiveTime: conv.lastReceiveTime,
     }));
+
     // 检查是否需要添加临时会话
     if (createId && title && recruiterName) {
       const exists = conversations.value.some(conv => conv.contactId == createId);
-      if (!exists) {// 历史会话不存在则添加
-        conversations.value.unshift({
+      if (!exists) { // 历史会话不存在则添加
+        const tempConversation = {
           sessionId: `temp_${createId}`,
           title: recruiterName,
           contactId: createId,
           isTemp: true,
           avatar: '', // 可以添加默认头像
           unreadCount: 0
-        });
+        };
+        conversations.value.unshift(tempConversation);
+        // 选中该临时会话
+        selectConversation(tempConversation.sessionId);
+      } else {
+        // 如果会话已存在，找到该会话并置顶
+        const existingConversation = conversations.value.find(conv => conv.contactId == createId);
+        if (existingConversation) {
+          conversations.value = conversations.value.filter(conv => conv.sessionId !== existingConversation.sessionId);
+          conversations.value.unshift(existingConversation);
+          // 选中该会话
+          selectConversation(existingConversation.sessionId);
+        }
       }
     }
 
     // 自动选择第一个会话（优先选择临时会话）
-    if (conversations.value.length > 0) {
+    if (conversations.value.length > 0 && !selectedConversation.value) {
       selectConversation(conversations.value[0].sessionId);
     }
   } catch (error) {
     ElMessage.error('获取会话列表失败:', error);
   }
 };
+
 const lastMessageTime = ref(null);
 const isFetching = ref(false);
 const fetchMessages = async (sessionId, historyTime = null) => {
@@ -413,7 +428,7 @@ const truncateMessage = (message, maxLength) => {
 //     console.error('获取消息失败:', error);
 //   }
 // };
-
+const count = ref(0)
 // 选择会话
 const selectConversation = (sessionId) => {
   // 1. 清空当前聊天消息
@@ -432,6 +447,12 @@ const selectConversation = (sessionId) => {
   }
   fetchMessages(sessionId);
   sendMessage.value.toId = conversation.contactId;
+  // 重置 jobId
+  if (count.value !== 0) {
+    currentJobId.value = null;
+  }
+  console.log(count.value)
+  count.value++;
 };
 
 // 发送消息
@@ -445,10 +466,15 @@ const submit = () => {
     toId: selectedContactId.value,
     messageContent: content,
     sendUserId: userInfo.value.userId,
+    // jobId: jobId, // 添加 jobId 参数
     sendTime: new Date().toLocaleTimeString(),
     avatar: userInfoMap.value[userId.value]?.avatar || '',
     username: userInfoMap.value[userId.value]?.username || ''
   };
+  if (currentJobId.value) {
+    message.jobId = currentJobId.value; // 只有在 currentJobId 不为空时才添加 jobId
+  }
+
 
   chatMessages.value.push(message);
   webSocket.value.send(JSON.stringify(message));

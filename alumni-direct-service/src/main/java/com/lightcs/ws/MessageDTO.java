@@ -18,6 +18,7 @@ public class MessageDTO {
     private Integer toId;
     private Integer messageType = MESSAGE_TYPE_TEXT;// 0文本 1文件， 默认文本，减少网络传输量
     private String messageContent; // 当messageType为0时，存放文本内容；当messageType为1时，存放文件的url
+    private Integer jobId; // 当前会话求职的职位ID
     private String fileName;
     private Integer fileSize;
     private Date time;

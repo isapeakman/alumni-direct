@@ -13,6 +13,7 @@ import com.lightcs.service.JobApplyRecordService;
 import com.lightcs.utils.CurrentUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -60,13 +61,15 @@ public class JobApplyRecordServiceImpl extends ServiceImpl<JobApplyRecordMapper,
      *
      * @param jobApplyRecord
      */
+    @Transactional(rollbackFor = RuntimeException.class)
     @Override
     public void saveJobApplyRecord(JobApplyRecord jobApplyRecord) {
-        Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+//        Integer currentUserId = CurrentUserUtil.getCurrentUserId();//ws无法从该对象获取用户信息
+        //直接使用ws发过来的fromId作为申请人
         // 申请记录已存在
         QueryWrapper<JobApplyRecord> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("job_id", jobApplyRecord.getJobId());
-        queryWrapper.eq("user_id", currentUserId);
+        queryWrapper.eq("applicant_id", jobApplyRecord.getApplicantId());
         JobApplyRecord record = jobApplyRecordMapper.selectOne(queryWrapper);
         // 如果存在则只修改申请时间和简历附件，相当于重复申请
         if (record != null) {
@@ -80,7 +83,7 @@ public class JobApplyRecordServiceImpl extends ServiceImpl<JobApplyRecordMapper,
 
         // 构建对象
         jobApplyRecord.setApplyTime(new Date());
-        jobApplyRecord.setApplicantId(currentUserId);
+        jobApplyRecord.setApplicantId(jobApplyRecord.getApplicantId());
         int res = jobApplyRecordMapper.insert(jobApplyRecord);
         ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "申请失败");
     }

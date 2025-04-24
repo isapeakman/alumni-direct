@@ -47,10 +47,8 @@ public class Job implements Serializable {
      */
     private String location;
 
-    /**
-     * 薪资范围
-     */
-    private String salaryRange;
+    private Integer minSalary;
+    private Integer maxSalary;
     /**
      * 企业名称
      */

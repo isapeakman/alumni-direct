@@ -6,7 +6,7 @@
         <div class="job-title">{{ selectedJob.title }}</div>
         <div class="job-salary">{{ formatSalary(selectedJob.minSalary, selectedJob.maxSalary) }}</div>
         <el-button type="primary" plain
-                   @click="goChat(selectedJob.createId,selectedJob.title,selectedJob.recruiterName)"
+                   @click="goChat(selectedJob.createId,selectedJob.title,selectedJob.recruiterName,selectedJob.id)"
                    class="apply-button">
           发起沟通
         </el-button>
@@ -60,13 +60,14 @@ const props = defineProps({
     required: true
   }
 })
-const goChat = (createId, title, recruiterName) => {
+const goChat = (createId, title, recruiterName, jobId) => {
   router.push({
     path: "/chat",
     query: {
       createId: createId,
       title: title,
       recruiterName: recruiterName,
+      jobId: jobId
     }
   })
 }

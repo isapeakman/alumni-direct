@@ -61,13 +61,12 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         Integer currentUserId = CurrentUserUtil.getCurrentUserId();
         Integer minSalary = jobAdd.getMinSalary();
         Integer maxSalary = jobAdd.getMaxSalary();
-        String salaryRange = minSalary + "-" + maxSalary;
         // 获取当前用户昵称
         String nickname = CurrentUserUtil.getCurrentUserVO().getNickname();
 
         // 添加职位
         Job job = Job.builder().jobDesc(jobAdd.getJobDesc()).jobType(jobAdd.getJobType()).location(jobAdd.getLocation())
-                .salaryRange(salaryRange).title(jobAdd.getTitle()).createId(currentUserId).companyName(jobAdd.getCompanyName())
+                .minSalary(minSalary).maxSalary(maxSalary).title(jobAdd.getTitle()).createId(currentUserId).companyName(jobAdd.getCompanyName())
                 .recruiterName(nickname)
                 .status(STATUS_PENDING)  // 设置职位状态:待审核
                 .build();
@@ -110,13 +109,22 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         ThrowUtils.throwIf(isExist == 0, NOT_FOUND_ERROR, "更新职位不存在");
         //todo 职位分类这里没有全删除后添加
 
+        // 删除原有职位分类
+        QueryWrapper jobCategoryWrapper = new QueryWrapper();
+        jobCategoryWrapper.eq("job_id", jobId);
+        jobCategoryMapper.delete(jobCategoryWrapper);
+        // 添加职位分类
+        Integer[] categoryIds = jobUpdate.getCategoryIds();
+        List<JobCategory> jobCategories = buildJobCategoryList(jobId, categoryIds);
+        jobCategoryService.saveBatch(jobCategories);// 批量插入关联关系
+
         // 构造Job
         Integer minSalary = jobUpdate.getMinSalary();
         Integer maxSalary = jobUpdate.getMaxSalary();
-        String salaryRange = minSalary + "-" + maxSalary;
+
         Job job = Job.builder().id(jobUpdate.getId())
                 .jobDesc(jobUpdate.getJobDesc()).jobType(jobUpdate.getJobType()).location(jobUpdate.getLocation())
-                .salaryRange(salaryRange).title(jobUpdate.getTitle()).companyName(jobUpdate.getCompanyName())
+                .minSalary(minSalary).maxSalary(maxSalary).title(jobUpdate.getTitle()).companyName(jobUpdate.getCompanyName())
                 .createId(CurrentUserUtil.getCurrentUserId())
                 .status(STATUS_PENDING)  // 调整职位状态为: 待审核
                 .build();
@@ -135,13 +143,14 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
      */
     private void generateApprovalRecord(Job job) {//只要调用者外层有事务，这里就能保证回滚
         // 构建 职位冗余信息
+        String salaryRange = job.getMinSalary() + "-" + job.getMaxSalary();
         JobApprovalRecord record = JobApprovalRecord.builder()
                 .jobId(job.getId())
                 .title(job.getTitle())
                 .jobType(job.getJobType())
                 .jobDesc(job.getJobDesc())
                 .location(job.getLocation())
-                .salaryRange(job.getSalaryRange())
+                .salaryRange(salaryRange)
                 .companyName(job.getCompanyName())
                 .createId(job.getCreateId())
                 .build();

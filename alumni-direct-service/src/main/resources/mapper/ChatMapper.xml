@@ -8,6 +8,13 @@
         values (#{userId}, #{contactId}, #{sessionId}),
                (#{contactId}, #{userId}, #{sessionId})
     </insert>
+    <update id="updateLastMessage">
+        update chat_session set last_message = #{lastMessage}, last_receive_time = #{lastReceiveTime}
+        <if test="jobId != null">
+            , job_id = #{jobId}
+        </if>
+        where session_id = #{sessionId}
+    </update>
 
     <select id="getSessionList" resultType="com.lightcs.model.pojo.ChatSession">
         select session_id,last_message,last_receive_time from chat_session where session_id in

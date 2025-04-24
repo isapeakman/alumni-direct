@@ -8,8 +8,10 @@ import com.lightcs.mapper.UserMapper;
 import com.lightcs.model.pojo.ChatMessage;
 import com.lightcs.model.pojo.ChatSession;
 import com.lightcs.model.pojo.ChatUserSession;
+import com.lightcs.model.pojo.JobApplyRecord;
 import com.lightcs.model.vo.ChatSessionVO;
 import com.lightcs.service.ChatService;
+import com.lightcs.service.JobApplyRecordService;
 import com.lightcs.utils.CurrentUserUtil;
 import com.lightcs.ws.MessageDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import static com.lightcs.constants.MessageConstant.MESSAGE_TYPE_FILE;
 
 /**
  * @Author: peak-like
@@ -33,6 +37,8 @@ public class ChatServiceImpl implements ChatService {
     private ChatMapper chatMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private JobApplyRecordService jobApplyRecordService;
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -52,6 +58,7 @@ public class ChatServiceImpl implements ChatService {
                     .sessionId(sessionId)
                     .lastMessage(messageDTO.getMessageContent())
                     .lastReceiveTime(messageDTO.getTime())
+                    .jobId(messageDTO.getJobId())//更新会话的职位ID
                     .build());
         } else {
             //更新会话的最后一条消息
@@ -59,6 +66,7 @@ public class ChatServiceImpl implements ChatService {
                     .sessionId(sessionId)
                     .lastMessage(messageDTO.getMessageContent())
                     .lastReceiveTime(messageDTO.getTime())
+                    .jobId(messageDTO.getJobId())//更新会话的职位ID,不为空则修改
                     .build());
         }
         //保存消息
@@ -73,6 +81,19 @@ public class ChatServiceImpl implements ChatService {
                 .fileSize(messageDTO.getFileSize())//文件大小
                 .status(messageDTO.getStatus())//消息状态:0未发送，1已发送
                 .build());
+        //发送简历则保存简历投递记录
+        if (Objects.equals(messageDTO.getMessageType(), MESSAGE_TYPE_FILE)) {
+            // 通过sessionId获取职位ID
+            Integer jobId = chatMapper.getJobIdBySessionId(sessionId);
+            //保存简历投递记录
+            jobApplyRecordService.saveJobApplyRecord(JobApplyRecord.builder()
+//                    .jobId(messageDTO.getJobId())   每次发送文件 不需要职位ID通过WS传送过来，直接通过数据库查询出来即可
+                    .jobId(jobId)
+                    .applicantId(messageDTO.getFromId())//申请人ID
+                    .resume(messageDTO.getMessageContent())//简历地址
+                    .build());
+        }
+
     }
 
     /**

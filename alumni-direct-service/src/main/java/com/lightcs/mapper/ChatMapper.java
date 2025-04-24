@@ -29,12 +29,34 @@ public interface ChatMapper {
     Integer insertUserSession(ChatUserSession chatUserSession);
 
 
-    @Insert("insert into chat_session(session_id,last_message,last_receive_time) values(#{sessionId}, #{lastMessage}, #{lastReceiveTime})")
+    @Insert("insert into chat_session(session_id,last_message,last_receive_time,job_id) values(#{sessionId}, #{lastMessage}, #{lastReceiveTime}, #{jobId})")
     Integer insertSession(ChatSession chatSession);
 
-    @Update("update chat_session set last_message = #{lastMessage}, last_receive_time = #{lastReceiveTime} where session_id = #{sessionId}")
+    /**
+     * 更新会话的最后一条消息和最后接收时间
+     *
+     * @param chatSession
+     * @return
+     */
     Integer updateLastMessage(ChatSession chatSession);
 
+    /**
+     * 通过会话ID获取职位ID
+     *
+     * @param sessionId
+     * @return
+     */
+    @Select("select job_id from chat_session where session_id = #{sessionId}")
+    Integer getJobIdBySessionId(String sessionId);
+
+    /**
+     * 更新会话的jobId
+     *
+     * @param chatSession
+     * @return
+     */
+    @Update("update chat_session set job_id = #{jobId} where session_id = #{sessionId}")
+    Integer updateJobId(ChatSession chatSession);
 
     @Insert("insert into chat_message(session_id, message_type, message_content, send_user_id, send_user_nickname, send_time, contact_id,file_name,file_size) values(#{sessionId}, #{messageType}, #{messageContent}, #{sendUserId}, #{sendUserNickname}, #{sendTime}, #{contactId}, #{fileName}, #{fileSize})")
     Integer saveTextMessage(ChatMessage chatMessage);
@@ -53,4 +75,6 @@ public interface ChatMapper {
     List<ChatSessionVO> getChatSessionList(Integer userId);
 
     List<ChatSession> getSessionList(List<String> sessionIdList);
+
+
 }
