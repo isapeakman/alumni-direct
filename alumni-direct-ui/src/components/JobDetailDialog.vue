@@ -6,6 +6,10 @@
       :before-close="handleClose"
   >
     <el-form :model="form" label-width="100px">
+      <!-- 新增公司名称字段 -->
+      <el-form-item label="公司名称">
+        <el-input v-model="form.companyName" :disabled="!isEditMode"/>
+      </el-form-item>
       <el-form-item label="职位名称">
         <el-input v-model="form.title" :disabled="!isEditMode"/>
       </el-form-item>
@@ -85,6 +89,11 @@
           确认拒绝
         </el-button>
         <el-button @click="cancelReject">取消</el-button>
+      </div>
+
+      <!-- 新增失败原因显示 -->
+      <div v-if="form.status === 4" style="margin-top: 10px; color: red;">
+        审核失败原因：{{ form.note || '无' }}
       </div>
     </template>
   </el-dialog>

@@ -57,4 +57,12 @@ public class JobVO {
      * 分类ids
      */
     private List<Integer> categoryIds;
+    /**
+     * 公司名称
+     */
+    private String companyName;
+    /**
+     * 审核失败原因
+     */
+    private String note;
 }

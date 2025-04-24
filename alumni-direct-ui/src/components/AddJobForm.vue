@@ -1,6 +1,10 @@
 <template>
   <div class="add-job-form">
     <el-form :model="form" label-width="100px">
+      <!-- 新增公司名称字段 -->
+      <el-form-item label="公司名称">
+        <el-input v-model="form.companyName" placeholder="请输入公司名称"/>
+      </el-form-item>
       <el-form-item label="职位名称">
         <el-input v-model="form.title" placeholder="请输入职位名称"/>
       </el-form-item>
@@ -51,6 +55,7 @@ import {getCategories} from "@/api/job.js";
 const emit = defineEmits(['submit', 'cancel']);
 const jobCategories = ref([]);
 const form = ref({
+  companyName: '', // 新增公司名称字段
   title: '',
   jobType: null,
   location: '',
@@ -106,6 +111,7 @@ const resetForm = () => {
     maxSalary: '',
     jobDesc: '',
     categoryIds: [],
+    companyName: '', // 重置公司名称字段
   };
 };
 </script>

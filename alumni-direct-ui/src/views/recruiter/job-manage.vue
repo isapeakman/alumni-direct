@@ -29,7 +29,6 @@
                   <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
                 </div>
                 <div class="info-row">
-
                   <p>{{ truncateText(job.jobDesc, 50) }}</p>
                   <span class="location">
                 <el-icon><Location/></el-icon>

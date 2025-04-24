@@ -50,7 +50,7 @@
         </where>
     </select>
     <select id="selectByUserId" resultType="com.lightcs.model.vo.JobVO">
-        SELECT id,title,job_type,location,
+        SELECT id,title,job_type,location,company_name,
         min_salary,
         max_salary,
         recruiter_name,status,job_desc

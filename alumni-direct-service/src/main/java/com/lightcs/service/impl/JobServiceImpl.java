@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.lightcs.constants.Common.*;
@@ -297,9 +298,18 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
             List<Integer> categoryIds = jobCategoryMapper.selectJobIdByJobId(jobId);
             jobVO.setCategoryIds(categoryIds);
         });
+        // 是否有职位审核失败，有则封装失败原因
+        currentUserJobList.forEach(jobVO -> {
+            if (Objects.equals(jobVO.getStatus(), STATUS_FAIL)) {
+                Integer jobId = jobVO.getId();
+                JobApprovalRecord jobApprovalRecord = jobApprovalRecordMapper.selectOne(new QueryWrapper<JobApprovalRecord>().eq("job_id", jobId).orderByDesc("create_time").last("limit 1"));//只返回一条
+                if (jobApprovalRecord != null) {
+                    jobVO.setNote(jobApprovalRecord.getNote());
+                }
+            }
+        });
+
         page.setRecords(currentUserJobList);
         return page;
     }
-
-
 }
