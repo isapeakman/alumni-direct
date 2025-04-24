@@ -112,6 +112,28 @@ public class JobController {
         return PaginationBuilder.build(data);
     }
 
+    @Operation(summary = "获取推荐职位卡片")
+    @GetMapping("/recommend/cards")
+    public BaseResponse<Map<String, Object>> getRecommendCardsConditional(JobCardRequest jobCardRequest) {
+
+        if (jobCardRequest.getMinSalary() != null && jobCardRequest.getMaxSalary() != null) {
+            ThrowUtils.throwIf(jobCardRequest.getMinSalary() > jobCardRequest.getMaxSalary(), PARAMS_ERROR, "最小薪资不能大于最大薪资");
+        }
+        try {
+            Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+        } catch (BusinessException e) {
+            log.info("未登录");
+            Integer current = jobCardRequest.getCurrent();
+            Integer pageSize = jobCardRequest.getPageSize();
+            // 如果没有登录，则无法查询其他页的数据
+            if (current != 1 || pageSize != 8) {
+                return PaginationBuilder.build(new Page<>());
+            }
+        }
+        Page<JobCardVO> data = jobService.selectRecommendCards(jobCardRequest);
+        return PaginationBuilder.build(data);
+    }
+
     @Operation(summary = "获取职位详情")
     @GetMapping("/detail")
     public BaseResponse<JobDetailVO> detail(@RequestParam(value = "jobId") Integer id) {

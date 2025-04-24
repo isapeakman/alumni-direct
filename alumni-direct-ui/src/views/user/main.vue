@@ -86,14 +86,18 @@
             <div class="info-row">
               <p>{{ truncateText(job.jobDesc, 20) }}</p>
               <span class="location">
-            <el-icon><Location/></el-icon>
-            {{ job.location }}
-          </span>
-              <span class="job-type">{{ getJobType(job.jobType) }}</span>
+                <el-icon><Location/></el-icon>
+                {{ job.location }}
+              </span>
             </div>
             <div class="recruiter">
               <el-avatar :size="30" :src="job.recruiterAvatar"/>
               <span>{{ job.recruiterName }}·招聘者</span>
+            </div>
+            <!-- 新增 job-footer 容器 -->
+            <div class="job-footer">
+              <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位</el-tag>
+              <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
             </div>
           </el-card>
         </el-col>
@@ -474,6 +478,14 @@ const truncateText = (text, length) => {
     .el-avatar {
       border: 1px solid #eee;
     }
+  }
+
+  .job-footer {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
   }
 }
 

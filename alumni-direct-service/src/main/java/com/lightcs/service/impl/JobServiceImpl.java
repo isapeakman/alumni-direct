@@ -3,6 +3,7 @@ package com.lightcs.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lightcs.controller.UserIntentionController;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.mapper.JobApprovalRecordMapper;
 import com.lightcs.mapper.JobCategoryMapper;
@@ -12,13 +13,12 @@ import com.lightcs.model.dto.JobCardRequest;
 import com.lightcs.model.dto.JobRequest;
 import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
-import com.lightcs.model.pojo.Job;
-import com.lightcs.model.pojo.JobApprovalRecord;
-import com.lightcs.model.pojo.JobCategory;
-import com.lightcs.model.pojo.User;
+import com.lightcs.model.pojo.*;
 import com.lightcs.model.vo.JobCardVO;
 import com.lightcs.model.vo.JobDetailVO;
 import com.lightcs.model.vo.JobVO;
+import com.lightcs.model.vo.UserIntentionVO;
+import com.lightcs.result.BaseResponse;
 import com.lightcs.service.JobCategoryService;
 import com.lightcs.service.JobService;
 import com.lightcs.utils.CurrentUserUtil;
@@ -194,6 +194,56 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         page.setRecords(jobCardVOS);
         return page;
     }
+
+    @Autowired
+    private UserIntentionController userIntentionController;
+
+    /**
+     * 获取推荐的职位卡片
+     *
+     * @param cardRequest
+     * @return
+     */
+    @Override
+    public Page<JobCardVO> selectRecommendCards(JobCardRequest cardRequest) {
+        Integer current = cardRequest.getCurrent();
+        Integer pageSize = cardRequest.getPageSize();
+        Page<JobCardVO> page = new Page<>(current, pageSize);
+        // 根据分类id查询职位
+        List<Integer> jobIdList = null;
+        if (cardRequest.getCategoryId() != null) {
+            jobIdList = jobCategoryMapper.selectJobIdByCategoryId(cardRequest.getCategoryId());
+            // 没有符合的职位
+            if (jobIdList == null || jobIdList.isEmpty()) {
+                return page;
+            }
+        }
+        // 查询当前用户的职位意向
+        BaseResponse<List<UserIntentionVO>> userIntention = userIntentionController.getUserIntention();
+        List<UserIntentionVO> data = userIntention.getData();
+        if (data == null || data.isEmpty()) {//没有意向则直接返回最新职位列表
+            return selectCards(cardRequest);
+        }
+        // 获取当前用户的职位意向
+        UserIntentionVO intention = data.get(0);//暂时只获取一个
+        List<Integer> categoryId = intention.getCategoryId();
+        Integer minSalary = intention.getMinSalary();
+        Integer maxSalary = intention.getMaxSalary();
+        Integer type = intention.getType();
+
+        // 查询推荐的职位卡片
+        List<JobCardVO> jobCardVOS = jobMapper.selectRecommendCards(page, type, minSalary, maxSalary, STATUS_OPENED, categoryId);
+        // 根据创建人id查询 创建人
+        jobCardVOS.forEach(jobCardVO -> {
+            Integer createId = jobCardVO.getCreateId();
+            User user = userMapper.selectById(createId);
+            jobCardVO.setRecruiterAvatar(user.getUserAvatar());
+            jobCardVO.setRecruiterName(user.getNickname());
+        });
+        page.setRecords(jobCardVOS);
+        return page;
+    }
+
 
     /**
      * 获取职位详情

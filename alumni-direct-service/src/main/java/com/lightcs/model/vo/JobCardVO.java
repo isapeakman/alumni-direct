@@ -58,4 +58,8 @@ public class JobCardVO {
      * 职位描述
      */
     private String jobDesc;
+    /**
+     * 0 普通用户 1 校友职位
+     */
+    private Integer isAlumni;
 }

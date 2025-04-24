@@ -8,7 +8,8 @@
         SELECT id,title,job_type,location,
         min_salary,
         max_salary,
-        company_name,recruiter_name,create_id,job_desc
+        company_name,recruiter_name,create_id,job_desc,
+        is_alumni
         FROM job
         <where>
             <if test="status != null">
@@ -53,7 +54,7 @@
         SELECT id,title,job_type,location,company_name,
         min_salary,
         max_salary,
-        recruiter_name,status,job_desc
+        recruiter_name,status,job_desc,
         FROM job
         <where>
             <if test="createId != null">
@@ -64,5 +65,37 @@
             </if>
         </where>
         order by update_time desc
+    </select>
+    <select id="selectRecommendCards" resultType="com.lightcs.model.vo.JobCardVO">
+        SELECT job.id,title,job_type,location,
+        min_salary,
+        max_salary,
+        company_name,recruiter_name,create_id,job_desc,
+        group_concat(distinct jc.category_id) as category_id,
+        is_alumni,
+        publish_time
+        FROM job
+        JOIN job_category jc on job.id = jc.job_id
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="jobType != null">
+                AND job_type = #{jobType}
+            </if>
+            <if test="minSalary != null">
+                AND min_salary &gt;= #{minSalary}
+            </if>
+            <if test="maxSalary != null">
+                AND max_salary &lt;= #{maxSalary}
+            </if>
+            <if test="categoryIds != null and categoryIds.size>0">
+                AND jc.category_id in
+                <foreach collection="categoryIds" item="categoryId" open="(" close=")" separator=",">#{categoryId}
+                </foreach>
+            </if>
+            group by job.id
+        </where>
+        order by is_alumni desc,publish_time desc
     </select>
 </mapper>

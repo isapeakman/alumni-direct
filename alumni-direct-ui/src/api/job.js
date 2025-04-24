@@ -12,6 +12,16 @@ export function getJobCard(currentPage, pageSize) {
     })
 }
 
+export function getRecommendJobCard(currentPage, pageSize) {
+    return request({
+        url: '/ad/job/recommend/cards',
+        method: 'get',
+        params: {
+            current: currentPage,
+            pageSize: pageSize
+        }
+    })
+}
 // 搜索职位
 export function searchJob({currentPage, pageSize, keyword, categoryId}) {
     // 构建参数对象，只包含有值的参数

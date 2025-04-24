@@ -20,7 +20,12 @@
             <el-icon><Location/></el-icon>
             {{ job.location }}
           </span>
-                <span class="job-type">{{ getJobType(job.jobType) }}</span>
+                <div class="job-footer">
+                  <!-- 新增校友职位标识 -->
+                  <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位
+                  </el-tag>
+                  <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
+                </div>
               </div>
               <div class="recruiter">
                 <el-avatar :size="30" :src="job.recruiterAvatar"/>
@@ -47,7 +52,7 @@
 <script setup>
 import {ref, onMounted} from 'vue'
 import {Location} from '@element-plus/icons-vue'
-import {getJobCard} from '@/api/job.js'
+import {getRecommendJobCard} from '@/api/job.js'
 import {ElMessage} from 'element-plus'
 import {getJobDetail} from '@/api/job.js'
 import JobDetails from '@/components/JobDetail.vue'
@@ -71,7 +76,7 @@ const loadMore = async () => {
 
   loading.value = true;
   try {
-    const response = await getJobCard(currentPage.value, pageSize.value);
+    const response = await getRecommendJobCard(currentPage.value, pageSize.value);
     if (response.data.code === 200) {
       const newJobs = response.data.data.records;
       total.value = response.data.data.page.total;
@@ -152,31 +157,25 @@ onMounted(() => {
   background-color: #e7f0fa;
 
   .job-list {
-    //max-width: 600px;
     min-width: 400px;
     min-height: 200px;
     margin-right: 10px;
   }
-
-}
-
-.list-header {
-  color: #409eff;
 }
 
 .job-card {
   margin-bottom: 5px;
   cursor: pointer;
-  transition: all 0.3s; /* 调整过渡时间为 0.3s */
-  width: 97%; /* 固定宽度 */
-  height: 100%; /* 固定高度 */
-  position: relative; /* 为子元素的绝对定位提供参考 */
+  transition: all 0.3s;
+  width: 97%;
+  height: 100%;
+  position: relative;
   border: 1px solid #ebeef5;
   border-radius: 8px;
   padding: 10px;
-  overflow: hidden; /* 确保内容不会超出卡片范围 */
+  overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  /* 覆盖内部 el-card__body 的 padding */
+
   ::v-deep(.el-card__body) {
     padding: 0;
   }
@@ -187,7 +186,7 @@ onMounted(() => {
   }
 
   &.active-card {
-    border-color: #409EFF !important; /* 使用!important确保覆盖 */
+    border-color: #409EFF !important;
     box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
 
     .job-header h4 {
@@ -205,7 +204,6 @@ onMounted(() => {
       margin: 0;
       font-size: 16px;
       color: #303133;
-      //flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -239,20 +237,24 @@ onMounted(() => {
       align-items: center;
       gap: 4px;
     }
+  }
 
+  .recruiter {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
 
-    .job-type {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      padding: 2px 8px;
-      background-color: #f0f2f5;
-      border-radius: 4px;
-      max-width: 50%; /* 限制宽度，避免超出卡片 */
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .el-avatar {
+      margin-right: 10px;
     }
+  }
+
+  .job-footer {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
   }
 }
 
@@ -262,12 +264,3 @@ onMounted(() => {
   color: #909399;
 }
 </style>
-
-<script>
-export default {
-  name: 'Recommend',
-  mounted() {
-    console.log('推荐职位组件已加载')
-  }
-}
-</script> 

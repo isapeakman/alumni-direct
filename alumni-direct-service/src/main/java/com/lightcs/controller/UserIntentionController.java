@@ -39,6 +39,7 @@ public class UserIntentionController {
         QueryWrapper<UserIntention> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", currentUserId);
         wrapper.orderByDesc("update_time");
+        wrapper.last("limit 1");
         List<UserIntention> list = userIntentionService.list(wrapper);
         // 将 UserIntention的 categoryId 由字符串转换为 List<Integer>
         ArrayList<UserIntentionVO> userIntentionVOS = new ArrayList<>();

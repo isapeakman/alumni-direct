@@ -42,6 +42,8 @@ public interface JobService extends IService<Job> {
      */
     Page<JobCardVO> selectCards(JobCardRequest cardRequest);
 
+    Page<JobCardVO> selectRecommendCards(JobCardRequest cardRequest);
+
     /**
      * 查询职位详情
      *
