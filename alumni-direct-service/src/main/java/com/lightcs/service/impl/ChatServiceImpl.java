@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import static com.lightcs.constants.MessageConstant.MESSAGE_TYPE_TEXT;
-
 /**
  * @Author: peak-like
  * @CreateTime: 2025-03-11
@@ -66,11 +64,13 @@ public class ChatServiceImpl implements ChatService {
         //保存消息
         chatMapper.saveTextMessage(ChatMessage.builder()
                 .messageContent(messageDTO.getMessageContent())
-                .messageType(MESSAGE_TYPE_TEXT)      //文件类型
+                .messageType(messageDTO.getMessageType())      //文件类型
                 .contactId(messageDTO.getToId())
                 .sendUserId(messageDTO.getFromId())
                 .sendTime(messageDTO.getTime())
                 .sessionId(sessionId)
+                .fileName(messageDTO.getFileName())//文件名称
+                .fileSize(messageDTO.getFileSize())//文件大小
                 .status(messageDTO.getStatus())//消息状态:0未发送，1已发送
                 .build());
     }
@@ -127,6 +127,14 @@ public class ChatServiceImpl implements ChatService {
                 }
             }
         }
+        // 根据最后一条消息时间降序排序
+        chatSessionList.sort((o1, o2) -> {
+            if (o1.getLastReceiveTime() == null || o2.getLastReceiveTime() == null) {
+                return 0;
+            }
+            return o2.getLastReceiveTime().compareTo(o1.getLastReceiveTime());
+        });
+
         //返回 会话列表
         return chatSessionList;
     }

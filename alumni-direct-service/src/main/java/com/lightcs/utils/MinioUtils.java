@@ -85,6 +85,7 @@ public class MinioUtils {
             byte[] bytes = out.toByteArray();
             HttpHeaders headers = new HttpHeaders();
             try {
+                // 文件类型
                 headers.add("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();

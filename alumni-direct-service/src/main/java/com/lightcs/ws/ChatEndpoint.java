@@ -87,6 +87,7 @@ public class ChatEndpoint {
             // 获取消息接收方id
             Integer toUserId = msg.getToId();
             String tempMessage = msg.getMessageContent();
+            Integer messageType = msg.getMessageType();
             Date currentTime = new Date();
 
             // 获取消息接收方用户对象的 session 对象
@@ -95,7 +96,7 @@ public class ChatEndpoint {
             // 接收方在线，则将消息发送给接收方
             if (receiveSession != null) {
                 Integer currentUserId = this.currentUserVO.getUserId();
-                String messageToSend = MessageUtils.buildMessage(currentUserId, tempMessage, currentTime);
+                String messageToSend = MessageUtils.buildMessage(currentUserId, messageType, tempMessage, currentTime, msg.getFileName(), msg.getFileSize());
                 receiveSession.getBasicRemote().sendText(messageToSend);
                 //todo 判断消息是否发送成功
                 status = MESSAGE_TYPE_STATUS_SEND;// 已发送

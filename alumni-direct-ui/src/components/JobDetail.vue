@@ -5,7 +5,9 @@
       <div class="job-title-row">
         <div class="job-title">{{ selectedJob.title }}</div>
         <div class="job-salary">{{ formatSalary(selectedJob.minSalary, selectedJob.maxSalary) }}</div>
-        <el-button type="primary" plain @click="goChat(selectedJob.createId,selectedJob.title)" class="apply-button">
+        <el-button type="primary" plain
+                   @click="goChat(selectedJob.createId,selectedJob.title,selectedJob.recruiterName)"
+                   class="apply-button">
           发起沟通
         </el-button>
       </div>
@@ -58,13 +60,13 @@ const props = defineProps({
     required: true
   }
 })
-const goChat = (createId, title) => {
-  console.log("创建者是", createId)
+const goChat = (createId, title, recruiterName) => {
   router.push({
     path: "/chat",
     query: {
       createId: createId,
-      title: title
+      title: title,
+      recruiterName: recruiterName,
     }
   })
 }

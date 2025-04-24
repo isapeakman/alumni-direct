@@ -8,6 +8,14 @@ export function uploadFile(formData) {
     })
 }
 
+export function uploadResume(formData) {
+    return request({
+        url: '/ad/file/upload',
+        method: 'post',
+        data: formData
+    })
+}
+
 export function downloadFile(fileName) {
     return request({
         url: '/ad/file/download',

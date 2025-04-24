@@ -36,7 +36,7 @@ public interface ChatMapper {
     Integer updateLastMessage(ChatSession chatSession);
 
 
-    @Insert("insert into chat_message(session_id, message_type, message_content, send_user_id, send_user_nickname, send_time, contact_id) values(#{sessionId}, #{messageType}, #{messageContent}, #{sendUserId}, #{sendUserNickname}, #{sendTime}, #{contactId})")
+    @Insert("insert into chat_message(session_id, message_type, message_content, send_user_id, send_user_nickname, send_time, contact_id,file_name,file_size) values(#{sessionId}, #{messageType}, #{messageContent}, #{sendUserId}, #{sendUserNickname}, #{sendTime}, #{contactId}, #{fileName}, #{fileSize})")
     Integer saveTextMessage(ChatMessage chatMessage);
 
 
