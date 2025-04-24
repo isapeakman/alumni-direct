@@ -155,6 +155,7 @@ import {ref, onMounted} from 'vue';
 import axios from "axios";
 import {addFair, deleteFair, getFairList, updateFair} from "@/api/fair.js";
 import {ElMessage} from "element-plus";
+import {uploadFile} from "@/api/file.js";
 
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -211,28 +212,27 @@ const fetchActivities = async () => {
   }
 };
 
-const handleFileChange = (event) => {
+const handleFileChange = async (event) => {
   const file = event.target.files[0];
+  console.log("选择的文件", file);
   if (file) {
-    uploadFile(file);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadResponse = await uploadFile(formData);
+      if (uploadResponse.data.code === 200) {
+        activityForm.value.imageUrl = uploadResponse.data.data; // 更新活动表单的图片URL
+        ElMessage.success("文件上传成功");
+      } else {
+        ElMessage.error(uploadResponse.data.message || "文件上传失败");
+      }
+    } catch (error) {
+      console.error("文件上传失败", error);
+      ElMessage.error("文件上传失败");
+    }
   }
 };
 
-// 上传图片
-const uploadFile = async (file) => {
-  try {
-    // const formData = new FormData();
-    // formData.append('file', file);
-    // const uploadResponse = await uploadFile(formData);
-
-    // 更新 activityForm 的 imageUrl
-    activityForm.value.imageUrl = "http://localhost:8080/ad/static/avator2.png";
-    ElMessage.success("文件上传成功");
-  } catch (error) {
-    console.error("文件上传失败", error);
-    ElMessage.error("文件上传失败");
-  }
-};
 
 // 提交活动信息
 const handleSubmit = async () => {

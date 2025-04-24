@@ -7,13 +7,13 @@
         <div class="header-content">
           <div class="logo">
             <router-link to="/">
-              <h1>人才招聘平台</h1>
+              <h1>校友直聘</h1>
             </router-link>
           </div>
           <div class="nav-menu">
-            <el-menu mode="horizontal" :router="true" :default-active="$route.path">
-              <el-menu-item index="/dashboard">首页</el-menu-item>
-            </el-menu>
+            <!--            <el-menu mode="horizontal" :router="true" :default-active="$route.path">-->
+            <!--              <el-menu-item index="/dashboard">首页</el-menu-item>-->
+            <!--            </el-menu>-->
           </div>
           <div class="user-actions">
             <template v-if="!isLoggedIn">
@@ -21,8 +21,6 @@
               <el-button @click="handleRegister">注册</el-button>
             </template>
             <template v-else>
-              <el-button type="primary" @click="showLogin">通知</el-button>
-              <el-button type="primary" @click="showLogin">消息</el-button>
 
               <el-dropdown>
               <span class="user-profile">

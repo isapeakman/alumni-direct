@@ -145,12 +145,18 @@ const handleConfirmReject = async () => {
     return;
   }
   props.job.note = rejectReason.value;
-  await props.onReject({...props.job});
-  dialogVisible.value = false;
-  // 重置状态
-  showRejectInput.value = false;
-  rejectReason.value = '';
+  try {
+    await props.onReject({...props.job}); // 调用父组件的拒绝方法
+    ElMessage.success('已拒绝该申请'); // 提示用户操作成功
+  } catch (error) {
+    ElMessage.error('拒绝申请失败，请重试'); // 捕获错误并提示用户
+  } finally {
+    dialogVisible.value = false; // 确保无论成功还是失败，都关闭弹窗
+    showRejectInput.value = false; // 重置拒绝原因输入框状态
+    rejectReason.value = ''; // 清空拒绝原因
+  }
 };
+
 // 定义审批按钮可见性（根据业务场景调整条件）
 const isApprovalVisible = computed(() => {
   // 审批管理页面特定角色可见
@@ -281,15 +287,9 @@ const handleCategoryCheck = (checkedNodes) => {
 defineExpose({open});
 </script>
 
-<style scoped>
+<style>
 .disabled-tree :deep(.el-checkbox) {
   pointer-events: none; /* 禁用复选框的点击事件 */
   opacity: 0.6; /* 降低复选框的透明度 */
 }
-
-/* 示例：将按钮固定在右下角 */
-#dialog-footer .el-button {
-  margin-right: 10px;
-}
-
 </style>

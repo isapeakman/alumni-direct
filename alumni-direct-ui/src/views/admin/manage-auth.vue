@@ -231,7 +231,7 @@ const showRejectDialog = (record) => {
 }
 
 // 确认拒绝
-const confirmReject = () => {
+const confirmReject = async () => {
   if (!rejectReason.value.trim()) {
     ElMessage.warning('请填写拒绝原因')
     return
@@ -243,7 +243,7 @@ const confirmReject = () => {
   record.approvalTime = new Date().toISOString()
 
   // 实际项目中这里应该是调用更新API
-  const response = approveAuth(record.id, record.note, record.approvalResult)
+  const response = await approveAuth(record.id, record.note, record.approvalResult)
   if (response.data.code !== 200) {
     ElMessage.error('审批失败')
     return

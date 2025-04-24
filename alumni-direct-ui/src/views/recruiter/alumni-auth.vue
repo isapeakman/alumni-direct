@@ -22,7 +22,10 @@
       <el-form-item label="认证材料">
         <el-upload
             list-type="picture-card"
-            :disabled="active === 2 || active === 3"
+            :http-request="customUpload"
+            :before-upload="beforeUpload"
+            :limit="2"
+            :on-exceed="handleExceed"
         >
           <i class="el-icon-plus"></i>
         </el-upload>
@@ -52,16 +55,17 @@ import {onMounted, ref} from 'vue';
 import {apply, getAuth} from "@/api/auth.js";
 import {ElMessage} from "element-plus";
 import router from "@/router/index.js";
+import {uploadFile} from "@/api/file.js";
 
 const form = ref({
   name: '',
   studentId: '',
-  yearAdmission: null, // 初始化为 null 或 new Date()
-  yearGraduated: null, // 初始化为 null 或 new Date()
+  yearAdmission: null,
+  yearGraduated: null,
   major: '',
   phone: '',
-  certification: '',
-  certification_2: ''
+  certification: '', // 认证材料1
+  certification2: '' // 认证材料2
 });
 const active = ref(1); // 只保留这一个响应式变量
 const approvalStatus = ref(0); // 申请状态 0 未审批 1 已审批
@@ -69,13 +73,61 @@ const applyResult = ref(0); // 申请结果  0 未通过 1 已通过
 const reasonMessage = ref(''); // 未通过原因
 const dialogImageUrl = ref('');
 const dialogVisible = ref(false);
+const fileList = ref([]);
+const customUpload = async (options) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', options.file);
+
+    const response = await uploadFile(formData);
+    if (response.data.code === 200) {
+      // 更新对应的认证材料字段
+      const currentCount = fileList.value.filter(f => f.status === 'success').length;
+      if (currentCount === 0) {
+        form.value.certification = response.data.data; // 第一张图片绑定到 certification
+      } else if (currentCount === 1) {
+        form.value.certification2 = response.data.data; // 第二张图片绑定到 certification_2
+      } else {
+        options.onError(new Error('最多只能上传两张图片'));
+        return;
+      }
+      options.onSuccess(response.data);
+      fileList.value.push({url: response.data.data, status: 'success'}); // 更新 fileList
+    } else {
+      options.onError(new Error(response.message || '上传失败'));
+    }
+  } catch (error) {
+    options.onError(error);
+  }
+};
+
+
+// 上传前校验
+const beforeUpload = (file) => {
+  const isJPG = file.type === 'image/jpeg';
+  const isPNG = file.type === 'image/png';
+  const isLt2M = file.size / 1024 / 1024 < 2;
+
+  if (!isJPG && !isPNG) {
+    ElMessage.error('上传图片只能是 JPG 或 PNG 格式!');
+    return false;
+  }
+  if (!isLt2M) {
+    ElMessage.error('上传图片大小不能超过 2MB!');
+    return false;
+  }
+  return true;
+};
+
+// 超过限制时的回调
+const handleExceed = () => {
+  ElMessage.warning('最多只能上传两张图片');
+};
 
 // 提交表单
 const submitForm = async () => {
   // 解包 form 对象
   const formData = form.value;
-  // 认证材料暂时默认
-  formData.certification = 'http://localhost:8080/ad/static/avator2.png';
 
   // 确保日期是字符串格式
   formData.yearAdmission = formData.yearAdmission ? formData.yearAdmission.toISOString().split('T')[0] : '';
@@ -138,7 +190,7 @@ const reset = () => {
     major: '',
     phone: '',
     certification: '',
-    certification_2: ''
+    certification2: ''
   };
   active.value = 1; // 重置进度条
   applyResult.value = 0;
