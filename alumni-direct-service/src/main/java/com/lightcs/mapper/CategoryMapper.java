@@ -2,6 +2,9 @@ package com.lightcs.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.lightcs.model.pojo.Category;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * @Author: peak-like
@@ -11,4 +14,6 @@ import com.lightcs.model.pojo.Category;
  */
 
 public interface CategoryMapper extends BaseMapper<Category> {
+    @Select("SELECT id FROM category WHERE parent_id = #{categoryId}")
+    List<Integer> selectCategoryIdByParentId(Integer categoryId);
 }

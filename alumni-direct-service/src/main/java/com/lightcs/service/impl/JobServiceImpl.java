@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lightcs.controller.UserIntentionController;
 import com.lightcs.exception.ThrowUtils;
-import com.lightcs.mapper.JobApprovalRecordMapper;
-import com.lightcs.mapper.JobCategoryMapper;
-import com.lightcs.mapper.JobMapper;
-import com.lightcs.mapper.UserMapper;
+import com.lightcs.mapper.*;
 import com.lightcs.model.dto.JobCardRequest;
 import com.lightcs.model.dto.JobRequest;
 import com.lightcs.model.dto.job.JobAdd;
@@ -160,6 +157,9 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "生成审批记录失败");
     }
 
+    @Autowired
+    private CategoryMapper categoryMapper;
+
     /**
      * 查询职位卡片
      *
@@ -174,7 +174,11 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         // 根据分类id查询职位
         List<Integer> jobIdList = null;
         if (cardRequest.getCategoryId() != null) {
-            jobIdList = jobCategoryMapper.selectJobIdByCategoryId(cardRequest.getCategoryId());
+            //递归获取所有的子分类id
+            List<Integer> categoryIdList = categoryMapper.selectCategoryIdByParentId(cardRequest.getCategoryId());
+            //将当前分类id添加到列表中
+            categoryIdList.add(cardRequest.getCategoryId());
+            jobIdList = jobCategoryMapper.selectJobIdByCategoryIds(categoryIdList);
             // 没有符合的职位
             if (jobIdList == null || jobIdList.isEmpty()) {
                 return page;

@@ -1,135 +1,126 @@
+<!-- src/views/user/job-search.vue -->
 <template>
-  <!-- 搜索区域 -->
-  <div class="search-section">
-    <div class="search-content">
-      <h2>找到理想的工作</h2>
-      <div class="search-box">
-        <el-input
-            v-model="searchKeyword"
-            placeholder="搜索职位"
-            class="search-input"
-        >
-          <template #prefix>
-            <el-icon>
-              <Search/>
-            </el-icon>
-          </template>
-        </el-input>
-        <el-button type="primary" size="large" @click="handleSearch">搜索</el-button>
-      </div>
-      <!--      <div class="hot-tags">-->
-      <!--        热门搜索：-->
-      <!--        <el-tag-->
-      <!--            v-for="tag in hotTags"-->
-      <!--            :key="tag"-->
-      <!--            class="hot-tag"-->
-      <!--            @click="searchKeyword = tag"-->
-      <!--        >-->
-      <!--          {{ tag }}-->
-      <!--        </el-tag>-->
-      <!--      </div>-->
-    </div>
-  </div>
-
-  <!-- 在搜索区域和职位推荐之间添加分类模块 -->
-  <!--  <div class="category-section">-->
-  <!--    <div class="section-content">-->
-  <!--      <h3 class="section-title">职位分类</h3>-->
-  <!--      <div class="category-container">-->
-  <!--        &lt;!&ndash; 左侧大分类 &ndash;&gt;-->
-  <!--        <div class="main-categories">-->
-  <!--          <div-->
-  <!--              v-for="category in categories"-->
-  <!--              :key="category.id"-->
-  <!--              class="main-category-item"-->
-  <!--              :class="{ active: currentCategory.id === category.id }"-->
-  <!--              @click="handleCategoryClick(category)"-->
-  <!--          >-->
-  <!--            {{ category.categoryName }}-->
-  <!--          </div>-->
-  <!--        </div>-->
-  <!--        &lt;!&ndash; 右侧小分类 &ndash;&gt;-->
-  <!--        <div class="sub-categories">-->
-  <!--          <div class="sub-category-group" v-if="currentCategory.children">-->
-  <!--            <div-->
-  <!--                v-for="(subList, index) in groupedSubCategories"-->
-  <!--                :key="main"-->
-  <!--                class="sub-category-row"-->
-  <!--            >-->
-  <!--              <div-->
-  <!--                  v-for="sub in subList"-->
-  <!--                  :key="sub.id"-->
-  <!--                  class="sub-category-item"-->
-  <!--                  @click="handleSubCategoryClick(sub)"-->
-  <!--              >-->
-  <!--                {{ sub.categoryName }}-->
-  <!--              </div>-->
-  <!--            </div>-->
-  <!--          </div>-->
-  <!--        </div>-->
-  <!--      </div>-->
-  <!--    </div>-->
-  <!--  </div>-->
-
-  <!-- 职位推荐部分改为 -->
-  <div class="section job-recommend">
-    <div class="section-content">
-      <h3 class="section-title">最新职位</h3>
-      <el-row :gutter="20">
-        <el-col :span="6" v-for="job in jobList" :key="job.title">
-          <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)">
-            <div class="job-header">
-              <h4>{{ job.title }}</h4>
-              <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
-            </div>
-            <div class="company">{{ job.companyName }}</div>
-            <div class="info-row">
-              <p>{{ truncateText(job.jobDesc, 20) }}</p>
-              <span class="location">
-                <el-icon><Location/></el-icon>
-                {{ job.location }}
-              </span>
-            </div>
-            <div class="recruiter">
-              <el-avatar :size="30" :src="job.recruiterAvatar"/>
-              <span>{{ job.recruiterName }}·招聘者</span>
-            </div>
-            <!-- 新增 job-footer 容器 -->
-            <div class="job-footer">
-              <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位</el-tag>
-              <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
-            </div>
-          </el-card>
-        </el-col>
-
-        <!-- 右侧抽屉 -->
-        <el-col :span="16" class="drawer-container">
-          <el-drawer
-              v-model="drawerVisible"
-              :direction="direction"
-              :before-close="handleClose"
-              size="50%"
-              destroy-on-close
+  <div class="job-search-container">
+    <!-- 搜索区域 -->
+    <div class="search-section">
+      <div class="search-content">
+        <div class="search-box">
+          <el-input
+              v-model="searchKeyword"
+              placeholder="搜索职位"
+              class="search-input"
           >
-            <template #header>
-              <h3>职位详情</h3>
+            <template #prefix>
+              <el-icon>
+                <Search/>
+              </el-icon>
             </template>
-            <JobDetails :selectedJob="selectedJob"/>
-          </el-drawer>
-        </el-col>
-      </el-row>
+          </el-input>
+          <el-button type="primary" size="large" @click="handleSearch">搜索</el-button>
+        </div>
+      </div>
+    </div>
 
-      <!-- 分页器 -->
-      <div class="pagination-container">
-        <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :total="total"
-            :page-sizes="[8, 12, 16, 20]"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-        />
+    <!-- 分类模块 -->
+    <div class="category-section">
+      <div class="section-content">
+        <div class="category-container">
+          <!-- 左侧大分类 -->
+          <div class="main-categories">
+            <div
+                v-for="category in categories"
+                :key="category.id"
+                class="main-category-item"
+                :class="{ active: currentCategory.id === category.id }"
+                @click="handleCategoryClick(category)"
+            >
+              {{ category.categoryName }}
+            </div>
+          </div>
+          <!-- 右侧小分类 -->
+          <div class="sub-categories">
+            <div class="sub-category-group" v-if="currentCategory.children">
+              <div
+                  v-for="(subList, index) in groupedSubCategories"
+                  :key="main"
+                  class="sub-category-row"
+              >
+                <div
+                    v-for="sub in subList"
+                    :key="sub.id"
+                    class="sub-category-item"
+                    @click="handleSubCategoryClick(sub)"
+                >
+                  {{ sub.categoryName }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 搜索结果部分 -->
+    <div class="section job-recommend">
+      <div class="section-content">
+        <h3 class="section-title">搜索结果</h3>
+        <el-row :gutter="20">
+          <el-col :span="6" v-for="job in jobList" :key="job.title">
+            <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)">
+              <div class="job-header">
+                <h4>{{ job.title }}</h4>
+                <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
+              </div>
+              <div class="company">{{ job.companyName }}</div>
+              <div class="info-row">
+                <p>{{ truncateText(job.jobDesc, 20) }}</p>
+                <span class="location">
+                  <el-icon><Location/></el-icon>
+                  {{ job.location }}
+                </span>
+              </div>
+              <div class="recruiter">
+                <el-avatar :size="30" :src="job.recruiterAvatar"/>
+                <span>{{ job.recruiterName }}·招聘者</span>
+              </div>
+              <!-- 新增 job-footer 容器 -->
+              <div class="job-footer">
+                <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位
+                </el-tag>
+                <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
+              </div>
+            </el-card>
+
+          </el-col>
+          <!-- 右侧抽屉 -->
+          <el-col :span="16" class="drawer-container">
+            <el-drawer
+                v-model="drawerVisible"
+                :direction="direction"
+                :before-close="handleClose"
+                size="50%"
+                destroy-on-close
+            >
+              <template #header>
+                <h3>职位详情</h3>
+              </template>
+              <JobDetails :selectedJob="selectedJob"/>
+            </el-drawer>
+          </el-col>
+        </el-row>
+
+        <!-- 分页器 -->
+        <div class="pagination-container">
+          <el-pagination
+              v-model:current-page="currentPage"
+              v-model:page-size="pageSize"
+              :total="total"
+              :page-sizes="[8, 12, 16, 20]"
+              layout="total, sizes, prev, pager, next, jumper"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -138,29 +129,28 @@
 <script setup>
 import {getJobCard, getJobDetail} from '@/api/job.js'
 import {searchJob} from '@/api/job.js'
-import {ref, computed} from 'vue'
+import {ref, computed, onMounted} from 'vue'
 import {ElMessage} from 'element-plus'
 import {Search, Location} from '@element-plus/icons-vue'
 import request from '@/utils/request.js'
-import {onMounted} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import JobDetails from '../../components/JobDetail.vue'
-import router from "@/router/index.js";
+import main from "@/views/user/main.vue";
+
+const route = useRoute()
+const router = useRouter()
+
 // 分类相关的状态
 const categories = ref([])
 const currentCategory = ref({})
-const searchKeyword = ref('')
-// 热门标签
-const hotTags = ref(['前端开发', 'Java开发', '产品经理', 'UI设计'])
-
+const searchKeyword = ref(route.query.keyword || '')
 
 // 获取分类数据
 const fetchCategories = async () => {
   try {
     const response = await request.get('/ad/category/getTree')
     if (response.data.code === 200) {
-      console.log('分类数据:', response.data.data)
       categories.value = response.data.data
-      console.log('分类数据:', categories.value)
       if (categories.value.length > 0) {
         currentCategory.value = categories.value[0]
       }
@@ -181,50 +171,6 @@ const groupedSubCategories = computed(() => {
   return groups
 })
 
-
-onMounted(() => {
-  fetchJobs()
-  fetchCategories()
-})
-
-// 点击大分类
-const handleCategoryClick = (category) => {
-  currentCategory.value = category
-}
-
-// 点击小分类
-const handleSubCategoryClick = async (subCategory) => {
-  // 可以跳转到对应分类的职位列表页
-  console.log('选择的子分类：', subCategory.id)
-  console.log('当前页：', currentPage.value)
-  console.log('显示个数', pageSize.value)
-  try {
-    const resp = await searchJob({
-      currentPage: currentPage.value,
-      pageSize: pageSize.value,
-      keyword: '',
-      categoryId: subCategory.id
-    })
-    if (resp.data.code === 200) {
-      jobList.value = resp.data.data.records
-      total.value = resp.data.data.page.total
-    } else {
-      ElMessage.error(resp.data.message || '获取职位列表失败')
-    }
-  } catch (error) {
-    console.error('获取职位列表失败：', error)
-  }
-}
-// 搜索
-const handleSearch = async () => {
-  if (searchKeyword.value === '') {
-    ElMessage.error('请输入搜索内容')
-    return
-  }
-  // 跳转到搜索结果页面
-  await router.push({name: 'Search', query: {keyword: searchKeyword.value}})
-}
-
 // 职位列表相关数据
 const jobList = ref([])
 const currentPage = ref(1)
@@ -233,9 +179,14 @@ const total = ref(0)
 
 // 获取职位列表
 const fetchJobs = async () => {
-  jobList.value = []; // Clear the job list before fetching new data
+  jobList.value = [] // Clear the job list before fetching new data
   try {
-    const response = await getJobCard(currentPage.value, pageSize.value)
+    const response = await searchJob({
+      currentPage: currentPage.value,
+      pageSize: pageSize.value,
+      keyword: searchKeyword.value,
+      categoryId: currentCategory.value.id || ''
+    })
 
     if (response.data.code === 200) {
       jobList.value = response.data.data.records
@@ -247,6 +198,29 @@ const fetchJobs = async () => {
     console.error('获取职位列表出错：', error)
     ElMessage.error('获取职位列表失败')
   }
+}
+
+// 搜索
+const handleSearch = async () => {
+  if (searchKeyword.value === '') {
+    ElMessage.error('请输入搜索内容')
+    return
+  }
+  //关键词
+  searchKeyword.value = searchKeyword.value.trim()
+  await fetchJobs()
+}
+
+// 点击大分类
+const handleCategoryClick = async (category) => {
+  currentCategory.value = category
+  await fetchJobs()
+}
+
+// 点击小分类
+const handleSubCategoryClick = async (subCategory) => {
+  currentCategory.value = subCategory
+  await fetchJobs()
 }
 
 // 工具函数：格式化薪资
@@ -265,19 +239,19 @@ const getJobType = (type) => {
   }
   return typeMap[type] || '未知'
 }
+
 // 抽屉相关状态
 const drawerVisible = ref(false);
 const direction = ref('rtl'); // 右侧弹出
 const selectedJob = ref(null);
+
 // 处理职位卡片点击事件
 const handleJobClick = async (jobId) => {
-  console.log('选中的职位id', jobId)
   drawerVisible.value = true;
   try {
     const response = await getJobDetail(jobId)
     if (response.data.code === 200) {
       selectedJob.value = response.data.data
-      console.log('选中的职位', selectedJob.value)
     } else {
       ElMessage.error(response.data.message || '获取职位详情失败')
     }
@@ -286,41 +260,50 @@ const handleJobClick = async (jobId) => {
     ElMessage.error('获取职位详情失败')
   }
 }
+
 // 关闭抽屉时重置数据
 const handleClose = () => {
   drawerVisible.value = false;
   selectedJob.value = null;
 };
+
 // 分页处理函数
 const handleSizeChange = (val) => {
   pageSize.value = val
   fetchJobs()
 }
+
 // 分页处理函数
 const handleCurrentChange = (val) => {
   currentPage.value = val
   fetchJobs()
 }
+
 // 截取文本
 const truncateText = (text, length) => {
   if (text.length <= length) return text;
   return text.substring(0, length) + '...';
 }
+
+onMounted(() => {
+  fetchCategories()
+  fetchJobs()
+})
 </script>
+
 <style lang="scss" scoped>
+.job-search-container {
+  padding: 20px;
+}
+
 .search-section {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  padding: 60px 0;
+
 
   .search-content {
     max-width: 1200px;
     margin: 0 auto;
     text-align: center;
     color: white;
-  }
-
-  h2 {
-    margin-bottom: 30px;
   }
 
   .search-box {
@@ -441,7 +424,6 @@ const truncateText = (text, length) => {
       gap: 4px;
     }
 
-
     .job-type {
       position: absolute;
       bottom: 10px;
@@ -484,7 +466,6 @@ const truncateText = (text, length) => {
 }
 
 .category-section {
-  padding: 40px 0;
   background-color: #fff;
 
   .category-container {

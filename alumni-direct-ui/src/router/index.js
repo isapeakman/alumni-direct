@@ -39,7 +39,11 @@ const routes = [
                 path: 'chat',
                 name: 'Chat',
                 component: () => import('../views/chat.vue'),
-            },
+            }, {
+                path: 'search',
+                name: 'Search',
+                component: () => import('@/views/user/job-search.vue'),
+            }
         ]
     },
     {
