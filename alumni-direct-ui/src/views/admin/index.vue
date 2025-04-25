@@ -1,64 +1,247 @@
 <template>
-  <div class="wrapper">
-    <v-header/>
-    <v-sidebar/>
-    <div class="content-box" :class="{ 'content-collapse': sidebar.collapse }">
-      <v-tabs></v-tabs>
-      <div class="content">
-        <router-view v-slot="{ Component }">
-          <transition name="move" mode="out-in">
-            <keep-alive :include="tabs.nameList">
-              <component :is="Component"></component>
-            </keep-alive>
-          </transition>
-        </router-view>
-      </div>
-    </div>
-  </div>
-</template>
-<script setup lang="ts">
-import {useSidebarStore} from '../../store/sidebar';
-import {useTabsStore} from '../../store/tabs';
-import vHeader from '../../components/header.vue';
-import vSidebar from '../../components/sidebar.vue';
-import vTabs from '../../components/tabs.vue';
 
-const sidebar = useSidebarStore();
-const tabs = useTabsStore();
+  <el-container>
+    <!-- 顶部导航 -->
+    <el-header>
+      <el-header class="header">
+        <div class="header-content">
+          <div class="logo">
+            <router-link to="/">
+              <h1>校友直聘后台</h1>
+            </router-link>
+          </div>
+          <div class="nav-menu">
+            <!--            <el-menu mode="horizontal" :router="true" :default-active="$route.path">-->
+            <!--              <el-menu-item index="/dashboard">首页</el-menu-item>-->
+            <!--            </el-menu>-->
+          </div>
+          <div class="user-actions">
+            <template v-if="!isLoggedIn">
+              <el-button type="primary" @click="showLogin">登录</el-button>
+              <el-button @click="handleRegister">注册</el-button>
+            </template>
+            <template v-else>
+
+              <el-dropdown>
+              <span class="user-profile">
+                <span class="username">{{ userName }}</span>
+                <el-avatar :size="48" :src="avatar"/>
+              </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item divided @click="navigateToUser">求职</el-dropdown-item>
+                    <el-dropdown-item divided @click="navigateToRecruitment">招聘/内推</el-dropdown-item>
+                    <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </template>
+          </div>
+        </div>
+      </el-header>
+    </el-header>
+    <!--  侧边导航栏-->
+    <el-container>
+      <el-aside width="200px">
+        <el-row class="tac">
+          <el-col :span="3">
+            <el-menu
+                default-active="/admin/user"
+                class="el-menu-vertical-demo"
+                router
+            >
+              <el-menu-item index="/admin/user">
+                <el-icon>
+                  <icon-menu/>
+                </el-icon>
+                <span>用户管理</span>
+              </el-menu-item>
+              <el-menu-item index="/admin/approval">
+                <el-icon>
+                  <document/>
+                </el-icon>
+                <span>职位审批</span>
+              </el-menu-item>
+              <el-menu-item index="/admin/auth">
+                <el-icon>
+                  <setting/>
+                </el-icon>
+                <span>身份审核</span>
+              </el-menu-item>
+              <el-menu-item index="/admin/fair">
+                <el-icon>
+                  <setting/>
+                </el-icon>
+                <span>活动管理</span>
+              </el-menu-item>
+            </el-menu>
+          </el-col>
+        </el-row>
+      </el-aside>
+      <el-main>
+        <router-view/>
+      </el-main>
+    </el-container>
+  </el-container>
+
+
+  <!--  <router-view/>-->
+
+  <!-- 添加登录弹窗组件 -->
+
+  <LoginDialog
+      v-model:visible="loginDialogVisible"
+  />
+
+
+</template>
+
+<script setup>
+import {
+  Document,
+  Menu as IconMenu,
+  Location,
+  Setting,
+} from '@element-plus/icons-vue'
+import {ref, onMounted, computed} from 'vue'
+import LoginDialog from '@/components/LoginDialog.vue'
+import router from '@/router/index.js'
+import {ElMessage} from 'element-plus'
+
+// 控制登录框显示
+const loginDialogVisible = ref(false)
+// 用户相关状态
+const isLoggedIn = ref(false)
+const userName = ref('')
+const userInfo = ref(null)
+const avatar = ref('')
+const role = ref(null)
+const navigateToUser = () => {
+  router.push('/')
+}
+// 显示登录框的方法
+const showLogin = () => {
+  loginDialogVisible.value = true
+}
+// 监听 localStorage 变化
+window.addEventListener('storage', (e) => {
+  if (e.key === 'token' || e.key === 'userInfo') {
+    checkLoginStatus()
+  }
+})
+
+// 检查登录状态
+const checkLoginStatus = () => {
+  const savedUserInfo = localStorage.getItem('userInfo')
+  if (savedUserInfo) {
+    try {
+      userInfo.value = JSON.parse(savedUserInfo)
+      isLoggedIn.value = true
+      console.log('用户信息:', userInfo.value)
+      avatar.value = userInfo.value.data.userAvatar
+      console.log('头像:', avatar.value)
+      userName.value = userInfo.value.data.nickname || userInfo.value.data.userAccount
+      console.log('用户名:', userName.value)
+      role.value = userInfo.value.data.role
+    } catch (e) {
+      console.error('解析用户信息失败', e)
+    }
+  }
+}
+
+
+// 页面加载时检查是否有保存的用户信息
+onMounted(() => {
+  checkLoginStatus()
+})
+
+// 登出处理方法
+const handleLogout = () => {
+  // 清除用户信息
+  userInfo.value = null
+  isLoggedIn.value = false
+  userName.value = ''
+
+  // 清除本地存储
+  localStorage.removeItem('userInfo')
+  localStorage.removeItem('token')
+
+  ElMessage.success('退出成功')
+}
+const navigateToRecruitment = () => {
+  router.push('/recruitment')
+}
+// 跳转到管理员页面
+const navigateToAdmin = () => {
+  router.push('/admin')
+}
+
+// 页面加载时检查登录状态
+onMounted(() => {
+  // 检查 localStorage 中是否有用户信息和 token
+  const storedToken = localStorage.getItem('token')
+  const storedUserInfo = localStorage.getItem('userInfo')
+
+  if (storedToken && storedUserInfo) {
+    const parsedUserInfo = JSON.parse(storedUserInfo)
+    userInfo.value = parsedUserInfo
+    isLoggedIn.value = true
+    userName.value = parsedUserInfo.nickname || parsedUserInfo.userAccount
+  } else {
+    // 如果 token 或用户信息不完整，清除所有登录状态
+    handleLogout()
+  }
+})
 </script>
 
-<style>
-.wrapper {
-  height: 100vh;
-  overflow: hidden;
+<style lang="scss" scoped>
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.content-box {
-  position: absolute;
-  left: 250px;
-  right: 0;
-  top: 70px;
-  bottom: 0;
-  padding-bottom: 30px;
-  -webkit-transition: left 0.3s ease-in-out;
-  transition: left 0.3s ease-in-out;
-  background: #eef0fc;
-  overflow: hidden;
-}
+.header {
+  position: fixed; // 固定位置
+  top: 0; // 顶部对齐
+  left: 0; // 左侧对齐
+  width: 100%; // 占满宽度
+  z-index: 1000; // 确保在其他内容之上
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: white; // 背景色，防止内容遮挡
 
-.content {
-  width: auto;
-  height: 100%;
-  padding: 20px;
-  overflow-y: scroll;
-  box-sizing: border-box;
-}
+  .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+  }
 
-.content::-webkit-scrollbar {
-  width: 0;
-}
+  .logo {
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+  }
 
-.content-collapse {
-  left: 65px;
+  .username {
+    color: #333;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .nav-menu {
+    flex: 1;
+    margin: 0 40px;
+  }
+
+  .user-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
 }
 </style>
