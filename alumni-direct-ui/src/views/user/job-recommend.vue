@@ -4,44 +4,48 @@
       <el-col :span="8">
         <div class="grid-content ep-bg-purple"/>
 
-        <!--  左侧职位列表-->
-        <div class="job-list" v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading">
-          <div style="width: 100%" v-for="job in jobList" :key="job.id">
-            <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)" :class="{ 'active-card':selectedCardId.value === Number(job.id)
- }">
-              <div class="job-header">
-                <h4>{{ job.title }}</h4>
-                <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
-              </div>
-              <div class="company">{{ job.companyName }}</div>
-              <div class="info-row">
-                <p>{{ truncateText(job.jobDesc, 20) }}</p>
-                <span class="location">
-            <el-icon><Location/></el-icon>
-            {{ job.location }}
-          </span>
-                <div class="job-footer">
-                  <!-- 新增校友职位标识 -->
-                  <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位
-                  </el-tag>
-                  <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
+        <!-- 左侧职位列表 -->
+        <div class="job-list-container no-scrollbar">
+          <div class="job-list" v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading">
+            <div style="width: 100%" v-for="job in jobList" :key="job.id">
+              <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)"
+                       :class="{ 'active-card': selectedCardId.value === Number(job.id) }">
+                <div class="job-header">
+                  <h4>{{ job.title }}</h4>
+                  <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
                 </div>
-              </div>
-              <div class="recruiter">
-                <el-avatar :size="30" :src="job.recruiterAvatar"/>
-                <span>{{ job.recruiterName }}·招聘者</span>
-              </div>
-            </el-card>
+                <div class="company">{{ job.companyName }}</div>
+                <div class="info-row">
+                  <p>{{ truncateText(job.jobDesc, 20) }}</p>
+                  <span class="location">
+                    <el-icon><Location/></el-icon>
+                    {{ job.location }}
+                  </span>
+                  <div class="job-footer">
+                    <!-- 新增校友职位标识 -->
+                    <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位
+                    </el-tag>
+                    <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
+                  </div>
+                </div>
+                <div class="recruiter">
+                  <el-avatar :size="30" :src="job.recruiterAvatar"/>
+                  <span>{{ job.recruiterName }}·招聘者</span>
+                </div>
+              </el-card>
+            </div>
+            <!-- 加载状态 -->
+            <div class="loading-status" v-if="loading">加载中...</div>
+            <div class="no-more" v-if="noMore">没有更多职位了</div>
           </div>
-          <!-- 加载状态 -->
-          <div class="loading-status" v-if="loading">加载中...</div>
-          <div class="no-more" v-if="noMore">没有更多职位了</div>
         </div>
       </el-col>
       <el-col :span="15">
         <div class="grid-content ep-bg-purple"/>
-        <!--    职位详情页-->
-        <JobDetails :selectedJob="selectedJob"/>
+        <!-- 职位详情页 -->
+        <div class="job-details-container no-scrollbar">
+          <JobDetails :selectedJob="selectedJob"/>
+        </div>
       </el-col>
     </div>
   </el-row>
@@ -156,18 +160,25 @@ onMounted(() => {
   display: flex;
   background-color: #e7f0fa;
   width: 100%;
+  height: 100vh; // 确保容器填满整个视口高度
   box-sizing: border-box;
 }
 
 .el-col {
   flex: 1;
   padding: 0 10px;
+  height: 100%; // 确保子元素填满整个列高度
+}
+
+.job-list-container {
+  height: 100%; // 确保容器填满整个列高度
+  overflow-y: auto;
+  padding-right: 10px; // 防止滚动条遮挡内容
 }
 
 .job-list {
   min-width: 400px;
   min-height: 200px;
-  margin-right: 10px;
 }
 
 .job-card {
@@ -270,4 +281,22 @@ onMounted(() => {
   padding: 20px 0;
   color: #909399;
 }
+
+.job-details-container {
+  height: 100%; // 确保容器填满整个列高度
+  overflow-y: auto;
+  padding-left: 10px; // 防止滚动条遮挡内容
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 </style>
+
+
