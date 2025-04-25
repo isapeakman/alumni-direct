@@ -155,12 +155,19 @@ onMounted(() => {
   padding: 10px;
   display: flex;
   background-color: #e7f0fa;
+  width: 100%;
+  box-sizing: border-box;
+}
 
-  .job-list {
-    min-width: 400px;
-    min-height: 200px;
-    margin-right: 10px;
-  }
+.el-col {
+  flex: 1;
+  padding: 0 10px;
+}
+
+.job-list {
+  min-width: 400px;
+  min-height: 200px;
+  margin-right: 10px;
 }
 
 .job-card {
