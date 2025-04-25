@@ -17,7 +17,15 @@
                 {{ fair.location }}
               </p>
               <p class="fair-desc">{{ fair.description }}</p>
+              <el-button
+                  size="medium"
+                  class="details-btn"
+                  @click="viewFairDetails(fair)"
+              >
+                查看详情
+              </el-button>
             </div>
+
             <div class="fair-image">
               <img :src="fair.imageUrl" :alt="fair.name"/>
             </div>
@@ -47,7 +55,7 @@
             <el-button
                 size="mini"
                 class="details-btn"
-                @click="viewFairDetails(fair.id)"
+                @click="viewFairDetails(fair)"
             >
               查看详情
             </el-button>
@@ -55,6 +63,35 @@
         </div>
       </div>
     </div>
+    <!-- 对话框 -->
+    <el-dialog
+        title="招聘会详情"
+        v-model="dialogVisible"
+        width="50%"
+        :before-close="handleClose"
+    >
+      <div class="fair-details">
+        <h3 class="fair-name">{{ selectedFair.name }}</h3>
+        <p class="fair-type">
+          <strong>类型:</strong> {{ selectedFair.type }}
+        </p>
+        <p class="fair-organizer">
+          <strong>主办方:</strong> {{ selectedFair.organizer }}
+        </p>
+        <p class="fair-company">
+          <strong>公司名:</strong> {{ selectedFair.companyName }}
+        </p>
+        <p class="fair-time">
+          <strong>举办时间:</strong> {{ selectedFair.startTime }}~{{ selectedFair.endTime }}
+        </p>
+        <p class="fair-location">
+          <strong>地点:</strong> {{ selectedFair.location }}
+        </p>
+        <p class="fair-desc">
+          <strong>描述:</strong> {{ selectedFair.description }}
+        </p>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -65,7 +102,8 @@ import {getFairCards} from "@/api/fair.js";
 
 const upcomingFairs = ref([]);
 const pastFairs = ref([]);
-
+const dialogVisible = ref(false);
+const selectedFair = ref({});
 const fetchFairs = async () => {
   try {
     const response = await getFairCards() // 假设后端API路径为 /api/fairs
@@ -85,11 +123,14 @@ const fetchFairs = async () => {
   }
 };
 
-const viewFairDetails = (fairId) => {
-  // 实现查看招聘会详情的逻辑
-  console.log('查看招聘会详情:', fairId);
+const viewFairDetails = (fair) => {
+  console.log('查看招聘会详情:', fair);
+  selectedFair.value = fair;
+  dialogVisible.value = true;
 };
-
+const handleClose = () => {
+  dialogVisible.value = false;
+};
 onMounted(() => {
   fetchFairs();
 });
@@ -122,6 +163,7 @@ onMounted(() => {
   background: linear-gradient(to right, #f5f7fa, #e4e7ed);
   border-radius: 8px;
   overflow: hidden;
+  position: relative; /* 设置相对定位 */
 }
 
 .fair-info {
@@ -265,6 +307,26 @@ onMounted(() => {
   margin-top: 10px;
 }
 
+/* 对话框样式 */
+.fair-details {
+  padding: 20px;
+}
+
+.fair-details h3 {
+  margin-bottom: 15px;
+}
+
+.fair-details p {
+  margin-bottom: 10px;
+}
+
+/* 轮播图按钮样式 */
+.carousel-item .details-btn {
+  position: absolute; /* 设置绝对定位 */
+  bottom: 10px; /* 距离底部10px */
+  left: 10px; /* 距离左侧10px */
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
   .carousel-item {
@@ -289,3 +351,4 @@ onMounted(() => {
   }
 }
 </style>
+

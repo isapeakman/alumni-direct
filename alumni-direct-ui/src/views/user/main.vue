@@ -6,7 +6,7 @@
       <div class="search-box">
         <el-input
             v-model="searchKeyword"
-            placeholder="搜索职位、公司或地点"
+            placeholder="搜索职位"
             class="search-input"
         >
           <template #prefix>
@@ -17,17 +17,17 @@
         </el-input>
         <el-button type="primary" size="large" @click="handleSearch">搜索</el-button>
       </div>
-      <div class="hot-tags">
-        热门搜索：
-        <el-tag
-            v-for="tag in hotTags"
-            :key="tag"
-            class="hot-tag"
-            @click="searchKeyword = tag"
-        >
-          {{ tag }}
-        </el-tag>
-      </div>
+      <!--      <div class="hot-tags">-->
+      <!--        热门搜索：-->
+      <!--        <el-tag-->
+      <!--            v-for="tag in hotTags"-->
+      <!--            :key="tag"-->
+      <!--            class="hot-tag"-->
+      <!--            @click="searchKeyword = tag"-->
+      <!--        >-->
+      <!--          {{ tag }}-->
+      <!--        </el-tag>-->
+      <!--      </div>-->
     </div>
   </div>
 
@@ -151,13 +151,6 @@ const searchKeyword = ref('')
 // 热门标签
 const hotTags = ref(['前端开发', 'Java开发', '产品经理', 'UI设计'])
 
-// 企业数据
-const companies = ref([
-  {id: 1, name: '阿里巴巴', logo: 'https://placeholder.com/100'},
-  {id: 2, name: '腾讯', logo: 'https://placeholder.com/100'},
-  {id: 3, name: '字节跳动', logo: 'https://placeholder.com/100'},
-  // ... 其他企业数据
-])
 
 // 获取分类数据
 const fetchCategories = async () => {

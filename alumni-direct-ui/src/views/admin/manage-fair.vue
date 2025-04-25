@@ -62,6 +62,7 @@
 
     <el-card>
       <el-table :data="activities" style="width: 100%">
+        <el-table-column prop="name" label="活动名称"></el-table-column>
         <el-table-column label="类型">
           <template #default="scope">
             {{ scope.row.type === 0 ? '招聘会' : '宣讲会' }}
@@ -98,6 +99,9 @@
 
     <el-dialog title="编辑活动" v-model="editDialogVisible" width="50%">
       <el-form :model="activityForm" :rules="rules" ref="activityFormRef" label-width="120px">
+        <el-form-item label="活动名称" prop="name">
+          <el-input v-model="activityForm.name" placeholder="输入活动名称"></el-input>
+        </el-form-item>
         <el-form-item label="活动类型" prop="type">
           <el-select v-model="activityForm.type" placeholder="请选择活动类型">
             <el-option label="招聘会" :value="0"/>
@@ -161,6 +165,7 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const totalRecords = ref(0);
 const activityForm = ref({
+  id: null,
   type: null,
   organizer: "",
   company: "",
@@ -176,6 +181,7 @@ const activityForm = ref({
   name: "",
 });
 const rules = {
+  name: [{required: true, message: "请输入活动名称", trigger: "blur"}],
   type: [{required: true, message: "请选择活动类型", trigger: "change"}],
   organizer: [{required: true, message: "请输入主办方", trigger: "blur"}],
   company: [{required: true, message: "请输入公司名称", trigger: "blur"}],
@@ -268,6 +274,7 @@ const handleSubmit = async () => {
 // 重置表单
 const resetForm = () => {
   activityForm.value = {
+    name: "",
     type: null,
     organizer: "",
     company: "",
@@ -280,7 +287,6 @@ const resetForm = () => {
     recruiterId: null,
     file: null,
     description: "",
-    name: "",
   };
 };
 
