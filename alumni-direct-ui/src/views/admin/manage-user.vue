@@ -24,6 +24,7 @@
         <template #default="{ row }">
           <el-button v-if="row.status===0" type="danger" @click="banUser(row,1)">禁用</el-button>
           <el-button v-else type="success" @click="banUser(row,0)">启用</el-button>
+          <el-button type="primary" @click="viewUserInfo(row)">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -35,6 +36,23 @@
         @current-change="handlePageChange"
         layout="total, prev, pager, next, jumper"
     />
+    <el-dialog v-model="dialogVisible" title="用户信息">
+      <div v-if="selectedUser">
+        <p>用户ID: {{ selectedUser.userId }}</p>
+        <p>用户账号: {{ selectedUser.userAccount }}</p>
+        <p>昵称: {{ selectedUser.nickname }}</p>
+        <p>头像: <img :src="selectedUser.userAvatar" alt="头像" class="user-avatar"/></p>
+        <p>角色: {{ selectedUser.role === 0 ? '管理员' : '用户' }}</p>
+        <p>性别: {{ selectedUser.gender }}</p>
+        <p>出生日期: {{ selectedUser.birth }}</p>
+        <p>简介: {{ selectedUser.introduction }}</p>
+        <p>创建时间: {{ selectedUser.createTime }}</p>
+        <p>是否删除: {{ selectedUser.isDelete === 0 ? '未删除' : '已删除' }}</p>
+        <p>最后登录时间: {{ selectedUser.lastLoginTime }}</p>
+        <p>是否校友: {{ selectedUser.isAlumni === 0 ? '否' : '是' }}</p>
+        <p>状态: {{ selectedUser.status === 0 ? '未禁用' : '已禁用' }}</p>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -49,7 +67,8 @@ const searchQuery = ref(null)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const totalUsers = ref(0)
-
+const selectedUser = ref(null)
+const dialogVisible = ref(false)
 const fetchUsers = async () => {
   try {
     const response = await fetchUserData(currentPage.value, pageSize.value, searchQuery.value)
@@ -73,7 +92,10 @@ const filterUsers = () => {
   currentPage.value = 1 // 重置到第一页
   fetchUsers()
 }
-
+const viewUserInfo = (user) => {
+  selectedUser.value = user
+  dialogVisible.value = true
+}
 const handlePageChange = (page) => {
   currentPage.value = page
   fetchUsers()

@@ -73,7 +73,7 @@
       <div class="fair-details">
         <h3 class="fair-name">{{ selectedFair.name }}</h3>
         <p class="fair-type">
-          <strong>类型:</strong> {{ selectedFair.type }}
+          <strong>类型:</strong> {{ selectedFair.type === 0 ? '招聘会' : '宣讲会' }}
         </p>
         <p class="fair-organizer">
           <strong>主办方:</strong> {{ selectedFair.organizer }}

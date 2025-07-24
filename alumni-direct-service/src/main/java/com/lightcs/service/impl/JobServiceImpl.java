@@ -4,13 +4,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lightcs.controller.UserIntentionController;
+import com.lightcs.exception.BusinessException;
 import com.lightcs.exception.ThrowUtils;
 import com.lightcs.mapper.*;
 import com.lightcs.model.dto.JobCardRequest;
 import com.lightcs.model.dto.JobRequest;
 import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
-import com.lightcs.model.pojo.*;
+import com.lightcs.model.pojo.Job;
+import com.lightcs.model.pojo.JobApprovalRecord;
+import com.lightcs.model.pojo.JobCategory;
+import com.lightcs.model.pojo.User;
 import com.lightcs.model.vo.JobCardVO;
 import com.lightcs.model.vo.JobDetailVO;
 import com.lightcs.model.vo.JobVO;
@@ -213,6 +217,13 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         Integer current = cardRequest.getCurrent();
         Integer pageSize = cardRequest.getPageSize();
         Page<JobCardVO> page = new Page<>(current, pageSize);
+        try {
+            Integer currentUserId = CurrentUserUtil.getCurrentUserId();
+        } catch (BusinessException e) {
+            // 如果没有登录，则无法查询其他页的数据
+            return selectCards(cardRequest);
+        }
+
         // 根据分类id查询职位
         List<Integer> jobIdList = null;
         if (cardRequest.getCategoryId() != null) {
