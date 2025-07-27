@@ -30,5 +30,6 @@ public class MyUserDetailService implements UserDetailsService {
                 .password(userPassword)
                 .roles(userRole)
                 .build();
+
     }
 }
