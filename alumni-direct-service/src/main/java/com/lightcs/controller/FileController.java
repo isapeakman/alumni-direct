@@ -32,7 +32,7 @@ public class FileController {
         String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
         minioUtils.upload(fileName, file);
         // 暂时写死
-        return ResultBuilder.success("http://192.168.110.157:9000/bucket/" + fileName);
+        return ResultBuilder.success("http://localhost:9000/bucket/" + fileName);
     }
 
     @Operation(summary = "上传简历")

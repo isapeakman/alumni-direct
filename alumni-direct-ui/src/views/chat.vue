@@ -33,6 +33,7 @@
             :key="message.id"
             :class="{ 'sent': message.sendUserId === userInfo.userId, 'received': message.sendUserId !== userInfo.userId }"
         >
+          <!-- 消息头部：头像和用户名 -->
           <div v-if="message.sendUserId===userInfo.userId" class="message-header">
             <img :src="avatar" alt="Avatar" class="message-avatar"/>
             <span class="message-username">我</span>
@@ -49,7 +50,6 @@
           >
             {{ message.messageContent }}
           </div>
-
           <!-- 文件消息 -->
           <div
               v-else-if="message.messageType === MESSAGE_TYPE.FILE"
@@ -369,6 +369,7 @@ const fetchConversations = async () => {
 
 const lastMessageTime = ref(null);
 const isFetching = ref(false);
+const isLoadingHistory = ref(false); // 标记是否正在加载历史消息
 const fetchMessages = async (sessionId, historyTime = null) => {
   if (isFetching.value) return;
   isFetching.value = true;
@@ -382,6 +383,7 @@ const fetchMessages = async (sessionId, historyTime = null) => {
 
       // 如果是加载历史消息（滚动到顶部时）
       if (historyTime) {
+        isLoadingHistory.value = true; // 设置标志位
         const previousScrollHeight = document.querySelector('.chat-messages')?.scrollHeight || 0;
         chatMessages.value = [...messages, ...chatMessages.value];
 
@@ -390,11 +392,11 @@ const fetchMessages = async (sessionId, historyTime = null) => {
         if (chatMessagesEl) {
           chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight - previousScrollHeight;
         }
+        isLoadingHistory.value = false; // 清除标志位
       }
       // 如果是首次加载或切换会话
       else {
         chatMessages.value = messages;
-
         await nextTick();
         scrollToBottom();
       }
@@ -520,10 +522,15 @@ const scrollToBottom = () => {
   });
 };
 
-watch(chatMessages, scrollToBottom, {deep: true});
+watch(chatMessages, (newVal, oldVal) => {
+  // 只有在非加载历史消息时才自动滚动到底部
+  if (!isLoadingHistory.value) {
+    scrollToBottom();
+  }
+}, {deep: true});
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .chat-container {
   display: flex;
   height: 90vh; /* Adjust the height as needed */
