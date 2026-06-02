@@ -11,10 +11,7 @@ import com.lightcs.model.dto.JobCardRequest;
 import com.lightcs.model.dto.JobRequest;
 import com.lightcs.model.dto.job.JobAdd;
 import com.lightcs.model.dto.job.JobUpdate;
-import com.lightcs.model.pojo.Job;
-import com.lightcs.model.pojo.JobApprovalRecord;
-import com.lightcs.model.pojo.JobCategory;
-import com.lightcs.model.pojo.User;
+import com.lightcs.model.pojo.*;
 import com.lightcs.model.vo.JobCardVO;
 import com.lightcs.model.vo.JobDetailVO;
 import com.lightcs.model.vo.JobVO;
@@ -204,20 +201,24 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
      * @return 所有子分类ID列表（包含当前分类）
      */
     private List<Integer> getAllCategoryIdByParentId(Integer parentId) {
-        List<Integer> result = new ArrayList<>();
-        // 添加当前分类ID
-        result.add(parentId);
-
-        // 查询直接子分类
-        List<Integer> directChildren = categoryMapper.selectCategoryIdByParentId(parentId);
-        if (directChildren != null && !directChildren.isEmpty()) {
-            // 递归获取每个子分类的所有后代分类
-            for (Integer childId : directChildren) {
-                List<Integer> subCategoryIds = getAllCategoryIdByParentId(childId);
-                result.addAll(subCategoryIds);
-            }
+        // 用DFS获取所有子分类ID
+        Set<Integer> categoryIdList = new HashSet<>();
+        Deque<Integer> stack = new ArrayDeque<>();
+        stack.push(parentId);
+        // 查询所有分类：减少数据库查询次数，后续在内存中处理
+        List<Category> categories = categoryMapper.selectList(null);
+        while (!stack.isEmpty()) {
+            Integer categoryId = stack.pop();
+            categoryIdList.add(categoryId);
+            // 查询子分类
+            categories.forEach(category -> {
+                // 如果该分类的父分类ID等于当前分类ID，并且不在结果列表中（防止出现环），则将该分类ID加入栈中
+                if (Objects.equals(category.getParentId(), categoryId) && !categoryIdList.contains(category.getId())) {
+                    stack.push(category.getId());
+                }
+            });
         }
-        return result;
+        return new ArrayList<>(categoryIdList);
     }
 
 
