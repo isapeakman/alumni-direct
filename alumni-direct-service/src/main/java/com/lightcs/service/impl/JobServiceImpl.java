@@ -27,10 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.lightcs.constants.Common.*;
@@ -178,10 +175,7 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         // 根据分类id查询职位
         List<Integer> jobIdList = null;
         if (cardRequest.getCategoryId() != null) {
-            //递归获取所有的子分类id
-            List<Integer> categoryIdList = categoryMapper.selectCategoryIdByParentId(cardRequest.getCategoryId());
-            //将当前分类id添加到列表中
-            categoryIdList.add(cardRequest.getCategoryId());
+            List<Integer> categoryIdList = getAllCategoryIdByParentId(cardRequest.getCategoryId());
             jobIdList = jobCategoryMapper.selectJobIdByCategoryIds(categoryIdList);
             // 没有符合的职位
             if (jobIdList == null || jobIdList.isEmpty()) {
@@ -202,6 +196,30 @@ public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobSe
         page.setRecords(jobCardVOS);
         return page;
     }
+
+    /**
+     * 递归获取所有子分类ID（包括当前分类）
+     *
+     * @param parentId 父分类ID
+     * @return 所有子分类ID列表（包含当前分类）
+     */
+    private List<Integer> getAllCategoryIdByParentId(Integer parentId) {
+        List<Integer> result = new ArrayList<>();
+        // 添加当前分类ID
+        result.add(parentId);
+
+        // 查询直接子分类
+        List<Integer> directChildren = categoryMapper.selectCategoryIdByParentId(parentId);
+        if (directChildren != null && !directChildren.isEmpty()) {
+            // 递归获取每个子分类的所有后代分类
+            for (Integer childId : directChildren) {
+                List<Integer> subCategoryIds = getAllCategoryIdByParentId(childId);
+                result.addAll(subCategoryIds);
+            }
+        }
+        return result;
+    }
+
 
     @Autowired
     private UserIntentionController userIntentionController;

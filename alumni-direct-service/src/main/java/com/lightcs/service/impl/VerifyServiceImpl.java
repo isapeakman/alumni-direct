@@ -9,6 +9,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -51,9 +52,9 @@ public class VerifyServiceImpl implements VerifyService {
 
     @Override
     public boolean doVerify(String mail, String code) {
-        String string = (String) redisUtil.get("verify:code:" + mail);
+        String realCaptcha = (String) redisUtil.get("verify:code:" + mail);
         // 校验成功后删除验证码
-        if (string.equals(code)) {
+        if (Objects.equals(code, realCaptcha)) {
             redisUtil.del("verify:code:" + mail);
             return true;
         }

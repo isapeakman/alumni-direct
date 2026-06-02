@@ -43,6 +43,8 @@ public class GlobalExceptionHandler {
     @ResponseBody
     @ExceptionHandler(Exception.class)
     public Map<String, Object> handleBusinessException(Exception e) {
+        //打印异常堆栈信息
+        e.printStackTrace();
         LinkedHashMap<String, Object> map = new LinkedHashMap<>();
         if (e instanceof BusinessException) {
             map.put("code", ((BusinessException) e).getCode());
