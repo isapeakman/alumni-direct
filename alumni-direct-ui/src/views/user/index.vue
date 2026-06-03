@@ -12,10 +12,10 @@
             </div>
             <div class="nav-menu">
               <el-menu mode="horizontal" :router="true" :default-active="$route.path">
-                <el-menu-item index="/dashboard">首页</el-menu-item>
-                <el-menu-item index="/recommend">推荐职位</el-menu-item>
-                <el-menu-item index="/search">搜索职位</el-menu-item>
-                <el-menu-item index="/fair">招聘会和宣讲会</el-menu-item>
+                <el-menu-item index="/dashboard" @click="handleNavClick('/dashboard')">首页</el-menu-item>
+                <el-menu-item index="/recommend" @click="handleNavClick('/recommend')">推荐职位</el-menu-item>
+                <el-menu-item index="/search" @click="handleNavClick('/search')">搜索职位</el-menu-item>
+                <el-menu-item index="/fair" @click="handleNavClick('/fair')">招聘会和宣讲会</el-menu-item>
               </el-menu>
             </div>
             <div class="user-actions">
@@ -51,7 +51,48 @@
           <el-main>
             <router-view></router-view>
           </el-main>
-          <el-footer>power by MR.WU</el-footer>
+          <el-footer>
+            <div class="footer-content">
+              <div class="footer-section">
+                <h4>校友直聘</h4>
+                <ul>
+                  <li><a href="/dashboard">首页</a></li>
+                  <li><a href="/recommend">推荐职位</a></li>
+                  <li><a href="/search">搜索职位</a></li>
+                  <li><a href="/fair">招聘会</a></li>
+                </ul>
+              </div>
+              <div class="footer-section">
+                <h4>求职者服务</h4>
+                <ul>
+                  <li><a href="#">简历指导</a></li>
+                  <li><a href="#">面试技巧</a></li>
+                  <li><a href="/apply">投递记录</a></li>
+                  <li><a href="/personalCenter">个人中心</a></li>
+                </ul>
+              </div>
+              <div class="footer-section">
+                <h4>企业服务</h4>
+                <ul>
+                  <li><a href="/recruitment">企业入驻</a></li>
+                  <li><a href="#">职位发布</a></li>
+                  <li><a href="#">校园招聘</a></li>
+                  <li><a href="#">品牌推广</a></li>
+                </ul>
+              </div>
+              <div class="footer-section">
+                <h4>联系我们</h4>
+                <div class="contact-info">
+                  <p class="phone">400-888-8888</p>
+                  <p>contact@alumnidirect.com</p>
+                  <p>北京市海淀区中关村大街1号</p>
+                </div>
+              </div>
+            </div>
+            <div class="copyright">
+              © 2024 校友直聘 版权所有 | 京ICP备12345678号
+            </div>
+          </el-footer>
         </el-container>
       </el-container>
     </div>
@@ -66,9 +107,11 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue'
 import LoginDialog from '@/components/LoginDialog.vue'
-import RegisterDialog from '@/components/RegisterDialog.vue' // 确保正确导入 RegisterDialog 组件
+import RegisterDialog from '@/components/RegisterDialog.vue'
 import request from '@/utils/request.js'
 import {ElMessage} from 'element-plus'
+import router from "@/router/index.js";
+import {getUserInfo} from "@/api/user.js";
 
 // 控制登录框显示
 const loginDialogVisible = ref(false)
@@ -147,27 +190,11 @@ const handleLogout = () => {
 }
 
 
-
-// 页面加载时检查登录状态
-onMounted(() => {
-  // 检查 localStorage 中是否有用户信息和 token
-  const storedToken = localStorage.getItem('token')
-  const storedUserInfo = localStorage.getItem('userInfo')
-
-  if (storedToken && storedUserInfo) {
-    const parsedUserInfo = JSON.parse(storedUserInfo)
-    userInfo.value = parsedUserInfo
-    isLoggedIn.value = true
-    userName.value = parsedUserInfo.nickname || parsedUserInfo.userAccount
-  } else {
-    // 如果 token 或用户信息不完整，清除所有登录状态
-    handleLogout()
-  }
-})
-
-
-import router from "@/router/index.js";
-import {getUserInfo} from "@/api/user.js";
+// 导航菜单点击处理
+const handleNavClick = (path) => {
+  console.log('导航点击:', path)
+  router.push(path)
+}
 
 // 跳转到招聘者页面
 const navigateToRecruitment = () => {
@@ -184,22 +211,32 @@ const navigateToAdmin = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #f8fafc;
 }
 
 .el-main {
-  margin-top: 10px; /* 假设导航栏高度为60px */
-  padding: 50px; /* 可选：添加内边距提升可读性 */
+  flex: 1;
+  padding: 0;
+  margin-top: 70px;
+}
+
+.el-footer {
+  background: #1e293b;
+  color: #fff;
+  padding: 60px 0 30px;
+  margin-top: auto;
 }
 
 .header {
-  position: fixed; // 固定位置
-  top: 0; // 顶部对齐
-  left: 0; // 左侧对齐
-  width: 100%; // 占满宽度
-  height: 60px;
-  z-index: 1000; // 确保在其他内容之上
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: white; // 背景色，防止内容遮挡
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
 
   .header-content {
     max-width: 1200px;
@@ -208,68 +245,195 @@ const navigateToAdmin = () => {
     align-items: center;
     justify-content: space-between;
     height: 100%;
+    padding: 0 20px;
   }
 
   .logo {
+    a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
     h1 {
       margin: 0;
       font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-  }
-
-  .username {
-    color: #333;
-    font-size: 14px;
-    white-space: nowrap;
   }
 
   .nav-menu {
     flex: 1;
-    margin: 0 40px;
+    margin: 0 60px;
+
+    :deep(.el-menu) {
+      border: none;
+      background: transparent;
+    }
+
+    :deep(.el-menu-item) {
+      font-size: 15px;
+      color: #475569;
+      padding: 0 20px;
+      margin: 0 8px;
+      border-radius: 8px;
+      transition: all 0.3s;
+
+      &:hover {
+        color: #0ea5e9;
+        background: rgba(14, 165, 233, 0.08);
+      }
+
+      &.is-active {
+        color: #0ea5e9;
+        background: rgba(14, 165, 233, 0.1);
+        font-weight: 600;
+      }
+    }
   }
 
   .user-actions {
     display: flex;
     gap: 12px;
     align-items: center;
+
+    .username {
+      color: #475569;
+      font-size: 14px;
+      font-weight: 500;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 20px;
+      transition: background 0.3s;
+
+      &:hover {
+        background: #f1f5f9;
+      }
+    }
+
+    :deep(.el-button) {
+      padding: 8px 24px;
+      border-radius: 20px;
+      font-weight: 500;
+
+      &.el-button--primary {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        border: none;
+
+        &:hover {
+          background: linear-gradient(135deg, #0284c7, #0369a1);
+        }
+      }
+
+      &.el-button--default {
+        border-color: #e2e8f0;
+
+        &:hover {
+          border-color: #0ea5e9;
+          color: #0ea5e9;
+        }
+      }
+    }
+
+    :deep(.el-dropdown-menu) {
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      border: none;
+      padding: 8px 0;
+
+      .el-dropdown-item {
+        padding: 10px 20px;
+        font-size: 14px;
+        color: #475569;
+
+        &:hover {
+          background: rgba(14, 165, 233, 0.08);
+          color: #0ea5e9;
+        }
+
+        &.is-divided {
+          border-top: 1px solid #f1f5f9;
+          margin-top: 4px;
+          padding-top: 14px;
+        }
+      }
+    }
   }
 }
-.footer {
-  background-color: #2c3e50;
-  color: white;
-  padding: 40px 0 20px;
-  margin-top: auto;
 
-
-  .footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 40px;
-  }
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  margin-bottom: 40px;
+  padding: 0 20px;
 
   .footer-section {
     h4 {
+      font-size: 16px;
+      font-weight: 600;
       margin-bottom: 20px;
+      color: #fff;
     }
 
-    p {
-      margin: 8px 0;
-      color: rgba(255, 255, 255, 0.7);
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        margin-bottom: 12px;
+
+        a {
+          color: #94a3b8;
+          text-decoration: none;
+          font-size: 14px;
+          transition: color 0.3s;
+
+          &:hover {
+            color: #0ea5e9;
+          }
+        }
+      }
     }
 
-    .phone {
-      font-size: 20px;
-      color: white;
+    .contact-info {
+      p {
+        margin: 8px 0;
+        color: #94a3b8;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .phone {
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+      }
     }
   }
+}
 
-  .copyright {
-    text-align: center;
-    color: rgba(255, 255, 255, 0.5);
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
+.copyright {
+  text-align: center;
+  color: #64748b;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
 }
 </style>

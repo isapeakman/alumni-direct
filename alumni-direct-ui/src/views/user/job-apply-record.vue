@@ -1,112 +1,194 @@
 <template>
-  <div class="job-apply-timeline" ref="scrollContainer" @scroll="handleScroll">
-    <h1>投递记录时间轴</h1>
-    <div class="timeline-container" ref="timelineContainer">
-      <div
-          v-for="(record, index) in jobRecords"
-          :key="record.jobId + '-' + index"
-          class="timeline-item"
-          :class="{'left-item': index % 2 === 0, 'right-item': index % 2 !== 0}"
-      >
-        <div class="timeline-content">
-          <div class="timestamp">{{ formatDate(record.applyTime) }}</div>
-          <div class="job-card" @click="showJobDetail(record)">
-            <h3>{{ record.title }}</h3>
-            <p>{{ record.companyName }} | {{ record.location }}</p>
-            <p>薪资范围：{{ formatSalary(record.minSalary, record.maxSalary) }}</p>
-            <el-tag :type="getStatusTagType(record.status)">
-              {{ getJobStatusText(record.status) }}
-            </el-tag>
-          </div>
-        </div>
-      </div>
-      <div v-if="loading" class="loading-more">
-        <el-icon class="is-loading">
-          <Loading/>
-        </el-icon>
-        加载中...
-      </div>
-      <div v-if="noMore" class="no-more">没有更多记录了</div>
+  <div class="job-apply-container" ref="scrollContainer" @scroll="handleScroll">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h1 class="page-title">投递记录</h1>
+      <p class="page-subtitle">追踪你的职位申请进度</p>
     </div>
 
-    <!-- 修改后的弹窗 -->
+    <!-- 统计卡片 -->
+    <div class="stats-card">
+      <div class="stat-item">
+        <el-icon class="stat-icon">
+          <Briefcase/>
+        </el-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ jobRecords.length }}</span>
+          <span class="stat-label">投递总数</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <el-icon class="stat-icon text-success">
+          <CheckCircle/>
+        </el-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ activeCount }}</span>
+          <span class="stat-label">进行中</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <el-icon class="stat-icon text-warning">
+          <Clock/>
+        </el-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ closedCount }}</span>
+          <span class="stat-label">已结束</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 时间轴 -->
+    <div class="timeline-section">
+      <div v-if="jobRecords.length > 0" class="timeline-container">
+        <div
+            v-for="(record, index) in sortedRecords"
+            :key="record.jobId + '-' + index"
+            class="timeline-item"
+        >
+          <div class="timeline-node">
+            <div class="node-dot"></div>
+            <div v-if="index < sortedRecords.length - 1" class="node-line"></div>
+          </div>
+          <div class="timeline-card" @click="showJobDetail(record)">
+            <div class="card-header">
+              <div class="job-info">
+                <h3 class="job-title">{{ record.title }}</h3>
+                <p class="job-meta">{{ record.companyName }} · {{ record.location }}</p>
+              </div>
+              <div class="card-badge">
+                <el-tag :type="getStatusTagType(record.status)" size="small">
+                  {{ getJobStatusText(record.status) }}
+                </el-tag>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="salary-info">
+                <el-icon>
+                  <Wallet/>
+                </el-icon>
+                <span>{{ formatSalary(record.minSalary, record.maxSalary) }}</span>
+              </div>
+              <div class="apply-time">
+                <el-icon>
+                  <Clock/>
+                </el-icon>
+                <span>{{ formatDate(record.applyTime) }}</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="recruiter">
+                <el-avatar :size="24" :src="record.recruiterAvatar || defaultAvatar"/>
+                {{ record.recruiterName }}
+              </span>
+              <span class="view-detail">查看详情 <el-icon><ChevronRight/></el-icon></span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="loading" class="loading-more">
+          <el-icon class="loading-icon">
+            <Loading/>
+          </el-icon>
+          加载中...
+        </div>
+        <div v-if="noMore" class="no-more">没有更多记录了</div>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-else class="empty-state">
+        <el-icon size="64" color="#cbd5e1">
+          <FileText/>
+        </el-icon>
+        <p>暂无投递记录</p>
+        <p class="empty-hint">快去搜索并投递心仪的职位吧</p>
+      </div>
+    </div>
+
+    <!-- 职位详情弹窗 -->
     <el-dialog
         v-model="dialogVisible"
         :title="selectedJob ? selectedJob.title : ''"
         width="50%"
         custom-class="job-details-dialog"
+        class="detail-dialog"
     >
       <div v-if="selectedJob" class="job-details-container">
-        <div class="job-details">
-          <!-- 标题与薪资 -->
-          <div class="job-title-row">
-            <div class="job-title">{{ selectedJob.title }}</div>
-            <div class="job-salary">{{ formatSalary(selectedJob.minSalary, selectedJob.maxSalary) }}</div>
-            <el-button
-                type="primary"
-                plain
-                @click="goChat(selectedJob.createId, selectedJob.title)"
-                class="apply-button"
-                :disabled="!isJobActive(selectedJob.status)"
-            >
-              发起沟通
-              <el-tooltip
-                  v-if="!isJobActive(selectedJob.status)"
-                  content="该职位已关闭，无法沟通"
-                  placement="top"
-              >
-                <el-icon>
-                  <Warning/>
-                </el-icon>
-              </el-tooltip>
-            </el-button>
+        <div class="details-header">
+          <div class="header-left">
+            <div class="details-salary">{{ formatSalary(selectedJob.minSalary, selectedJob.maxSalary) }}</div>
+            <el-tag type="info" size="small" class="details-type">{{ getJobType(selectedJob.jobType) }}</el-tag>
           </div>
-
-          <!-- 职位类型标签 -->
-          <el-tag type="info" size="small" class="job-type-tag">
-            {{ getJobType(selectedJob.jobType) }}
-          </el-tag>
-
-          <!-- 发布时间 -->
-          <div class="publish-time">
-            发布时间：{{ formatDateTime(selectedJob.publishTime) }}
-          </div>
-
-          <!-- 职位详情 -->
-          <h3 class="section-title">职位详情</h3>
-          <div class="job-desc">
-            <p v-for="(line, index) in jobDescLines" :key="index" class="desc-line">
-              {{ line }}
-            </p>
-          </div>
-
-          <!-- 工作地点 -->
-          <p class="location">工作地点：
+          <el-button
+              type="primary"
+              plain
+              @click="goChat(selectedJob.createId, selectedJob.title)"
+              :disabled="!isJobActive(selectedJob.status)"
+              class="chat-btn"
+          >
             <el-icon>
-              <Location/>
+              <MessageCircle/>
             </el-icon>
-            {{ selectedJob.location }}
-          </p>
+            发起沟通
+          </el-button>
+        </div>
 
-          <!-- 招聘者信息 -->
-          <div class="divider-section">
-            <el-divider></el-divider>
-            <el-avatar :size="30" :src="selectedJob.recruiterAvatar || defaultAvatar"/>
-            招聘者：{{ selectedJob.recruiterName }}
+        <div class="details-body">
+          <div class="detail-section">
+            <h4 class="section-title">职位详情</h4>
+            <div class="job-desc">
+              <p v-for="(line, index) in jobDescLines" :key="index" class="desc-line">
+                {{ line }}
+              </p>
+            </div>
           </div>
 
-          <!-- 公司名称 -->
-          <p class="company-name">公司名称：{{ selectedJob.companyName }}</p>
+          <div class="detail-section">
+            <h4 class="section-title">基本信息</h4>
+            <div class="info-grid">
+              <div class="info-item">
+                <el-icon class="info-icon">
+                  <MapPin/>
+                </el-icon>
+                <span class="info-label">工作地点</span>
+                <span class="info-value">{{ selectedJob.location }}</span>
+              </div>
+              <div class="info-item">
+                <el-icon class="info-icon">
+                  <Calendar/>
+                </el-icon>
+                <span class="info-label">发布时间</span>
+                <span class="info-value">{{ formatDateTime(selectedJob.publishTime) }}</span>
+              </div>
+              <div class="info-item">
+                <el-icon class="info-icon">
+                  <Building/>
+                </el-icon>
+                <span class="info-label">公司名称</span>
+                <span class="info-value">{{ selectedJob.companyName }}</span>
+              </div>
+              <div class="info-item">
+                <el-icon class="info-icon">
+                  <User/>
+                </el-icon>
+                <span class="info-label">招聘者</span>
+                <div class="recruiter-info">
+                  <el-avatar :size="28" :src="selectedJob.recruiterAvatar || defaultAvatar"/>
+                  <span>{{ selectedJob.recruiterName }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <!-- 职位状态 -->
-          <div class="status-section">
-            <el-tag
-                :type="getStatusTagType(selectedJob.status)"
-                size="small"
-                class="status-tag"
-            >
-              {{ getJobStatusText(selectedJob.status) }}
-            </el-tag>
+          <div class="detail-section">
+            <h4 class="section-title">职位状态</h4>
+            <div class="status-display">
+              <el-tag :type="getStatusTagType(selectedJob.status)" class="status-tag">
+                {{ getJobStatusText(selectedJob.status) }}
+              </el-tag>
+              <span v-if="!isJobActive(selectedJob.status)" class="status-hint">
+                该职位已关闭，无法发起沟通
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -116,7 +198,22 @@
 
 <script setup>
 import {ref, computed} from 'vue'
-import {Location, Warning} from "@element-plus/icons-vue"
+import {
+  Location,
+  Warning,
+  Briefcase,
+  CheckCircle,
+  Clock,
+  Wallet,
+  ChevronRight,
+  FileText,
+  MapPin,
+  Calendar,
+  Building,
+  User,
+  MessageCircle,
+  Loading
+} from "@element-plus/icons-vue"
 import {getJobApplyRecord} from '@/api/job.js'
 import dayjs from 'dayjs'
 import router from '@/router/index.js'
@@ -141,6 +238,16 @@ const sortedRecords = computed(() => {
   return [...jobRecords.value].sort((a, b) => {
     return new Date(b.applyTime) - new Date(a.applyTime)
   })
+})
+
+// 统计进行中的投递数量
+const activeCount = computed(() => {
+  return jobRecords.value.filter(record => record.status === 2).length
+})
+
+// 统计已结束的投递数量
+const closedCount = computed(() => {
+  return jobRecords.value.filter(record => record.status !== 2).length
 })
 
 const jobDescLines = computed(() => {
@@ -264,35 +371,269 @@ const formatDateTime = (date) => {
 fetchJobRecords()
 </script>
 
-<style scoped lang="scss">
-.job-apply-timeline {
-  padding: 20px;
-  max-width: 1200px;
+<style lang="scss" scoped>
+.job-apply-container {
+  padding: 30px;
+  max-width: 900px;
   margin: 0 auto;
-  height: calc(100vh - 60px); /* 设置固定高度以启用滚动 */
-  overflow-y: auto; /* 启用垂直滚动 */
+  min-height: calc(100vh - 60px);
+
+  .page-header {
+    margin-bottom: 24px;
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 8px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+}
+
+/* 统计卡片 */
+.stats-card {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  border-radius: 16px;
+
+  .stat-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #fff;
+
+      &.text-success {
+        background: rgba(34, 197, 94, 0.3);
+      }
+
+      &.text-warning {
+        background: rgba(251, 146, 60, 0.3);
+      }
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+    }
+  }
+}
+
+/* 时间轴区域 */
+.timeline-section {
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+
+    p {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .empty-hint {
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-top: 6px;
+    }
+  }
 }
 
 .timeline-container {
   position: relative;
-  padding: 20px 0;
-  min-height: 100%;
 }
 
-/* 加载更多样式 */
-.loading-more, .no-more {
-  text-align: center;
-  padding: 20px 0;
-  color: #909399;
-  font-size: 14px;
+.timeline-item {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 0;
 
-  .el-icon {
-    margin-right: 8px;
-    animation: rotating 2s linear infinite;
+  &:last-child .timeline-node .node-line {
+    display: none;
   }
 }
 
-@keyframes rotating {
+.timeline-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 24px;
+
+  .node-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+  }
+
+  .node-line {
+    width: 2px;
+    flex: 1;
+    background: linear-gradient(180deg, #e2e8f0, transparent);
+    margin-top: 12px;
+  }
+}
+
+.timeline-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    transform: translateX(8px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+
+    .job-info {
+      .job-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 6px;
+      }
+
+      .job-meta {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+      }
+    }
+
+    .card-badge {
+      :deep(.el-tag) {
+        border: none;
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 12px;
+
+        &.el-tag--success {
+          background: rgba(34, 197, 94, 0.1);
+          color: #22c55e;
+        }
+
+        &.el-tag--info {
+          background: rgba(148, 163, 184, 0.1);
+          color: #64748b;
+        }
+      }
+    }
+  }
+
+  .card-body {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+    padding: 12px 0;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+
+    .salary-info, .apply-time {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #64748b;
+
+      :deep(.el-icon) {
+        font-size: 14px;
+      }
+    }
+
+    .salary-info {
+      color: #ef4444;
+      font-weight: 600;
+    }
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .recruiter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+
+      :deep(.el-avatar) {
+        border: 1px solid #f1f5f9;
+      }
+    }
+
+    .view-detail {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #0ea5e9;
+    }
+  }
+}
+
+.loading-more, .no-more {
+  text-align: center;
+  padding: 24px 0;
+  color: #94a3b8;
+  font-size: 13px;
+
+  .loading-icon {
+    margin-right: 8px;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
   from {
     transform: rotate(0deg);
   }
@@ -301,282 +642,208 @@ fetchJobRecords()
   }
 }
 
+/* 详情弹窗样式 */
+.detail-dialog {
+  ::v-deep(.el-dialog__header) {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
 
-.timeline-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  background-color: #e0e0e0;
-  transform: translateX(-50%);
-}
-
-.timeline-item {
-  position: relative;
-  margin-bottom: 40px;
-  width: 100%;
-}
-
-.timeline-item::after {
-  content: '';
-  position: absolute;
-  top: 20px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: #409eff;
-  z-index: 1;
-}
-
-.left-item::after {
-  left: 50%;
-  transform: translateX(-8px);
-}
-
-.right-item::after {
-  left: 50%;
-  transform: translateX(-8px);
-}
-
-.timeline-content {
-  position: relative;
-  width: calc(50% - 40px);
-  padding: 15px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-}
-
-.left-item .timeline-content {
-  margin-right: auto;
-  margin-left: 0;
-}
-
-.right-item .timeline-content {
-  margin-left: auto;
-  margin-right: 0;
-}
-
-.timestamp {
-  position: absolute;
-  top: 10px;
-  font-size: 12px;
-  color: #999;
-}
-
-.left-item .timestamp {
-  right: -120px;
-  text-align: left;
-}
-
-.right-item .timestamp {
-  left: -120px;
-  text-align: right;
-}
-
-.job-card {
-  cursor: pointer;
-  transition: all 0.3s;
-
-  h3 {
-    margin: 0 0 8px 0;
-    color: #333;
-    font-size: 16px;
+    span {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+    }
   }
 
-  p {
-    margin: 4px 0;
-    color: #666;
-    font-size: 14px;
-  }
-
-  &:hover {
-    transform: translateY(-3px);
+  ::v-deep(.el-dialog__body) {
+    padding: 24px;
   }
 }
 
-.status {
-  font-weight: bold;
-  margin-top: 8px !important;
-}
-
-.status-pending {
-  color: #e6a23c;
-}
-
-.status-success {
-  color: #67c23a; /* Green */
-}
-
-.status-closed {
-  color: #909399; /* Gray */
-}
-
-.status-error {
-  color: #909399; /* Gray */
-}
-
-/* 详情弹窗样式 - 完全匹配你提供的设计 */
 .job-details-container {
-  padding: 10px;
-  max-height: 70vh;
-  overflow-y: auto;
+  .details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 20px;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .details-salary {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ef4444;
+      }
+
+      .details-type {
+        background: #f1f5f9;
+        color: #64748b;
+        border: none;
+      }
+    }
+
+    .chat-btn {
+      background: rgba(14, 165, 233, 0.1);
+      color: #0ea5e9;
+      border-color: transparent;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      &:hover:not(:disabled) {
+        background: rgba(14, 165, 233, 0.2);
+        border-color: transparent;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .details-body {
+    .detail-section {
+      margin-bottom: 24px;
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+    }
+
+    .job-desc {
+      .desc-line {
+        margin: 8px 0;
+        line-height: 1.7;
+        color: #64748b;
+        font-size: 14px;
+      }
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+
+      .info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+
+        .info-icon {
+          width: 20px;
+          height: 20px;
+          color: #0ea5e9;
+          flex-shrink: 0;
+        }
+
+        .info-label {
+          font-size: 12px;
+          color: #94a3b8;
+          width: 60px;
+          flex-shrink: 0;
+        }
+
+        .info-value {
+          font-size: 13px;
+          color: #334155;
+        }
+
+        .recruiter-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          color: #334155;
+
+          :deep(.el-avatar) {
+            border: 1px solid #e2e8f0;
+          }
+        }
+      }
+    }
+
+    .status-display {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .status-tag {
+        font-size: 14px;
+        padding: 8px 20px;
+        border-radius: 20px;
+        border: none;
+
+        &.el-tag--success {
+          background: rgba(34, 197, 94, 0.1);
+          color: #22c55e;
+        }
+
+        &.el-tag--info {
+          background: rgba(148, 163, 184, 0.1);
+          color: #64748b;
+        }
+      }
+
+      .status-hint {
+        font-size: 13px;
+        color: #94a3b8;
+      }
+    }
+  }
 }
 
-.job-details {
-  .job-title-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-
-    .job-title {
-      font-size: 20px;
-      color: #303133;
-      margin-right: 16px;
-    }
-
-    .job-salary {
-      font-size: 20px;
-      color: #409EFF;
-      font-weight: bold;
-      margin-right: auto;
-    }
-
-    .apply-button {
-      margin-left: 20px;
-    }
-  }
-
-  .job-type-tag {
-    margin-bottom: 12px;
-  }
-
-  .publish-time {
-    color: #909399;
-    font-size: 12px;
-    margin-bottom: 16px;
-  }
-
-  .section-title {
-    color: #303133;
-    font-size: 16px;
-    margin: 20px 0 10px 0;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .job-desc {
-    .desc-line {
-      margin: 8px 0;
-      line-height: 1.6;
-      color: #606266;
-    }
-  }
-
-  .location {
-    display: flex;
-    align-items: center;
-    margin: 15px 0;
-    color: #606266;
-
-    .el-icon {
-      margin-right: 5px;
-    }
-  }
-
-  .divider-section {
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-
-    .el-divider {
-      flex: 1;
-      margin-right: 15px;
-    }
-
-    .el-avatar {
-      margin-right: 10px;
-    }
-  }
-
-  .company-name {
-    color: #606266;
-    margin: 10px 0;
-  }
-
-  .status-section {
-    margin-top: 20px;
-    text-align: center;
-
-    .el-tag {
-      font-size: 14px;
-      padding: 8px 15px;
-    }
-  }
-}
-
+/* 响应式调整 */
 @media (max-width: 768px) {
-  .timeline-container::before {
-    left: 20px;
-  }
-
-  .timeline-item::after {
-    left: 20px;
-  }
-
-  .timeline-content {
-    width: calc(100% - 60px);
-    margin-left: 60px !important;
-  }
-
-  .left-item .timestamp,
-  .right-item .timestamp {
-    left: -40px;
-    right: auto;
-    text-align: left;
-  }
-
-  .job-details-dialog {
-    width: 90% !important;
-  }
-
-  .job-title-row {
-    flex-wrap: wrap;
-
-    .job-title {
-      width: 100%;
-      margin-bottom: 8px;
-    }
-
-    .job-salary {
-      margin-right: 0 !important;
-    }
-  }
-}
-</style>
-
-<style lang="scss">
-/* 全局覆盖对话框样式 */
-.job-details-dialog {
-  .el-dialog__header {
-    border-bottom: 1px solid #f0f0f0;
-    margin-right: 0;
-  }
-
-  .el-dialog__body {
+  .job-apply-container {
     padding: 20px;
   }
-}
 
-.status-tag {
-  margin-left: 10px;
-}
+  .stats-card {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
 
-/* 禁用按钮样式 */
-.apply-button[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
+    .stat-item {
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+    }
+  }
+
+  .timeline-item {
+    gap: 16px;
+  }
+
+  .timeline-card {
+    padding: 16px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  ::v-deep(.el-dialog) {
+    width: 90% !important;
+  }
 }
 </style>

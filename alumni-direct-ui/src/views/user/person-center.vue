@@ -1,8 +1,15 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-aside width="200px">
+      <el-aside width="250px">
         <div class="sidebar">
+          <div class="sidebar-header">
+            <el-avatar :size="48" :src="avatarUrl" class="sidebar-avatar"/>
+            <div class="sidebar-user">
+              <span class="user-name">{{ formData.nickname || '用户' }}</span>
+              <span class="user-role">个人中心</span>
+            </div>
+          </div>
           <el-menu
               class="sidebar-el-menu"
               :default-active="onRoutes"
@@ -25,44 +32,23 @@
       </el-aside>
       <el-main>
         <div class="personal-center">
-          <el-card class="box-card" shadow="hover">
-            <!-- 头像与基本信息左右布局 -->
-            <el-row :gutter="20">
-              <!-- 左侧表单项 -->
-              <el-col :span="12">
-                <el-form ref="basicForm" :model="formData" :rules="rules" label-width="120px">
-                  <h3>基本信息</h3>
-                  <el-form-item label="昵称" prop="nickname">
-                    <el-input v-model="formData.nickname" placeholder="请输入昵称"/>
-                  </el-form-item>
-                  <el-form-item label="账户" prop="account">
-                    <el-input v-model="formData.userAccount" disabled placeholder="账户不可修改"/>
-                  </el-form-item>
-                  <el-form-item label="生日" prop="birthday">
-                    <el-date-picker v-model="formData.birth" type="date" placeholder="选择日期"/>
-                  </el-form-item>
-                  <el-form-item label="性别" prop="gender">
-                    <el-select v-model="formData.gender" placeholder="请选择性别">
-                      <el-option label="男" value="0"/>
-                      <el-option label="女" value="1"/>
-                      <el-option label="未知" value="2"/>
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item label="自我介绍" prop="selfIntroduction">
-                    <el-input
-                        v-model="formData.introduction"
-                        type="textarea"
-                        :rows="4"
-                        placeholder="请输入自我介绍"
-                    />
-                  </el-form-item>
-                </el-form>
-                <el-button type="primary" @click="saveBasicInfo">保存个人信息</el-button>
-              </el-col>
+          <!-- 页面标题 -->
+          <div class="page-header">
+            <h1 class="page-title">个人中心</h1>
+            <p class="page-subtitle">管理您的个人信息和求职意愿</p>
+          </div>
 
-              <!-- 右侧头像 -->
-              <el-col :span="4" class="avatar-container">
-                <div class="user-avatar">
+          <!-- 基本信息卡片 -->
+          <div class="info-section">
+            <div class="section-header">
+              <h2 class="section-title">基本信息</h2>
+              <span class="section-icon">
+                <el-icon><User/></el-icon>
+              </span>
+            </div>
+            <div class="info-card">
+              <div class="avatar-section">
+                <div class="avatar-wrapper">
                   <el-upload
                       class="avatar-uploader"
                       :show-file-list="false"
@@ -72,57 +58,143 @@
                   >
                     <img v-if="avatarUrl" :src="avatarUrl" class="avatar"/>
                     <el-icon v-else class="avatar-placeholder">
-                      <Plus/>
+                      <UserPlus/>
                     </el-icon>
                   </el-upload>
-                  <el-button type="primary" @click="saveAvatar">保存头像</el-button>
+                  <span class="upload-hint">点击更换头像</span>
                 </div>
-              </el-col>
-            </el-row>
+                <el-button type="primary" size="small" @click="saveAvatar" class="save-avatar-btn">
+                  <el-icon>
+                    <Save/>
+                  </el-icon>
+                  保存头像
+                </el-button>
+              </div>
 
-            <!-- 求职信息 -->
-            <el-form ref="jobForm" :model="formData" label-width="120px">
-              <h3>求职意愿</h3>
-              <el-form-item label="职位类型" prop="type">
-                <el-radio-group v-model="formData.type">
-                  <el-radio :label="0">全职</el-radio>
-                  <el-radio :label="1">实习</el-radio>
-                  <el-radio :label="2">兼职</el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item label="薪资范围(单位:K)" prop="salaryRange">
-                <el-input-number
-                    v-model="formData.minSalary"
-                    :min="0"
-                    :max="100000"
-                    placeholder="最低薪资"
-                    style="width: 38%"
-                />
-                <el-input-number
-                    v-model="formData.maxSalary"
-                    :min="0"
-                    :max="100000"
-                    placeholder="最高薪资"
-                    style="width: 38%; margin-left: 4%"
-                />
-              </el-form-item>
-              <el-form-item label="职位分类" prop="categoryId">
-                <el-tree
-                    ref="treeRef"
-                    :data="jobCategories"
-                    show-checkbox
-                    node-key="id"
-                    :props="defaultProps"
-                    @check="handleCategoryCheck"
-                    :default-checked-keys="formData.categoryId"
-                    class="horizontal-tree"
-                />
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="saveJobInfo">保存求职信息</el-button>
-              </el-form-item>
-            </el-form>
-          </el-card>
+              <div class="form-section">
+                <el-form ref="basicForm" :model="formData" :rules="rules" label-width="110px">
+                  <div class="form-row">
+                    <el-form-item label="昵称" prop="nickname">
+                      <el-input
+                          v-model="formData.nickname"
+                          placeholder="请输入昵称"
+                          class="form-input"
+                      />
+                    </el-form-item>
+                    <el-form-item label="账户" prop="account">
+                      <el-input
+                          v-model="formData.userAccount"
+                          disabled
+                          placeholder="账户不可修改"
+                          class="form-input"
+                      />
+                    </el-form-item>
+                  </div>
+                  <div class="form-row">
+                    <el-form-item label="生日" prop="birthday">
+                      <el-date-picker
+                          v-model="formData.birth"
+                          type="date"
+                          placeholder="选择日期"
+                          class="form-input"
+                      />
+                    </el-form-item>
+                    <el-form-item label="性别" prop="gender">
+                      <el-select
+                          v-model="formData.gender"
+                          placeholder="请选择性别"
+                          class="form-input"
+                      >
+                        <el-option label="男" value="0"/>
+                        <el-option label="女" value="1"/>
+                        <el-option label="未知" value="2"/>
+                      </el-select>
+                    </el-form-item>
+                  </div>
+                  <el-form-item label="自我介绍" prop="selfIntroduction">
+                    <el-input
+                        v-model="formData.introduction"
+                        type="textarea"
+                        :rows="4"
+                        placeholder="请输入自我介绍"
+                        class="form-textarea"
+                    />
+                  </el-form-item>
+                  <el-form-item class="form-actions">
+                    <el-button type="primary" @click="saveBasicInfo" class="submit-btn">
+                      <el-icon>
+                        <Save/>
+                      </el-icon>
+                      保存个人信息
+                    </el-button>
+                  </el-form-item>
+                </el-form>
+              </div>
+            </div>
+          </div>
+
+          <!-- 求职信息卡片 -->
+          <div class="info-section">
+            <div class="section-header">
+              <h2 class="section-title">求职意愿</h2>
+              <span class="section-icon">
+                <el-icon><Briefcase/></el-icon>
+              </span>
+            </div>
+            <div class="info-card">
+              <el-form ref="jobForm" :model="formData" label-width="110px">
+                <div class="form-row">
+                  <el-form-item label="职位类型" prop="type">
+                    <el-radio-group v-model="formData.type" class="radio-group">
+                      <el-radio :label="0" class="radio-item">全职</el-radio>
+                      <el-radio :label="1" class="radio-item">实习</el-radio>
+                      <el-radio :label="2" class="radio-item">兼职</el-radio>
+                    </el-radio-group>
+                  </el-form-item>
+                </div>
+                <el-form-item label="薪资范围(单位:K)" prop="salaryRange">
+                  <div class="salary-input">
+                    <el-input-number
+                        v-model="formData.minSalary"
+                        :min="0"
+                        :max="100000"
+                        placeholder="最低薪资"
+                        class="salary-item"
+                    />
+                    <span class="salary-separator">-</span>
+                    <el-input-number
+                        v-model="formData.maxSalary"
+                        :min="0"
+                        :max="100000"
+                        placeholder="最高薪资"
+                        class="salary-item"
+                    />
+                    <span class="salary-unit">K</span>
+                  </div>
+                </el-form-item>
+                <el-form-item label="职位分类" prop="categoryId">
+                  <el-tree
+                      ref="treeRef"
+                      :data="jobCategories"
+                      show-checkbox
+                      node-key="id"
+                      :props="defaultProps"
+                      @check="handleCategoryCheck"
+                      :default-checked-keys="formData.categoryId"
+                      class="category-tree"
+                  />
+                </el-form-item>
+                <el-form-item class="form-actions">
+                  <el-button type="primary" @click="saveJobInfo" class="submit-btn">
+                    <el-icon>
+                      <Save/>
+                    </el-icon>
+                    保存求职信息
+                  </el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </div>
         </div>
       </el-main>
     </el-container>
@@ -132,7 +204,7 @@
 <script setup>
 import {ref, computed, onMounted} from 'vue';
 import {ElMessage} from 'element-plus';
-import {Plus} from '@element-plus/icons-vue';
+import {Plus, User, UserPlus, Save, Briefcase} from '@element-plus/icons-vue';
 import {useRoute} from "vue-router";
 import {useSidebarStore} from '../../store/sidebar';
 import {getIntention, getUserInfo, saveIntention, update, updateAvatar} from "@/api/user.js";
@@ -342,84 +414,301 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .personal-center {
-  padding: 20px;
+  padding: 30px;
+  min-height: calc(100vh - 60px);
 
-  .box-card {
-    width: 80%;
-    margin: 0 auto;
+  .page-header {
+    margin-bottom: 32px;
 
-    .user-avatar {
-      text-align: center;
-      margin-bottom: 20px;
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 8px;
+    }
 
-      .avatar-uploader {
-        width: 100px;
-        height: 100px;
-        border: 1px dashed #0f49f6;
-        border-radius: 50%;
+    .page-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+}
 
-        .avatar {
-          width: 100%;
-          height: 100%;
+/* 侧边栏样式 */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    .sidebar-avatar {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .sidebar-user {
+      display: flex;
+      flex-direction: column;
+
+      .user-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .user-role {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+  }
+}
+
+.sidebar-el-menu {
+  flex: 1;
+  border-right: none;
+  background: transparent;
+
+  ::v-deep(.el-menu-item) {
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 0 8px 8px 0;
+    margin: 4px 0;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    &.is-active {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+  }
+}
+
+.el-aside {
+  width: 250px;
+}
+
+/* 信息区域 */
+.info-section {
+  margin-bottom: 24px;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+    }
+  }
+
+  .info-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+    display: flex;
+    gap: 32px;
+
+    .avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-right: 24px;
+      border-right: 1px solid #f1f5f9;
+
+      .avatar-wrapper {
+        position: relative;
+        margin-bottom: 12px;
+
+        .avatar-uploader {
+          width: 120px;
+          height: 120px;
           border-radius: 50%;
+          border: 2px dashed #cbd5e1;
+          cursor: pointer;
+          transition: all 0.3s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            border-color: #0ea5e9;
+          }
+
+          .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+          }
+
+          .avatar-placeholder {
+            font-size: 32px;
+            color: #94a3b8;
+          }
         }
 
-        .avatar-placeholder {
-          font-size: 40px;
-          line-height: 150px;
+        .upload-hint {
+          display: block;
+          font-size: 12px;
+          color: #94a3b8;
+          text-align: center;
+          margin-top: 8px;
+        }
+      }
+
+      .save-avatar-btn {
+        background: rgba(14, 165, 233, 0.1);
+        color: #0ea5e9;
+        border-color: transparent;
+        padding: 8px 20px;
+
+        &:hover:not(:disabled) {
+          background: rgba(14, 165, 233, 0.2);
         }
       }
     }
 
-    h3 {
-      margin: 20px 0;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 10px;
+    .form-section {
+      flex: 1;
     }
   }
 }
 
-.sidebar {
-  display: block;
-  width: 200px; // 显式设置宽度
-  overflow-y: auto;
+/* 表单样式 */
+.form-row {
+  display: flex;
+  gap: 16px;
 }
 
-.sidebar::-webkit-scrollbar {
-  width: 0;
+.form-input {
+  width: 100%;
 }
 
-.el-aside {
-  width: 250px; // ← 与 el-menu 的宽度一致
+.form-textarea {
+  width: 100%;
 }
 
-.sidebar-el-menu:not(.el-menu--collapse) {
-  width: 250px;
+.form-actions {
+  padding-left: 110px;
+
+  .submit-btn {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    border: none;
+    padding: 10px 28px;
+    border-radius: 8px;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  }
 }
 
-.sidebar-el-menu {
-  min-height: 100%;
+/* 单选按钮组 */
+.radio-group {
+  display: flex;
+  gap: 24px;
+
+  .radio-item {
+    font-size: 14px;
+    color: #334155;
+  }
 }
 
-/* 水平树形结构样式 */
-.horizontal-tree {
-  /* 强制所有节点水平排列 */
-  .el-tree-node {
-    display: inline-flex !important;
-    margin-right: 15px;
-    vertical-align: top;
+/* 薪资输入 */
+.salary-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .salary-item {
+    width: 120px;
   }
 
-  /* 子节点水平排列 + 换行 */
-  .el-tree-node__children {
-    display: inline-flex !important;
-    flex-wrap: wrap;
-    margin-left: 0 !important;
+  .salary-separator {
+    color: #94a3b8;
   }
 
-  /* 调整复选框样式 */
-  .el-checkbox {
-    margin-right: 5px;
+  .salary-unit {
+    color: #64748b;
+    font-size: 14px;
+  }
+}
+
+/* 分类树 */
+.category-tree {
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+
+  ::v-deep(.el-tree-node) {
+    margin-bottom: 4px;
+  }
+
+  ::v-deep(.el-tree-node__content) {
+    padding: 6px 8px;
+    border-radius: 6px;
+
+    &:hover {
+      background: rgba(14, 165, 233, 0.08);
+    }
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .personal-center {
+    padding: 20px;
+  }
+
+  .info-card {
+    flex-direction: column !important;
+    gap: 20px !important;
+
+    .avatar-section {
+      padding-right: 0 !important;
+      border-right: none !important;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 20px;
+    }
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-actions {
+    padding-left: 0;
+  }
+
+  .el-aside {
+    width: 100%;
   }
 }
 </style>

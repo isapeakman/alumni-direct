@@ -1,61 +1,91 @@
 <template>
-  <el-row :gutter="20">
-    <div class="recommend-container">
-      <el-col :span="8">
-        <div class="grid-content ep-bg-purple"/>
+  <div class="recommend-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h1 class="page-title">智能职位推荐</h1>
+      <p class="page-subtitle">基于您的求职意向，为您推荐最合适的职位</p>
+    </div>
 
-        <!-- 左侧职位列表 -->
-        <div class="job-list-container no-scrollbar">
+    <div class="main-content">
+      <!-- 左侧职位列表 -->
+      <div class="job-list-panel">
+        <div class="panel-header">
+          <h3>推荐职位</h3>
+          <span class="count">{{ jobList.length }} 个职位</span>
+        </div>
+
+        <div class="job-list-container">
           <div class="job-list" v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading">
-            <div style="width: 100%" v-for="job in jobList" :key="job.id">
-              <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)"
-                       :class="{ 'active-card': selectedCardId.value === Number(job.id) }">
+            <div class="job-card-wrapper" v-for="job in jobList" :key="job.id">
+              <div
+                  class="job-card"
+                  @click="handleJobClick(job.id)"
+                  :class="{ 'active-card': selectedCardId.value === Number(job.id) }"
+              >
+                <!-- 标签区域 -->
+                <div class="job-tags">
+                  <el-tag v-if="job.isAlumni === 1" type="success" size="small" class="alumni-tag">校友职位</el-tag>
+                  <el-tag type="info" size="small" class="type-tag">{{ getJobType(job.jobType) }}</el-tag>
+                </div>
+
+                <!-- 职位信息 -->
                 <div class="job-header">
-                  <h4>{{ job.title }}</h4>
+                  <h4 class="job-title">{{ job.title }}</h4>
                   <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
                 </div>
+
                 <div class="company">{{ job.companyName }}</div>
-                <div class="info-row">
-                  <p>{{ truncateText(job.jobDesc, 20) }}</p>
+
+                <div class="job-info">
+                  <p class="job-desc">{{ truncateText(job.jobDesc, 30) }}</p>
                   <span class="location">
                     <el-icon><Location/></el-icon>
                     {{ job.location }}
                   </span>
-                  <div class="job-footer">
-                    <!-- 新增校友职位标识 -->
-                    <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位
-                    </el-tag>
-                    <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
-                  </div>
                 </div>
-                <div class="recruiter">
+
+                <div class="recruiter-info">
                   <el-avatar :size="30" :src="job.recruiterAvatar"/>
-                  <span>{{ job.recruiterName }}·招聘者</span>
+                  <span class="recruiter-name">{{ job.recruiterName }}·招聘者</span>
                 </div>
-              </el-card>
+              </div>
             </div>
+
             <!-- 加载状态 -->
-            <div class="loading-status" v-if="loading">加载中...</div>
+            <div class="loading-status" v-if="loading">
+              <el-icon class="loading-icon">
+                <Loading/>
+              </el-icon>
+              加载中...
+            </div>
             <div class="no-more" v-if="noMore">没有更多职位了</div>
           </div>
         </div>
-      </el-col>
-      <el-col :span="15">
-        <div class="grid-content ep-bg-purple"/>
-        <!-- 职位详情页 -->
-        <div class="job-details-container no-scrollbar">
-          <JobDetails :selectedJob="selectedJob"/>
+      </div>
+
+      <!-- 右侧职位详情 -->
+      <div class="job-detail-panel">
+        <div class="panel-header">
+          <h3>职位详情</h3>
         </div>
-      </el-col>
+
+        <div class="job-details-container">
+          <div v-if="!selectedJob" class="empty-state">
+            <el-icon size="64" color="#cbd5e1">
+              <Briefcase/>
+            </el-icon>
+            <p>请选择一个职位查看详情</p>
+          </div>
+          <JobDetails v-else :selectedJob="selectedJob"/>
+        </div>
+      </div>
     </div>
-  </el-row>
-
-
+  </div>
 </template>
 
 <script setup>
 import {ref, onMounted} from 'vue'
-import {Location} from '@element-plus/icons-vue'
+import {Location, Loading, Briefcase} from '@element-plus/icons-vue'
 import {getRecommendJobCard} from '@/api/job.js'
 import {ElMessage} from 'element-plus'
 import {getJobDetail} from '@/api/job.js'
@@ -156,147 +186,263 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .recommend-container {
-  padding: 10px;
-  display: flex;
-  background-color: #e7f0fa;
-  width: 100%;
-  height: 100vh; // 确保容器填满整个视口高度
-  box-sizing: border-box;
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .page-header {
+    margin-bottom: 30px;
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 8px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+  }
 }
 
-.el-col {
-  flex: 1;
-  padding: 0 10px;
-  height: 100%; // 确保子元素填满整个列高度
+.main-content {
+  display: grid;
+  grid-template-columns: 450px 1fr;
+  gap: 24px;
+}
+
+/* 左侧职位列表面板 */
+.job-list-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .count {
+      font-size: 13px;
+      color: #94a3b8;
+      background: #f1f5f9;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+  }
 }
 
 .job-list-container {
-  height: 100%; // 确保容器填满整个列高度
+  max-height: calc(100vh - 200px);
   overflow-y: auto;
-  padding-right: 10px; // 防止滚动条遮挡内容
+  padding: 16px;
 }
 
-.job-list {
-  min-width: 400px;
-  min-height: 200px;
+.job-card-wrapper {
+  margin-bottom: 12px;
 }
 
 .job-card {
-  margin-bottom: 5px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
   cursor: pointer;
   transition: all 0.3s;
-  width: 97%;
-  height: 100%;
-  position: relative;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  padding: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-  ::v-deep(.el-card__body) {
-    padding: 0;
-  }
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
   &.active-card {
-    border-color: #409EFF !important;
-    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+    border-color: #0ea5e9;
+    background: rgba(14, 165, 233, 0.02);
 
-    .job-header h4 {
-      color: #409EFF !important;
+    .job-title {
+      color: #0ea5e9;
+    }
+  }
+
+  .job-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    .alumni-tag {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border: none;
+      color: #fff;
+    }
+
+    .type-tag {
+      background: #f1f5f9;
+      color: #64748b;
+      border: none;
     }
   }
 
   .job-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    align-items: flex-start;
+    margin-bottom: 8px;
 
-    h4 {
-      margin: 0;
+    .job-title {
       font-size: 16px;
-      color: #303133;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+      flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .salary {
-      color: #f56c6c;
-      font-weight: bold;
-      font-size: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ef4444;
       white-space: nowrap;
-      margin-left: auto;
     }
   }
 
   .company {
-    color: #606266;
-    margin-bottom: 12px;
-    font-size: 14px;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 10px;
   }
 
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .job-info {
     margin-bottom: 12px;
-    color: #909399;
-    font-size: 13px;
+
+    .job-desc {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin: 0 0 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
 
     .location {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 4px;
+      font-size: 12px;
+      color: #94a3b8;
     }
   }
 
-  .recruiter {
+  .recruiter-info {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
 
     .el-avatar {
-      margin-right: 10px;
+      margin-right: 8px;
+      border: 1px solid #f1f5f9;
     }
-  }
 
-  .job-footer {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    display: flex;
-    gap: 10px;
+    .recruiter-name {
+      font-size: 12px;
+      color: #64748b;
+    }
   }
 }
 
 .loading-status, .no-more {
   text-align: center;
   padding: 20px 0;
-  color: #909399;
-}
+  color: #94a3b8;
+  font-size: 14px;
 
-.job-details-container {
-  height: 100%; // 确保容器填满整个列高度
-  overflow-y: auto;
-  padding-left: 10px; // 防止滚动条遮挡内容
-}
-
-.no-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
-  &::-webkit-scrollbar {
-    display: none;
+  .loading-icon {
+    margin-right: 8px;
+    animation: spin 1s linear infinite;
   }
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 右侧职位详情面板 */
+.job-detail-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  max-height: calc(100vh - 180px);
+
+  .panel-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+  }
+}
+
+.job-details-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  color: #94a3b8;
+
+  p {
+    margin-top: 16px;
+    font-size: 14px;
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .main-content {
+    grid-template-columns: 1fr;
+  }
+
+  .job-detail-panel {
+    max-height: 600px;
+  }
+}
 </style>
 
 

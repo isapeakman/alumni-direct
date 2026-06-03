@@ -1,22 +1,28 @@
 <!-- src/views/user/job-search.vue -->
 <template>
   <div class="job-search-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h1 class="page-title">职位搜索</h1>
+      <p class="page-subtitle">搜索你感兴趣的职位、公司或技能</p>
+    </div>
+
     <!-- 搜索区域 -->
     <div class="search-section">
-      <div class="search-content">
+      <div class="search-box-wrapper">
         <div class="search-box">
-          <el-input
-              v-model="searchKeyword"
-              placeholder="搜索职位"
-              class="search-input"
-          >
-            <template #prefix>
-              <el-icon>
-                <Search/>
-              </el-icon>
-            </template>
-          </el-input>
-          <el-button type="primary" size="large" @click="handleSearch">搜索</el-button>
+          <div class="search-input-wrapper">
+            <el-icon class="search-icon">
+              <Search/>
+            </el-icon>
+            <el-input
+                v-model="searchKeyword"
+                placeholder="搜索职位、公司或技能"
+                class="search-input"
+                @keyup.enter="handleSearch"
+            />
+          </div>
+          <el-button type="primary" size="large" class="search-btn" @click="handleSearch">搜索职位</el-button>
         </div>
       </div>
     </div>
@@ -24,6 +30,9 @@
     <!-- 分类模块 -->
     <div class="category-section">
       <div class="section-content">
+        <div class="section-header">
+          <h3 class="section-title">职位分类</h3>
+        </div>
         <div class="category-container">
           <!-- 左侧大分类 -->
           <div class="main-categories">
@@ -34,26 +43,27 @@
                 :class="{ active: currentCategory.id === category.id }"
                 @click="handleCategoryClick(category)"
             >
-              {{ category.categoryName }}
+              <el-icon class="category-icon">
+                <Folder/>
+              </el-icon>
+              <span>{{ category.categoryName }}</span>
             </div>
           </div>
           <!-- 右侧小分类 -->
           <div class="sub-categories">
-            <div class="sub-category-group" v-if="currentCategory.children">
+            <div v-if="currentCategory.children" class="sub-category-grid">
               <div
-                  v-for="(subList, index) in groupedSubCategories"
-                  :key="main"
-                  class="sub-category-row"
+                  v-for="sub in currentCategory.children"
+                  :key="sub.id"
+                  class="sub-category-item"
+                  :class="{ active: selectedSubCategory?.id === sub.id }"
+                  @click="handleSubCategoryClick(sub)"
               >
-                <div
-                    v-for="sub in subList"
-                    :key="sub.id"
-                    class="sub-category-item"
-                    @click="handleSubCategoryClick(sub)"
-                >
-                  {{ sub.categoryName }}
-                </div>
+                {{ sub.categoryName }}
               </div>
+            </div>
+            <div v-else class="empty-sub-categories">
+              <p>暂无子分类</p>
             </div>
           </div>
         </div>
@@ -61,56 +71,64 @@
     </div>
 
     <!-- 搜索结果部分 -->
-    <div class="section job-recommend">
+    <div class="section job-results">
       <div class="section-content">
-        <h3 class="section-title">搜索结果</h3>
-        <el-row :gutter="20">
-          <el-col :span="6" v-for="job in jobList" :key="job.title">
-            <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)">
+        <div class="section-header">
+          <div class="header-left">
+            <h3 class="section-title">搜索结果</h3>
+            <p class="section-subtitle">共找到 {{ total }} 个职位</p>
+          </div>
+        </div>
+
+        <div v-if="jobList.length > 0" class="job-grid">
+          <div
+              class="job-card"
+              v-for="job in jobList"
+              :key="job.id"
+              @click="handleJobClick(job.id)"
+          >
+            <div class="job-card-inner">
+              <div class="job-tags">
+                <el-tag v-if="job.isAlumni === 1" type="success" size="small" class="alumni-tag">校友职位</el-tag>
+                <el-tag type="info" size="small" class="type-tag">{{ getJobType(job.jobType) }}</el-tag>
+              </div>
+
               <div class="job-header">
-                <h4>{{ job.title }}</h4>
+                <h4 class="job-title">{{ job.title }}</h4>
                 <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
               </div>
+
               <div class="company">{{ job.companyName }}</div>
-              <div class="info-row">
-                <p>{{ truncateText(job.jobDesc, 20) }}</p>
+
+              <div class="job-info">
                 <span class="location">
                   <el-icon><Location/></el-icon>
                   {{ job.location }}
                 </span>
+                <p class="job-desc">{{ truncateText(job.jobDesc, 30) }}</p>
               </div>
-              <div class="recruiter">
-                <el-avatar :size="30" :src="job.recruiterAvatar"/>
-                <span>{{ job.recruiterName }}·招聘者</span>
-              </div>
-              <!-- 新增 job-footer 容器 -->
-              <div class="job-footer">
-                <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位
-                </el-tag>
-                <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
-              </div>
-            </el-card>
 
-          </el-col>
-          <!-- 右侧抽屉 -->
-          <el-col :span="16" class="drawer-container">
-            <el-drawer
-                v-model="drawerVisible"
-                :direction="direction"
-                :before-close="handleClose"
-                size="50%"
-                destroy-on-close
-            >
-              <template #header>
-                <h3>职位详情</h3>
-              </template>
-              <JobDetails :selectedJob="selectedJob"/>
-            </el-drawer>
-          </el-col>
-        </el-row>
+              <div class="recruiter-info">
+                <el-avatar :size="36" :src="job.recruiterAvatar" class="recruiter-avatar"/>
+                <div class="recruiter-detail">
+                  <span class="recruiter-name">{{ job.recruiterName }}</span>
+                  <span class="recruiter-role">招聘者</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="empty-results">
+          <el-icon size="64" color="#cbd5e1">
+            <Search/>
+          </el-icon>
+          <p>未找到相关职位</p>
+          <p class="empty-hint">试试其他关键词或选择不同的分类</p>
+        </div>
 
         <!-- 分页器 -->
-        <div class="pagination-container">
+        <div v-if="jobList.length > 0" class="pagination-container">
           <el-pagination
               v-model:current-page="currentPage"
               v-model:page-size="pageSize"
@@ -119,10 +137,26 @@
               layout="total, sizes, prev, pager, next, jumper"
               @size-change="handleSizeChange"
               @current-change="handleCurrentChange"
+              class="pagination"
           />
         </div>
       </div>
     </div>
+
+    <!-- 右侧抽屉 -->
+    <el-drawer
+        v-model="drawerVisible"
+        :direction="direction"
+        :before-close="handleClose"
+        size="50%"
+        destroy-on-close
+        class="job-detail-drawer"
+    >
+      <template #header>
+        <h3>职位详情</h3>
+      </template>
+      <JobDetails :selectedJob="selectedJob"/>
+    </el-drawer>
   </div>
 </template>
 
@@ -131,7 +165,7 @@ import {getJobCard, getJobDetail} from '@/api/job.js'
 import {searchJob} from '@/api/job.js'
 import {ref, computed, onMounted} from 'vue'
 import {ElMessage} from 'element-plus'
-import {Search, Location} from '@element-plus/icons-vue'
+import {Search, Location, Folder} from '@element-plus/icons-vue'
 import request from '@/utils/request.js'
 import {useRoute, useRouter} from 'vue-router'
 import JobDetails from '../../components/JobDetail.vue'
@@ -143,6 +177,7 @@ const router = useRouter()
 // 分类相关的状态
 const categories = ref([])
 const currentCategory = ref({})
+const selectedSubCategory = ref(null)
 const searchKeyword = ref(route.query.keyword || '')
 
 // 获取分类数据
@@ -293,103 +328,267 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .job-search-container {
-  padding: 20px;
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .page-header {
+    margin-bottom: 30px;
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 8px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+  }
 }
 
+/* 搜索区域 */
 .search-section {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 24px;
 
-
-  .search-content {
-    max-width: 1200px;
+  .search-box-wrapper {
+    max-width: 800px;
     margin: 0 auto;
-    text-align: center;
-    color: white;
   }
 
   .search-box {
     display: flex;
     gap: 12px;
-    justify-content: center;
-    margin-bottom: 20px;
   }
 
-  .search-input {
-    width: 500px;
+  .search-input-wrapper {
+    flex: 1;
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+
+    .search-icon {
+      color: #94a3b8;
+      margin-right: 12px;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      box-shadow: none;
+
+      ::v-deep(.el-input__inner) {
+        border: none;
+        box-shadow: none;
+      }
+    }
   }
 
-  .hot-tags {
-    color: rgba(255, 255, 255, 0.8);
+  .search-btn {
+    padding: 0 32px;
+    border-radius: 12px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border: none;
 
-    .hot-tag {
-      margin: 0 4px;
-      cursor: pointer;
+    &:hover {
+      background: linear-gradient(135deg, #fb923c, #f97316);
     }
   }
 }
 
-.section {
-  padding: 40px 0;
+/* 分类区域 */
+.category-section {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  margin-bottom: 24px;
 
   .section-content {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+    .section-header {
+      margin-bottom: 20px;
 
-  .section-title {
-    margin-bottom: 24px;
-    font-size: 24px;
-    font-weight: bold;
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+      }
+    }
+
+    .category-container {
+      display: flex;
+      gap: 24px;
+      min-height: 280px;
+    }
+
+    .main-categories {
+      width: 180px;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 8px;
+
+      .main-category-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s;
+        font-size: 14px;
+        color: #475569;
+
+        .category-icon {
+          font-size: 16px;
+        }
+
+        &:hover {
+          background: #e2e8f0;
+        }
+
+        &.active {
+          background: #0ea5e9;
+          color: #fff;
+        }
+      }
+    }
+
+    .sub-categories {
+      flex: 1;
+
+      .sub-category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+      }
+
+      .sub-category-item {
+        padding: 10px 16px;
+        background: #f8fafc;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 13px;
+        color: #64748b;
+        text-align: center;
+
+        &:hover {
+          background: #e2e8f0;
+          color: #334155;
+        }
+
+        &.active {
+          background: rgba(14, 165, 233, 0.1);
+          color: #0ea5e9;
+        }
+      }
+
+      .empty-sub-categories {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        color: #94a3b8;
+
+        p {
+          margin: 0;
+        }
+      }
+    }
   }
 }
 
-.company-showcase {
-  background-color: #f5f7fa;
+/* 搜索结果区域 */
+.job-results {
+  .section-content {
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
 
-  .company-card {
-    text-align: center;
-    padding: 20px;
+      .header-left {
+        .section-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #1e293b;
+          margin: 0 0 4px;
+        }
 
-    .company-logo {
-      width: 80px;
-      height: 80px;
-      object-fit: contain;
-      margin-bottom: 12px;
-    }
-
-    .company-name {
-      font-size: 14px;
+        .section-subtitle {
+          font-size: 13px;
+          color: #94a3b8;
+          margin: 0;
+        }
+      }
     }
   }
+}
+
+.job-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
 }
 
 .job-card {
-  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s; /* 调整过渡时间为 0.3s */
-  width: 250px; /* 固定宽度 */
-  height: 200px; /* 固定高度 */
-  position: relative; /* 为子元素的绝对定位提供参考 */
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  padding: 16px;
-  overflow: hidden; /* 确保内容不会超出卡片范围 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  border: 1px solid #f1f5f9;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border-color: #0ea5e9;
+  }
+
+  .job-card-inner {
+    padding: 20px;
+  }
+
+  .job-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .alumni-tag {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border: none;
+      color: #fff;
+    }
+
+    .type-tag {
+      background: #f1f5f9;
+      color: #64748b;
+      border: none;
+    }
   }
 
   .job-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    align-items: flex-start;
+    margin-bottom: 8px;
 
-    h4 {
-      margin: 0;
+    .job-title {
       font-size: 16px;
-      color: #303133;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -397,148 +596,131 @@ onMounted(() => {
     }
 
     .salary {
-      color: #f56c6c;
-      font-weight: bold;
-      font-size: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ef4444;
       white-space: nowrap;
     }
   }
 
   .company {
-    color: #606266;
+    font-size: 13px;
+    color: #64748b;
     margin-bottom: 12px;
+  }
+
+  .job-info {
+    margin-bottom: 14px;
+
+    .location {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    .job-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  .recruiter-info {
+    display: flex;
+    align-items: center;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+
+    .recruiter-avatar {
+      margin-right: 12px;
+      border: 2px solid #f1f5f9;
+    }
+
+    .recruiter-detail {
+      display: flex;
+      flex-direction: column;
+
+      .recruiter-name {
+        font-size: 13px;
+        color: #475569;
+        font-weight: 500;
+      }
+
+      .recruiter-role {
+        font-size: 11px;
+        color: #94a3b8;
+      }
+    }
+  }
+}
+
+.empty-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  color: #94a3b8;
+
+  p {
+    margin: 12px 0 0;
     font-size: 14px;
   }
 
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    color: #909399;
-    font-size: 13px;
-
-    .location {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .job-type {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      padding: 2px 8px;
-      background-color: #f0f2f5;
-      border-radius: 4px;
-      max-width: 50%; /* 限制宽度，避免超出卡片 */
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  .recruiter {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #909399;
-
-    .el-avatar {
-      border: 1px solid #eee;
-    }
-  }
-
-  .job-footer {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    display: flex;
-    gap: 10px;
+  .empty-hint {
+    font-size: 12px;
+    color: #cbd5e1;
+    margin-top: 6px;
   }
 }
 
 .pagination-container {
-  margin-top: 30px;
+  margin-top: 32px;
   display: flex;
   justify-content: center;
-}
 
-.category-section {
-  background-color: #fff;
-
-  .category-container {
-    display: flex;
-    gap: 20px;
-    min-height: 300px;
-    border: 1px solid #ebeef5;
-    border-radius: 4px;
-  }
-
-  .main-categories {
-    width: 200px;
-    border-right: 1px solid #ebeef5;
-
-    .main-category-item {
-      padding: 15px 20px;
-      cursor: pointer;
-      transition: all 0.3s;
-
-      &:hover {
-        color: #409eff;
-        background-color: #f5f7fa;
+  .pagination {
+    ::v-deep(.el-pagination) {
+      .el-pager li {
+        border-radius: 8px;
+        margin: 0 4px;
       }
 
-      &.active {
-        color: #409eff;
-        background-color: #ecf5ff;
+      .el-pager li.active {
+        background: #0ea5e9;
       }
-    }
-  }
 
-  .sub-categories {
-    flex: 1;
-    padding: 20px;
-
-    .sub-category-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      margin-bottom: 20px;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
-
-    .sub-category-item {
-      padding: 8px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s;
-      color: #606266;
-
-      &:hover {
-        color: #409eff;
-        background-color: #ecf5ff;
+      .el-pagination__sizes {
+        margin-right: 12px;
       }
     }
   }
 }
 
-/* 覆盖抽屉默认样式 */
-:deep(.el-drawer__body) {
-  padding: 20px;
-}
+/* 抽屉样式 */
+.job-detail-drawer {
+  ::v-deep(.el-drawer__body) {
+    padding: 24px;
+  }
 
-/* 抽屉标题样式 */
-:deep(.el-drawer__header) {
-  margin-bottom: 20px;
+  ::v-deep(.el-drawer__header) {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
 
-  h3 {
-    margin: 0;
-    font-size: 20px;
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+    }
   }
 }
 </style>

@@ -1,7 +1,7 @@
 package com.lightcs.controller;
 
 
-import jakarta.annotation.Resource;
+import com.lightcs.provider.PromptTemplateService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -18,21 +18,36 @@ import reactor.core.publisher.Flux;
 public class AiInterviewController {
 
     private final ChatClient chatClient;
-
-    @Resource
     private ZhiPuAiChatModel chatModel;
+    private PromptTemplateService promptTemplateService;
 
-    public AiInterviewController(ChatClient.Builder chatClientBuilder) {
+    public AiInterviewController(ChatClient.Builder chatClientBuilder,
+                                 ZhiPuAiChatModel chatModel,
+                                 PromptTemplateService promptTemplateService) {
         this.chatClient = chatClientBuilder.build();
+        this.chatModel = chatModel;
+        this.promptTemplateService = promptTemplateService;
     }
 
     @GetMapping("/ai")
-    String generation(String userInput) {
+    String generation(String userInput, String jobTitle) throws Exception {
+        // 根据职位获取特定的系统提示
+        String jobSpecificPrompt = promptTemplateService.getJobSpecificPrompt(jobTitle);
         return this.chatClient.prompt()
+                .system(jobSpecificPrompt)
                 .user(userInput)
                 .call()
                 .content();
     }
+
+    @GetMapping("/ai/stream")
+    Flux<String> generationByStream(String userInput) {
+        return this.chatClient.prompt()
+                .user(userInput)
+                .stream()
+                .content();
+    }
+
 
     /**
      * glm 模型直接调用

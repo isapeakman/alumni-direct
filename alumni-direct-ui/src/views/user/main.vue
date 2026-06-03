@@ -1,33 +1,72 @@
 <template>
-  <!-- 搜索区域 -->
-  <div class="search-section">
-    <div class="search-content">
-      <h2>找到理想的工作</h2>
-      <div class="search-box">
-        <el-input
-            v-model="searchKeyword"
-            placeholder="搜索职位"
-            class="search-input"
-        >
-          <template #prefix>
-            <el-icon>
+  <!-- Hero搜索区域 -->
+  <div class="hero-section">
+    <!-- 背景装饰 -->
+    <div class="hero-bg">
+      <div class="bg-circle bg-circle-1"></div>
+      <div class="bg-circle bg-circle-2"></div>
+      <div class="bg-circle bg-circle-3"></div>
+      <div class="bg-wave"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">校友直聘</h1>
+        <p class="hero-subtitle">连接校友资源，开启职业新篇章</p>
+        <p class="hero-desc">汇聚优质企业，精准匹配职位，助力校友职业发展</p>
+      </div>
+
+      <div class="search-box-wrapper">
+        <div class="search-box">
+          <div class="search-input-wrapper">
+            <el-icon class="search-icon">
               <Search/>
             </el-icon>
-          </template>
-        </el-input>
-        <el-button type="primary" size="large" @click="handleSearch">搜索</el-button>
+            <el-input
+                v-model="searchKeyword"
+                placeholder="搜索职位、公司或技能"
+                class="search-input"
+                @keyup.enter="handleSearch"
+            />
+          </div>
+          <el-button type="primary" size="large" class="search-btn" @click="handleSearch">搜索职位</el-button>
+        </div>
+
+        <div class="hot-tags">
+          <span class="hot-label">热门搜索：</span>
+          <el-tag
+              v-for="tag in hotTags"
+              :key="tag"
+              class="hot-tag"
+              @click="searchKeyword = tag"
+          >
+            {{ tag }}
+          </el-tag>
+        </div>
       </div>
-      <!--      <div class="hot-tags">-->
-      <!--        热门搜索：-->
-      <!--        <el-tag-->
-      <!--            v-for="tag in hotTags"-->
-      <!--            :key="tag"-->
-      <!--            class="hot-tag"-->
-      <!--            @click="searchKeyword = tag"-->
-      <!--        >-->
-      <!--          {{ tag }}-->
-      <!--        </el-tag>-->
-      <!--      </div>-->
+
+      <!-- 统计数据 -->
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-number">500+</div>
+          <div class="stat-label">优质企业</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-number">10000+</div>
+          <div class="stat-label">精选职位</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-number">98%</div>
+          <div class="stat-label">匹配成功率</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-number">50万+</div>
+          <div class="stat-label">校友用户</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -71,53 +110,80 @@
   <!--    </div>-->
   <!--  </div>-->
 
-  <!-- 职位推荐部分改为 -->
+  <!-- 合作伙伴展示 -->
+  <div class="partners-section">
+    <div class="section-content">
+      <div class="section-header">
+        <h3 class="section-title">合作伙伴企业</h3>
+        <p class="section-subtitle">携手知名企业，共创职业未来</p>
+      </div>
+      <div class="partners-grid">
+        <div class="partner-item" v-for="n in 8" :key="n">
+          <div class="partner-logo">
+            <el-icon size="48" color="#1890ff">
+              <Briefcase/>
+            </el-icon>
+          </div>
+          <span class="partner-name">合作伙伴{{ n }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 职位推荐部分 -->
   <div class="section job-recommend">
     <div class="section-content">
-      <h3 class="section-title">最新职位</h3>
-      <el-row :gutter="20">
-        <el-col :span="6" v-for="job in jobList" :key="job.title">
-          <el-card shadow="hover" class="job-card" @click="handleJobClick(job.id)">
+      <div class="section-header">
+        <div class="header-left">
+          <h3 class="section-title">热门职位推荐</h3>
+          <p class="section-subtitle">精选优质职位，助你快速入职</p>
+        </div>
+        <el-button type="text" class="view-more" @click="router.push('/search')">查看更多</el-button>
+      </div>
+
+      <div class="job-grid">
+        <div
+            class="job-card"
+            v-for="job in jobList"
+            :key="job.id"
+            @click="handleJobClick(job.id)"
+        >
+          <div class="job-card-inner">
+            <!-- 顶部标签 -->
+            <div class="job-tags">
+              <el-tag v-if="job.isAlumni === 1" type="success" size="small" class="alumni-tag">校友职位</el-tag>
+              <el-tag type="info" size="small" class="type-tag">{{ getJobType(job.jobType) }}</el-tag>
+            </div>
+
+            <!-- 职位信息 -->
             <div class="job-header">
-              <h4>{{ job.title }}</h4>
+              <h4 class="job-title">{{ job.title }}</h4>
               <div class="salary">{{ formatSalary(job.minSalary, job.maxSalary) }}</div>
             </div>
-            <div class="company">{{ job.companyName }}</div>
-            <div class="info-row">
-              <p>{{ truncateText(job.jobDesc, 20) }}</p>
-              <span class="location">
-                <el-icon><Location/></el-icon>
-                {{ job.location }}
-              </span>
-            </div>
-            <div class="recruiter">
-              <el-avatar :size="30" :src="job.recruiterAvatar"/>
-              <span>{{ job.recruiterName }}·招聘者</span>
-            </div>
-            <!-- 新增 job-footer 容器 -->
-            <div class="job-footer">
-              <el-tag v-if="job.isAlumni === 1" type="success" size="small" style="margin-left: 10px;">校友职位</el-tag>
-              <el-tag type="info" size="small">{{ getJobType(job.jobType) }}</el-tag>
-            </div>
-          </el-card>
-        </el-col>
 
-        <!-- 右侧抽屉 -->
-        <el-col :span="16" class="drawer-container">
-          <el-drawer
-              v-model="drawerVisible"
-              :direction="direction"
-              :before-close="handleClose"
-              size="50%"
-              destroy-on-close
-          >
-            <template #header>
-              <h3>职位详情</h3>
-            </template>
-            <JobDetails :selectedJob="selectedJob"/>
-          </el-drawer>
-        </el-col>
-      </el-row>
+            <div class="company">{{ job.companyName }}</div>
+
+            <div class="job-info">
+              <div class="info-row">
+                <span class="location">
+                  <el-icon><Location/></el-icon>
+                  {{ job.location }}
+                </span>
+              </div>
+              <p class="job-desc">{{ truncateText(job.jobDesc, 30) }}</p>
+            </div>
+
+            <!-- 招聘者信息 -->
+            <div class="recruiter-info">
+              <el-avatar :size="36" :src="job.recruiterAvatar" class="recruiter-avatar"/>
+              <div class="recruiter-detail">
+                <span class="recruiter-name">{{ job.recruiterName }}</span>
+                <span class="recruiter-role">招聘者</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- 分页器 -->
       <div class="pagination-container">
@@ -129,10 +195,26 @@
             layout="total, sizes, prev, pager, next, jumper"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
+            class="pagination"
         />
       </div>
     </div>
   </div>
+
+  <!-- 右侧抽屉 -->
+  <el-drawer
+      v-model="drawerVisible"
+      :direction="direction"
+      :before-close="handleClose"
+      size="50%"
+      destroy-on-close
+      class="job-detail-drawer"
+  >
+    <template #header>
+      <h3>职位详情</h3>
+    </template>
+    <JobDetails :selectedJob="selectedJob"/>
+  </el-drawer>
 </template>
 
 <script setup>
@@ -140,7 +222,7 @@ import {getJobCard, getJobDetail} from '@/api/job.js'
 import {searchJob} from '@/api/job.js'
 import {ref, computed} from 'vue'
 import {ElMessage} from 'element-plus'
-import {Search, Location} from '@element-plus/icons-vue'
+import {Search, Location, Briefcase} from '@element-plus/icons-vue'
 import request from '@/utils/request.js'
 import {onMounted} from 'vue'
 import JobDetails from '../../components/JobDetail.vue'
@@ -308,256 +390,474 @@ const truncateText = (text, length) => {
 }
 </script>
 <style lang="scss" scoped>
-.search-section {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  padding: 60px 0;
+/* Hero区域样式 */
+.hero-section {
+  position: relative;
+  min-height: 500px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0ea5e9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 60px;
 
-  .search-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-    color: white;
+  .hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.3) 0%, transparent 70%);
+      animation: float 6s ease-in-out infinite;
+
+      &.bg-circle-1 {
+        width: 400px;
+        height: 400px;
+        top: -100px;
+        left: -100px;
+        animation-delay: 0s;
+      }
+
+      &.bg-circle-2 {
+        width: 300px;
+        height: 300px;
+        top: 100px;
+        right: 50px;
+        animation-delay: 2s;
+      }
+
+      &.bg-circle-3 {
+        width: 200px;
+        height: 200px;
+        bottom: 50px;
+        left: 200px;
+        animation-delay: 4s;
+      }
+    }
+
+    .bg-wave {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z'%3E%3C/path%3E%3C/svg%3E") no-repeat bottom center;
+      background-size: cover;
+    }
   }
 
-  h2 {
-    margin-bottom: 30px;
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .hero-text {
+    margin-bottom: 40px;
+
+    .hero-title {
+      font-size: 48px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 16px;
+      letter-spacing: 2px;
+    }
+
+    .hero-subtitle {
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0 0 12px;
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.7);
+      margin: 0;
+    }
+  }
+
+  .search-box-wrapper {
+    margin-bottom: 50px;
   }
 
   .search-box {
     display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
+    max-width: 700px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
 
-  .search-input {
-    width: 500px;
+    .search-input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+
+      .search-icon {
+        color: #909399;
+        margin-right: 12px;
+        font-size: 18px;
+      }
+
+      .search-input {
+        flex: 1;
+        border: none;
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+
+    .search-btn {
+      border-radius: 0 12px 12px 0;
+      padding: 0 32px;
+      font-weight: 600;
+    }
   }
 
   .hot-tags {
-    color: rgba(255, 255, 255, 0.8);
+    margin-top: 16px;
+
+    .hot-label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      margin-right: 12px;
+    }
 
     .hot-tag {
-      margin: 0 4px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0 6px;
       cursor: pointer;
+      transition: all 0.3s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+    }
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+
+    .stat-item {
+      flex: 1;
+      text-align: center;
+
+      .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 0 20px;
     }
   }
 }
 
-.section {
-  padding: 40px 0;
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.05);
+  }
+}
+
+/* 合作伙伴区域 */
+.partners-section {
+  background: #f8fafc;
+  padding: 60px 0;
 
   .section-content {
     max-width: 1200px;
     margin: 0 auto;
   }
 
-  .section-title {
-    margin-bottom: 24px;
-    font-size: 24px;
-    font-weight: bold;
+  .section-header {
+    text-align: center;
+    margin-bottom: 40px;
+
+    .section-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 8px;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+
+  .partners-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+
+    .partner-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      }
+
+      .partner-logo {
+        margin-bottom: 12px;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+      }
+
+      .partner-name {
+        font-size: 14px;
+        color: #64748b;
+      }
+    }
   }
 }
 
-.company-showcase {
-  background-color: #f5f7fa;
+/* 通用区块样式 */
+.section {
+  padding: 60px 0;
 
-  .company-card {
-    text-align: center;
-    padding: 20px;
+  .section-content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
 
-    .company-logo {
-      width: 80px;
-      height: 80px;
-      object-fit: contain;
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+
+    .header-left {
+      .section-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 8px;
+      }
+
+      .section-subtitle {
+        font-size: 14px;
+        color: #64748b;
+        margin: 0;
+      }
+    }
+
+    .view-more {
+      color: #0ea5e9;
+      font-weight: 500;
+
+      &:hover {
+        color: #0284c7;
+      }
+    }
+  }
+}
+
+/* 职位卡片样式 */
+.job-recommend {
+  .job-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .job-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    .job-card-inner {
+      padding: 20px;
+    }
+
+    .job-tags {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+
+      .alumni-tag {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        border: none;
+        color: #fff;
+      }
+
+      .type-tag {
+        background: #f1f5f9;
+        color: #64748b;
+        border: none;
+      }
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+
+      .job-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .salary {
+        font-size: 18px;
+        font-weight: 700;
+        color: #ef4444;
+        white-space: nowrap;
+      }
+    }
+
+    .company {
+      font-size: 14px;
+      color: #64748b;
       margin-bottom: 12px;
     }
 
-    .company-name {
-      font-size: 14px;
-    }
-  }
-}
+    .job-info {
+      margin-bottom: 16px;
 
-.job-card {
-  margin-bottom: 20px;
-  cursor: pointer;
-  transition: all 0.3s; /* 调整过渡时间为 0.3s */
-  width: 250px; /* 固定宽度 */
-  height: 200px; /* 固定高度 */
-  position: relative; /* 为子元素的绝对定位提供参考 */
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  padding: 16px;
-  overflow: hidden; /* 确保内容不会超出卡片范围 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      .info-row {
+        margin-bottom: 8px;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
+        .location {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 13px;
+          color: #94a3b8;
+        }
+      }
 
-  .job-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-
-    h4 {
-      margin: 0;
-      font-size: 16px;
-      color: #303133;
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      .job-desc {
+        font-size: 13px;
+        color: #94a3b8;
+        line-height: 1.6;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
     }
 
-    .salary {
-      color: #f56c6c;
-      font-weight: bold;
-      font-size: 15px;
-      white-space: nowrap;
-    }
-  }
-
-  .company {
-    color: #606266;
-    margin-bottom: 12px;
-    font-size: 14px;
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    color: #909399;
-    font-size: 13px;
-
-    .location {
+    .recruiter-info {
       display: flex;
       align-items: center;
-      gap: 4px;
-    }
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
 
+      .recruiter-avatar {
+        margin-right: 10px;
+        border: 2px solid #f1f5f9;
+      }
 
-    .job-type {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      padding: 2px 8px;
-      background-color: #f0f2f5;
-      border-radius: 4px;
-      max-width: 50%; /* 限制宽度，避免超出卡片 */
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      .recruiter-detail {
+        display: flex;
+        flex-direction: column;
+
+        .recruiter-name {
+          font-size: 13px;
+          color: #475569;
+          font-weight: 500;
+        }
+
+        .recruiter-role {
+          font-size: 12px;
+          color: #94a3b8;
+        }
+      }
     }
   }
 
-  .recruiter {
+  .pagination-container {
+    margin-top: 40px;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #909399;
+    justify-content: center;
 
-    .el-avatar {
-      border: 1px solid #eee;
-    }
-  }
-
-  .job-footer {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    display: flex;
-    gap: 10px;
-  }
-}
-
-.pagination-container {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-}
-
-.category-section {
-  padding: 40px 0;
-  background-color: #fff;
-
-  .category-container {
-    display: flex;
-    gap: 20px;
-    min-height: 300px;
-    border: 1px solid #ebeef5;
-    border-radius: 4px;
-  }
-
-  .main-categories {
-    width: 200px;
-    border-right: 1px solid #ebeef5;
-
-    .main-category-item {
-      padding: 15px 20px;
-      cursor: pointer;
-      transition: all 0.3s;
-
-      &:hover {
-        color: #409eff;
-        background-color: #f5f7fa;
-      }
-
-      &.active {
-        color: #409eff;
-        background-color: #ecf5ff;
-      }
-    }
-  }
-
-  .sub-categories {
-    flex: 1;
-    padding: 20px;
-
-    .sub-category-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      margin-bottom: 20px;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
-
-    .sub-category-item {
-      padding: 8px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s;
-      color: #606266;
-
-      &:hover {
-        color: #409eff;
-        background-color: #ecf5ff;
+    .pagination {
+      :deep(.el-pagination__total) {
+        color: #64748b;
       }
     }
   }
 }
 
-/* 覆盖抽屉默认样式 */
-:deep(.el-drawer__body) {
-  padding: 20px;
-}
+/* 抽屉样式 */
+.job-detail-drawer {
+  :deep(.el-drawer__header) {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #f1f5f9;
 
-/* 抽屉标题样式 */
-:deep(.el-drawer__header) {
-  margin-bottom: 20px;
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+  }
 
-  h3 {
-    margin: 0;
-    font-size: 20px;
+  :deep(.el-drawer__body) {
+    padding: 24px;
   }
 }
 </style>
