@@ -18,8 +18,8 @@ import reactor.core.publisher.Flux;
 public class AiInterviewController {
 
     private final ChatClient chatClient;
-    private ZhiPuAiChatModel chatModel;
-    private PromptTemplateService promptTemplateService;
+    private final ZhiPuAiChatModel chatModel;
+    private final PromptTemplateService promptTemplateService;
 
     public AiInterviewController(ChatClient.Builder chatClientBuilder,
                                  ZhiPuAiChatModel chatModel,

@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 提示词服务类
+ */
 @Service
 public class PromptTemplateService {
 
@@ -40,13 +43,6 @@ public class PromptTemplateService {
             result = result.replace("{{" + entry.getKey() + "}}", entry.getValue());
         }
         return result;
-    }
-
-    /**
-     * 获取面试系统提示词
-     */
-    public String getInterviewSystemPrompt() throws IOException {
-        return loadPrompt("system-prompt.txt");
     }
 
     /**
