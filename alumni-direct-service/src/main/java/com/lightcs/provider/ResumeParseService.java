@@ -4,6 +4,8 @@ package com.lightcs.provider;
 import com.alibaba.fastjson2.JSON;
 import com.lightcs.component.GlmApiService;
 import com.lightcs.component.OcrService;
+import com.lightcs.enums.ErrorCode;
+import com.lightcs.exception.BusinessException;
 import com.lightcs.model.vo.ResumeDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +52,7 @@ public class ResumeParseService {
             log.debug("OCR识别原始结果:\n{}", rawText);
 
             if (rawText.isEmpty()) {
-                throw new RuntimeException("无法从文件中提取文本内容，请检查文件是否清晰可读");
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "无法从文件中提取文本内容，请检查文件是否清晰可读");
             }
 
             // 2. 文本预处理（轻微清理，保留原始特征供GLM纠错）
@@ -61,7 +63,6 @@ public class ResumeParseService {
             log.info("🤖 调用GLM进行OCR纠错和结构化解析...");
             String jsonResult = glmApiService.parseResumeToJson(cleanedText);
             log.info("✅ GLM解析完成，返回JSON长度: {} 字符", jsonResult.length());
-            log.debug("GLM返回的JSON:\n{}", jsonResult);
 
             // 4. 解析JSON为DTO对象
             ResumeDTO resumeDTO = parseJsonToDto(jsonResult);
@@ -76,10 +77,13 @@ public class ResumeParseService {
 
         } catch (IOException e) {
             log.error("❌ 读取简历文件失败: {}", filename, e);
-            throw new RuntimeException("读取简历文件失败: " + e.getMessage(), e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "读取简历文件失败: " + e.getMessage());
+        } catch (BusinessException e) {
+            // 业务异常直接抛出
+            throw e;
         } catch (Exception e) {
             log.error("❌ 简历解析失败: {}", filename, e);
-            throw new RuntimeException("简历解析失败: " + e.getMessage(), e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "简历解析失败: " + e.getMessage());
         }
     }
 
@@ -97,20 +101,35 @@ public class ResumeParseService {
     }
 
     /**
-     * 文本预处理
+     * 文本预处理（OCR后基础清洗）
+     * 移除明显的噪声字符和特殊符号
      */
     private String cleanText(String text) {
         if (text == null) {
             return "";
         }
 
-        return text
-                // 去除多余的空白字符
-                .replaceAll("\\s+", " ")
-                // 去除连续的换行
-                .replaceAll("\\n+", "\n")
-                // 去除首尾空白
-                .trim();
+        String cleaned = text;
+
+        // 1. 移除常见的OCR噪声字符（黑方框、特殊符号等）
+        cleaned = cleaned.replaceAll("[■●◆▲▼◀▶◇○□▪▫►◄•·‣⁃⁌⁍※†‡§¶]", " ");
+
+        // 2. 移除连续的特殊标点（如多个句号、逗号等）
+        cleaned = cleaned.replaceAll("[.。]{3,}", "...");
+        cleaned = cleaned.replaceAll("[,，]{2,}", ",");
+
+        // 3. 去除多余的空白字符
+        cleaned = cleaned.replaceAll("\\s+", " ");
+
+        // 4. 去除连续的换行（保留最多2个换行）
+        cleaned = cleaned.replaceAll("\n{3,}", "\n\n");
+
+        // 5. 去除首尾空白
+        cleaned = cleaned.trim();
+
+        log.debug("文本清洗完成，原始长度: {}, 清洗后长度: {}", text.length(), cleaned.length());
+
+        return cleaned;
     }
 
     /**
@@ -147,7 +166,7 @@ public class ResumeParseService {
             }
         } catch (IOException e) {
             log.error("OCR识别失败", e);
-            throw new RuntimeException("OCR识别失败: " + e.getMessage(), e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "OCR识别失败: " + e.getMessage());
         }
     }
 }

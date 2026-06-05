@@ -1,7 +1,15 @@
 package com.lightcs.controller;
 
 
+import com.lightcs.exception.BusinessException;
+import com.lightcs.model.vo.AsyncTaskStatusVO;
+import com.lightcs.model.vo.ResumeDTO;
 import com.lightcs.provider.PromptTemplateService;
+import com.lightcs.provider.ResumeParseService;
+import com.lightcs.result.BaseResponse;
+import com.lightcs.result.ResultBuilder;
+import com.lightcs.service.AsyncResumeParseService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -9,24 +17,30 @@ import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
 import org.springframework.ai.zhipuai.ZhiPuAiChatOptions;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
+@Slf4j
 @RestController
 public class AiInterviewController {
 
     private final ChatClient chatClient;
     private final ZhiPuAiChatModel chatModel;
     private final PromptTemplateService promptTemplateService;
+    private final ResumeParseService resumeParseService;
+    private final AsyncResumeParseService asyncResumeParseService;
 
     public AiInterviewController(ChatClient.Builder chatClientBuilder,
                                  ZhiPuAiChatModel chatModel,
-                                 PromptTemplateService promptTemplateService) {
+                                 PromptTemplateService promptTemplateService,
+                                 ResumeParseService resumeParseService,
+                                 AsyncResumeParseService asyncResumeParseService) {
         this.chatClient = chatClientBuilder.build();
         this.chatModel = chatModel;
         this.promptTemplateService = promptTemplateService;
+        this.resumeParseService = resumeParseService;
+        this.asyncResumeParseService = asyncResumeParseService;
     }
 
     @GetMapping("/ai")
@@ -94,5 +108,118 @@ public class AiInterviewController {
                                 .build()
                 ))
                 .doOnError(Throwable::printStackTrace);
+    }
+
+    /**
+     * 简历解析接口 - 支持图片和PDF格式
+     *
+     * @param file 简历文件（支持图片、PDF等格式）
+     * @return 结构化的简历数据
+     */
+    @PostMapping("/ai/resume/parse")
+    public BaseResponse<Object> parseResume(@RequestPart MultipartFile file) {
+        try {
+            // 验证文件是否为空
+            if (file == null || file.isEmpty()) {
+                return ResultBuilder.fail("上传的文件不能为空");
+            }
+
+            // 验证文件类型
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null) {
+                return ResultBuilder.fail("文件名无效");
+            }
+
+            String lowerCaseFilename = originalFilename.toLowerCase();
+            boolean isSupportedFormat = lowerCaseFilename.endsWith(".pdf") ||
+                    lowerCaseFilename.endsWith(".jpg") ||
+                    lowerCaseFilename.endsWith(".jpeg") ||
+                    lowerCaseFilename.endsWith(".png") ||
+                    lowerCaseFilename.endsWith(".gif") ||
+                    lowerCaseFilename.endsWith(".bmp");
+
+            if (!isSupportedFormat) {
+                return ResultBuilder.fail("不支持的文件格式，请上传PDF或图片文件（JPG、PNG等）");
+            }
+
+            // 调用简历解析服务
+            ResumeDTO resumeDTO = resumeParseService.parseResume(file);
+
+            // 返回解析结果
+            return ResultBuilder.success(resumeDTO);
+
+        } catch (BusinessException e) {
+            // 业务异常，记录日志并返回失败响应
+            log.error("简历解析业务异常", e);
+            return ResultBuilder.fail(e.getMessage());
+        } catch (Exception e) {
+            // 其他异常，记录日志并返回失败响应
+            log.error("简历解析失败", e);
+            return ResultBuilder.fail("简历解析失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 异步简历解析接口 - 提交任务
+     *
+     * @param file 简历文件（支持图片、PDF等格式）
+     * @return 任务ID
+     */
+    @PostMapping("/ai/resume/parse/async")
+    public BaseResponse<Object> submitParseTask(@RequestPart MultipartFile file) {
+        try {
+            // 验证文件是否为空
+            if (file == null || file.isEmpty()) {
+                return ResultBuilder.fail("上传的文件不能为空");
+            }
+
+            // 验证文件类型
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null) {
+                return ResultBuilder.fail("文件名无效");
+            }
+
+            String lowerCaseFilename = originalFilename.toLowerCase();
+            boolean isSupportedFormat = lowerCaseFilename.endsWith(".pdf") ||
+                    lowerCaseFilename.endsWith(".jpg") ||
+                    lowerCaseFilename.endsWith(".jpeg") ||
+                    lowerCaseFilename.endsWith(".png") ||
+                    lowerCaseFilename.endsWith(".gif") ||
+                    lowerCaseFilename.endsWith(".bmp");
+
+            if (!isSupportedFormat) {
+                return ResultBuilder.fail("不支持的文件格式，请上传PDF或图片文件（JPG、PNG等）");
+            }
+
+            // 提交异步任务
+            String taskId = asyncResumeParseService.submitParseTask(file);
+            log.info("提交简历解析任务成功，任务ID: {}", taskId);
+            // 返回任务ID
+            return ResultBuilder.success(java.util.Map.of("taskId", taskId));
+
+        } catch (BusinessException e) {
+            log.error("提交简历解析任务业务异常", e);
+            return ResultBuilder.fail(e.getMessage());
+        } catch (Exception e) {
+            log.error("提交简历解析任务失败", e);
+            return ResultBuilder.fail("提交任务失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 查询简历解析任务状态
+     *
+     * @param taskId 任务ID
+     * @return 任务状态
+     */
+    @GetMapping("/ai/resume/parse/task/{taskId}")
+    public BaseResponse<Object> getParseTaskStatus(@PathVariable String taskId) {
+        try {
+            AsyncTaskStatusVO taskStatus = asyncResumeParseService.getTaskStatus(taskId);
+            return ResultBuilder.success(taskStatus);
+        } catch (Exception e) {
+            log.error("查询任务状态失败: {}", taskId, e);
+            return ResultBuilder.fail("查询任务状态失败: " + e.getMessage());
+        }
     }
 }

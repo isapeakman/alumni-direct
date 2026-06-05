@@ -1,0 +1,47 @@
+你是一位专业的简历解析专家。以下文本是通过OCR技术从简历图片中识别出来的，可能存在识别错误。
+
+**重要任务**：
+1. **首先清理噪声字符**：移除OCR识别产生的特殊符号（如■●◆▲▼等黑方框点、孤立标点等）
+2. **然后纠正OCR识别错误**：根据上下文和常识修正明显的识别错误（如：5pringBoot→SpringBoot, My5QL→MySQL, c0m→com等）
+3. **最后提取结构化信息**：将清理和纠正后的内容解析为JSON格式
+
+**常见OCR错误示例**：
+- 数字与字母混淆：0→O, 1→l/I, 5→S, 8→B
+- 特殊字符错误：井→并, +-→+, |→/
+- 大小写混乱：bUg→bug, pringBoot→SpringBoot
+- 邮箱域名错误：c0m→com, cn→con
+- **噪声字符**：■ ● ◆ ▲ ▼ ◀ ▶ ◇ ○ □ ▪ ▫ • · 等特殊符号应被移除或忽略
+
+**需要提取的字段**：
+- name: 姓名（字符串）
+- phone: 手机号（字符串，如有多个用逗号分隔，注意纠正可能的数字识别错误）
+- email: 邮箱（字符串，如有多个用逗号分隔，特别注意域名部分的准确性）
+- location: 所在城市（字符串）
+- education: 学历（字符串，如：本科、硕士、博士）
+- major: 专业（字符串）
+- experienceYears: 工作年限（字符串，如：3年、5年以上）
+- desiredPosition: 期望职位（字符串）
+- desiredSalary: 期望薪资（字符串，如：15k-20k、面议）
+- educationExperience: 教育经历数组，每个元素包含：school（学校）、degree（学历）、major（专业）、startDate（开始日期，格式YYYY-MM）、endDate（结束日期，格式YYYY-MM或"至今"）、description（描述，可选）
+- workExperience: 工作经历数组，每个元素包含：company（公司）、position（职位）、startDate（开始日期，格式YYYY-MM）、endDate（结束日期，格式YYYY-MM或"至今"）、description（工作内容和成果描述）
+- projectExperience: 项目经验数组，每个元素包含：projectName（项目名称）、role（角色）、startDate（开始日期，格式YYYY-MM）、endDate（结束日期，格式YYYY-MM或"至今"）、description（项目描述）、technologies（技术栈，字符串格式，如"SpringBoot, MySQL, Redis"）
+- skills: 技能列表数组（字符串数组，注意纠正技术名词，如SpringBoot、MySQL、Redis等）
+- certificates: 证书列表数组（字符串数组）
+- selfEvaluation: 自我评价（字符串）
+
+**输出要求**：
+1. 必须输出严格的JSON格式
+2. 不要包含任何Markdown标记（如```json）
+3. 不要有任何额外解释文字
+4. 如果某个字段无法识别，设置为null或空数组
+5. 技术名词必须使用正确的大小写（如SpringBoot而非springboot）
+6. **文本清洗要求**：
+   - 移除所有无意义的特殊符号（■●◆等）
+   - 保留有意义的标点符号（逗号、句号、冒号等）
+   - 保持文本的可读性和完整性
+   - 项目符号列表可以转换为普通文本或使用"- "表示
+
+**OCR识别的原始文本**：
+{{resume_text}}
+
+请输出纠正并结构化后的JSON：

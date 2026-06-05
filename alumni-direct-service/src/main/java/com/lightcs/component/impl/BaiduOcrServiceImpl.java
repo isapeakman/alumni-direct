@@ -3,6 +3,7 @@ package com.lightcs.component.impl;
 
 import com.baidu.aip.ocr.AipOcr;
 import com.lightcs.component.OcrService;
+import com.lightcs.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -32,7 +33,7 @@ public class BaiduOcrServiceImpl implements OcrService {
 
             // 调用百度OCR API识别图片
             JSONObject res = aipOcrClient.basicGeneral(imageBytes, options);
-            log.info("OCR识别成功，完整响应: {}", res.toString(2));
+            log.info("百度OCR识别成功，完整响应: {}", res.toString(2));
 
             // 提取识别结果中的文字内容
             StringBuilder textBuilder = new StringBuilder();
@@ -53,7 +54,7 @@ public class BaiduOcrServiceImpl implements OcrService {
             return recognizedText;
         } catch (Exception e) {
             log.error("OCR识别失败", e);
-            throw new RuntimeException("OCR识别失败: " + e.getMessage(), e);
+            throw new BusinessException("OCR识别失败: " + e.getMessage());
         }
     }
 
