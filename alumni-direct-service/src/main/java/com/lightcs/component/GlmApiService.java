@@ -1,5 +1,7 @@
 package com.lightcs.component;
 
+import com.lightcs.enums.ErrorCode;
+import com.lightcs.exception.BusinessException;
 import com.lightcs.provider.PromptTemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -44,48 +46,16 @@ public class GlmApiService {
      * 构建简历解析Prompt
      */
     private String buildResumeParsePrompt(String resumeText) {
-        return """
-                你是一位专业的简历解析专家。以下文本是通过OCR技术从简历图片中识别出来的，可能存在识别错误。
-                            
-                **重要任务**：
-                1. **首先纠正OCR识别错误**：根据上下文和常识修正明显的识别错误（如：5pringBoot→SpringBoot, My5QL→MySQL, c0m→com等）
-                2. **然后提取结构化信息**：将纠正后的内容解析为JSON格式
-                            
-                **常见OCR错误示例**：
-                - 数字与字母混淆：0→O, 1→l/I, 5→S, 8→B
-                - 特殊字符错误：井→并, +-→+, |→/
-                - 大小写混乱：bUg→bug, pringBoot→SpringBoot
-                - 邮箱域名错误：c0m→com, cn→con
-                            
-                **需要提取的字段**：
-                - name: 姓名
-                - phone: 手机号（注意纠正可能的数字识别错误）
-                - email: 邮箱（特别注意域名部分的准确性）
-                - location: 所在城市
-                - education: 学历（如：本科、硕士、博士）
-                - major: 专业
-                - experienceYears: 工作年限（如：3年经验）
-                - desiredPosition: 期望职位
-                - desiredSalary: 期望薪资
-                - educationExperience: 教育经历数组，每个元素包含：school（学校）、degree（学历）、major（专业）、startDate（开始日期）、endDate（结束日期）、description（描述）
-                - workExperience: 工作经历数组，每个元素包含：company（公司）、position（职位）、startDate（开始日期）、endDate（结束日期）、description（描述）
-                - projectExperience: 项目经验数组，每个元素包含：projectName（项目名称）、role（角色）、startDate（开始日期）、endDate（结束日期）、description（描述）、technologies（技术栈，注意纠正技术名词）
-                - skills: 技能列表数组（注意纠正技术名词，如SpringBoot、MySQL、Redis等）
-                - certificates: 证书列表数组
-                - selfEvaluation: 自我评价
-                            
-                **输出要求**：
-                1. 必须输出严格的JSON格式
-                2. 不要包含任何Markdown标记（如```json）
-                3. 不要有任何额外解释文字
-                4. 如果某个字段无法识别，设置为null或空数组
-                5. 技术名词必须使用正确的大小写（如SpringBoot而非springboot）
-                            
-                **OCR识别的原始文本**：
-                %s
-                            
-                请输出纠正并结构化后的JSON：
-                """.formatted(resumeText);
+        try {
+            // 从模板文件加载提示词
+            String template = promptTemplateService.loadPrompt("resume-parse.txt");
+            // 填充变量
+            return promptTemplateService.fillTemplate(template,
+                    java.util.Map.of("resume_text", resumeText));
+        } catch (Exception e) {
+            log.error("加载简历解析提示词模板失败", e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "加载提示词模板失败: " + e.getMessage());
+        }
     }
 
     /**
@@ -105,7 +75,7 @@ public class GlmApiService {
             return response;
         } catch (Exception e) {
             log.error("调用GLM API失败", e);
-            throw new RuntimeException("调用GLM API失败: " + e.getMessage(), e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM API失败: " + e.getMessage());
         }
     }
 
@@ -130,7 +100,7 @@ public class GlmApiService {
             return response;
         } catch (Exception e) {
             log.error("调用GLM API失败", e);
-            throw new RuntimeException("调用GLM API失败: " + e.getMessage(), e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM API失败: " + e.getMessage());
         }
     }
 
@@ -161,7 +131,7 @@ public class GlmApiService {
             return result;
         } catch (Exception e) {
             log.error("调用GLM模型失败", e);
-            throw new RuntimeException("调用GLM模型失败: " + e.getMessage(), e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM模型失败: " + e.getMessage());
         }
     }
 

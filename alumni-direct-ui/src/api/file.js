@@ -24,3 +24,11 @@ export function downloadFile(fileName) {
         responseType: 'blob'
     })
 }
+
+export function parseResume(formData) {
+    return request({
+        url: '/ad/ai/resume/parse',
+        method: 'post',
+        data: formData
+    })
+}

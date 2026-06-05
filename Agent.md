@@ -121,8 +121,8 @@ alumni-direct/
 
 - 负责接收请求和返回响应
 - 使用 `@RestController` 注解
-- 参数校验使用 `@Valid` 注解
 - 返回统一响应格式 `BaseResponse`
+- 抛出异常使用`ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "更新审批记录失败");`
 
 ### 5.2 Service 层
 
@@ -144,6 +144,8 @@ alumni-direct/
 - 使用 `@Service` 注解标识
 - 使用 `@Transactional` 管理事务
 - 业务异常抛出 `BusinessException`
+- 判断后抛出异常可参考`ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "更新审批记录失败");`
+- 异常码可参考`ErrorCode`枚举类
 
 ### 5.3 Entity/VO/DTO
 
@@ -196,7 +198,7 @@ alumni-direct/
 
 - 使用 `.txt` 或 `.json` 格式存储
 - 文件名格式：`{业务场景}_{功能}.txt`
-- 示例：`resume_parse.txt`, `job_recommend.txt`
+- 示例：`resume-parse.txt`, `job-recommend.txt`
 
 ### 6.3 提示词相关服务
 
