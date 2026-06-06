@@ -51,3 +51,17 @@ export function parseResumeSync(file) {
         timeout: 60000 // 设置60秒超时
     })
 }
+
+/**
+ * 生成简历材料（求职信、面试建议等）
+ * @param {Object} resumeData - 简历信息和求职岗位
+ * @returns {Promise} 返回生成的材料
+ */
+export function generateResumeMaterial(resumeData) {
+    return request({
+        url: '/ad/ai/resume/generate',
+        method: 'post',
+        data: resumeData,
+        timeout: 60000 // 设置60秒超时
+    })
+}

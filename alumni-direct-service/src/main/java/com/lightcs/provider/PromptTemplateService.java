@@ -55,10 +55,11 @@ public class PromptTemplateService {
     /**
      * 获取带岗位信息的面试提示词
      */
-    public String getJobSpecificPrompt(String jobTitle) throws IOException {
+    public String getJobSpecificPrompt(String jobTitle, String resumeText) throws IOException {
         String template = loadPrompt(PROMPT_INTERVIEW);
         Map<String, String> variables = new HashMap<>();
         variables.put("job_title", jobTitle);
+        variables.put("resume_info", resumeText);
         return fillTemplate(template, variables);
     }
 
@@ -74,6 +75,21 @@ public class PromptTemplateService {
         String template = loadPrompt(promptFilePath);
         Map<String, String> variables = new HashMap<>();
         variables.put("resume_text", ocrText);
+        return fillTemplate(template, variables);
+    }
+
+    /**
+     * 获取简历生成提示词
+     *
+     * @param jobPosition 求职岗位
+     * @param resumeInfo  简历信息（JSON格式）
+     * @return 填充后的提示词
+     */
+    public String getResumeGeneratePrompt(String jobPosition, String resumeInfo) {
+        String template = loadPrompt("resume-generate.txt");
+        Map<String, String> variables = new HashMap<>();
+        variables.put("job_position", jobPosition);
+        variables.put("resume_info", resumeInfo);
         return fillTemplate(template, variables);
     }
 }

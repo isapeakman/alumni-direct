@@ -111,6 +111,11 @@ const routes = [
                 path: 'resume-async',
                 name: 'ResumeTestAsync',
                 component: () => import('../views/admin/resume-parse-async.vue'),
+            },
+            {
+                path: 'resume-edit',
+                name: 'ResumeEdit',
+                component: () => import('../views/admin/resume-edit.vue'),
             }
         ]
     }

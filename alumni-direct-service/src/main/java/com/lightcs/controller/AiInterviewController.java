@@ -1,7 +1,9 @@
 package com.lightcs.controller;
 
 
+import com.alibaba.fastjson2.JSON;
 import com.lightcs.exception.BusinessException;
+import com.lightcs.model.dto.ResumeGenerationRequest;
 import com.lightcs.model.vo.AsyncTaskStatusVO;
 import com.lightcs.provider.PromptTemplateService;
 import com.lightcs.result.BaseResponse;
@@ -39,14 +41,56 @@ public class AiInterviewController {
     }
 
     @GetMapping("/ai")
-    String generation(String userInput, String jobTitle) throws Exception {
+    String generation(String userInput, String jobTitle, String resumeText) throws Exception {
         // 根据职位获取特定的系统提示
-        String jobSpecificPrompt = promptTemplateService.getJobSpecificPrompt(jobTitle);
+        String jobSpecificPrompt = promptTemplateService.getJobSpecificPrompt(jobTitle, resumeText);
         return this.chatClient.prompt()
                 .system(jobSpecificPrompt)
                 .user(userInput)
                 .call()
                 .content();
+    }
+
+    /**
+     * 简历生成接口
+     * 根据用户修改后的简历信息和求职岗位，生成求职材料
+     *
+     * @param request 简历信息和求职岗位
+     * @return 生成的求职材料（求职信、面试建议、技能匹配分析）
+     */
+    @PostMapping("/ai/resume/generate")
+    public BaseResponse<String> generateResumeMaterial(@RequestBody ResumeGenerationRequest request) {
+        try {
+            // 验证必填参数
+            if (request.getDesiredPosition() == null || request.getDesiredPosition().isBlank()) {
+                return ResultBuilder.fail("求职岗位不能为空");
+            }
+
+            // 将简历信息转换为JSON字符串
+            String resumeInfo = JSON.toJSONString(request);
+
+            // 获取提示词
+            String prompt = promptTemplateService.getResumeGeneratePrompt(
+                    request.getDesiredPosition(),
+                    resumeInfo
+            );
+
+            // 调用GLM API生成内容
+            String result = chatClient.prompt()
+                    .user(prompt)
+                    .call()
+                    .content();
+
+            log.info("简历生成完成，求职岗位: {}", request.getDesiredPosition());
+            return ResultBuilder.success(result);
+
+        } catch (BusinessException e) {
+            log.error("简历生成业务异常", e);
+            return ResultBuilder.fail(e.getMessage());
+        } catch (Exception e) {
+            log.error("简历生成失败", e);
+            return ResultBuilder.fail("生成失败: " + e.getMessage());
+        }
     }
 
     @GetMapping("/ai/stream")
