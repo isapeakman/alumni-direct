@@ -1,7 +1,6 @@
 package com.lightcs.controller;
 
 
-import com.lightcs.component.AbstractLLMService;
 import com.lightcs.exception.BusinessException;
 import com.lightcs.model.vo.AsyncTaskStatusVO;
 import com.lightcs.provider.PromptTemplateService;
@@ -28,30 +27,26 @@ public class AiInterviewController {
     private final ZhiPuAiChatModel chatModel;
     private final PromptTemplateService promptTemplateService;
     private final AsyncResumeParseService asyncResumeParseService;
-    private final AbstractLLMService llmService;
 
     public AiInterviewController(ChatClient.Builder chatClientBuilder,
                                  ZhiPuAiChatModel chatModel,
                                  PromptTemplateService promptTemplateService,
-                                 AsyncResumeParseService asyncResumeParseService,
-                                 AbstractLLMService llmService) {
+                                 AsyncResumeParseService asyncResumeParseService) {
         this.chatClient = chatClientBuilder.build();
         this.chatModel = chatModel;
         this.promptTemplateService = promptTemplateService;
         this.asyncResumeParseService = asyncResumeParseService;
-        this.llmService = llmService;
     }
 
     @GetMapping("/ai")
     String generation(String userInput, String jobTitle) throws Exception {
         // 根据职位获取特定的系统提示
         String jobSpecificPrompt = promptTemplateService.getJobSpecificPrompt(jobTitle);
-        return llmService.callApi(jobSpecificPrompt);
-//        return this.chatClient.prompt()
-//                .system(jobSpecificPrompt)
-//                .user(userInput)
-//                .call()
-//                .content();
+        return this.chatClient.prompt()
+                .system(jobSpecificPrompt)
+                .user(userInput)
+                .call()
+                .content();
     }
 
     @GetMapping("/ai/stream")

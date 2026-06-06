@@ -1,9 +1,8 @@
 package com.lightcs.component.impl;
 
-import com.lightcs.component.AbstractLLMService;
+import com.lightcs.component.LLMApiStrategy;
 import com.lightcs.enums.ErrorCode;
 import com.lightcs.exception.BusinessException;
-import com.lightcs.provider.PromptTemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -18,16 +17,14 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-public class GlmApiService extends AbstractLLMService {
+public class GlmApiService implements LLMApiStrategy {
 
     private final ChatClient chatClient;
     private final ZhiPuAiChatModel chatModel;
     private static final String RESUME_PARSE_TEMPLATE = "resume-parse.txt";
 
     public GlmApiService(ChatClient.Builder chatClientBuilder,
-                         ZhiPuAiChatModel chatModel,
-                         PromptTemplateService promptTemplateService) {
-        super(promptTemplateService);
+                         ZhiPuAiChatModel chatModel) {
         this.chatClient = chatClientBuilder.build();
         this.chatModel = chatModel;
     }
@@ -57,7 +54,7 @@ public class GlmApiService extends AbstractLLMService {
      * 实现抽象方法：加载提示词模板
      */
     @Override
-    protected String loadPromptTemplate() {
+    public String loadPromptTemplate() {
         return RESUME_PARSE_TEMPLATE;
     }
 

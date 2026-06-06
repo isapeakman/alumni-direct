@@ -1,7 +1,7 @@
 package com.lightcs.service.impl;
 
 import com.alibaba.fastjson2.JSON;
-import com.lightcs.component.AbstractLLMService;
+import com.lightcs.component.LLMApiStrategy;
 import com.lightcs.component.OcrService;
 import com.lightcs.enums.AsyncTaskStageEnum;
 import com.lightcs.enums.AsyncTaskStatusEnum;
@@ -9,6 +9,7 @@ import com.lightcs.enums.ErrorCode;
 import com.lightcs.exception.BusinessException;
 import com.lightcs.model.vo.AsyncTaskStatusVO;
 import com.lightcs.model.vo.ResumeDTO;
+import com.lightcs.provider.ResumeParseTemplateService;
 import com.lightcs.service.ResumeParseExecutor;
 import com.lightcs.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,8 @@ import static com.lightcs.constants.RedisConstant.TASK_KEY_PREFIX;
 public class ResumeParseExecutorImpl implements ResumeParseExecutor {
 
     private final OcrService ocrService;
-    private final AbstractLLMService llmService;
+    private final ResumeParseTemplateService resumeParseTemplateService;
+    private final LLMApiStrategy llmApiStrategy;
     private final RedisUtil redisUtil;
 
     /**
@@ -97,7 +99,7 @@ public class ResumeParseExecutorImpl implements ResumeParseExecutor {
 
             // 3. GLM结构化：纠正OCR错误并提取结构化信息
             log.info("[任务: {}] 🤖 调用GLM进行OCR纠错和结构化解析...", taskId);
-            String jsonResult = llmService.parseResumeToJson(cleanedText);
+            String jsonResult = resumeParseTemplateService.parseResumeToJson(cleanedText, llmApiStrategy);
             log.info("[任务: {}] ✅ GLM解析完成，返回JSON长度: {} 字符", taskId, jsonResult.length());
             updateTaskStatus(taskId, AsyncTaskStatusEnum.PROCESSING.getValue(), 90,
                     AsyncTaskStageEnum.GLM_PARSING.getValue(), null, null);
