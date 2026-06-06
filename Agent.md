@@ -146,12 +146,14 @@ alumni-direct/
 - 业务异常抛出 `BusinessException`
 - 判断后抛出异常可参考`ThrowUtils.throwIf(res == 0, OPERATION_ERROR, "更新审批记录失败");`
 - 异常码可参考`ErrorCode`枚举类
+- Redis的常量KEY统一放在`RedisConstants`类中
 
 ### 5.3 Entity/VO/DTO
 
 - **Entity**：数据库表对应的实体，使用 `@TableName` 注解
 - **VO**：视图对象，用于返回给前端
 - **DTO**：数据传输对象，用于接收前端参数
+- 字段存在多个枚举值时，赋值时使用枚举值，枚举类放在enums 包中
 
 ### 5.4 统一响应
 

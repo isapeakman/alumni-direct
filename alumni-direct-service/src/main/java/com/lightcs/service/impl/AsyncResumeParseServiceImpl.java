@@ -1,6 +1,8 @@
 package com.lightcs.service.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.lightcs.enums.AsyncTaskStageEnum;
+import com.lightcs.enums.AsyncTaskStatusEnum;
 import com.lightcs.model.vo.AsyncTaskStatusVO;
 import com.lightcs.service.AsyncResumeParseService;
 import com.lightcs.service.ResumeParseExecutor;
@@ -13,6 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.lightcs.constants.RedisConstant.TASK_EXPIRE_TIME;
+import static com.lightcs.constants.RedisConstant.TASK_KEY_PREFIX;
+
 /**
  * 异步简历解析服务实现
  */
@@ -24,8 +29,6 @@ public class AsyncResumeParseServiceImpl implements AsyncResumeParseService {
     private final ResumeParseExecutor resumeParseExecutor;
     private final RedisUtil redisUtil;
 
-    private static final String TASK_KEY_PREFIX = "resume:task:";
-    private static final long TASK_EXPIRE_TIME = 30; // 任务保留30分钟
 
     @Override
     public String submitParseTask(MultipartFile file) {
@@ -35,9 +38,9 @@ public class AsyncResumeParseServiceImpl implements AsyncResumeParseService {
         // 创建初始任务状态
         AsyncTaskStatusVO taskStatus = AsyncTaskStatusVO.builder()
                 .taskId(taskId)
-                .status("PENDING")
+                .status(AsyncTaskStatusEnum.PENDING.getValue())
                 .progress(0)
-                .stage("等待处理")
+                .stage(AsyncTaskStageEnum.WAITING.getValue())
                 .createTime(System.currentTimeMillis())
                 .build();
 
@@ -63,7 +66,7 @@ public class AsyncResumeParseServiceImpl implements AsyncResumeParseService {
             log.warn("任务不存在或已过期: {}", taskId);
             return AsyncTaskStatusVO.builder()
                     .taskId(taskId)
-                    .status("FAILED")
+                    .status(AsyncTaskStatusEnum.FAILED.getValue())
                     .errorMessage("任务不存在或已过期")
                     .build();
         }

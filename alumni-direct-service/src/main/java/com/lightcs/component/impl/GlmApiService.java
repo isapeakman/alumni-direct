@@ -1,5 +1,6 @@
-package com.lightcs.component;
+package com.lightcs.component.impl;
 
+import com.lightcs.component.AbstractLLMService;
 import com.lightcs.enums.ErrorCode;
 import com.lightcs.exception.BusinessException;
 import com.lightcs.provider.PromptTemplateService;
@@ -17,54 +18,27 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-public class GlmApiService {
+public class GlmApiService extends AbstractLLMService {
 
     private final ChatClient chatClient;
     private final ZhiPuAiChatModel chatModel;
-    private final PromptTemplateService promptTemplateService;
+    private static final String RESUME_PARSE_TEMPLATE = "resume-parse.txt";
 
     public GlmApiService(ChatClient.Builder chatClientBuilder,
                          ZhiPuAiChatModel chatModel,
                          PromptTemplateService promptTemplateService) {
+        super(promptTemplateService);
         this.chatClient = chatClientBuilder.build();
         this.chatModel = chatModel;
-        this.promptTemplateService = promptTemplateService;
     }
 
     /**
-     * 调用GLM API进行简历结构化
-     *
-     * @param resumeText 简历文本内容
-     * @return 结构化的JSON字符串
+     * 实现抽象方法：调用GLM API
      */
-    public String parseResumeToJson(String resumeText) {
-        String prompt = buildResumeParsePrompt(resumeText);
-        return callGlmApi(prompt);
-    }
-
-    /**
-     * 构建简历解析Prompt
-     */
-    private String buildResumeParsePrompt(String resumeText) {
+    @Override
+    public String callApi(String prompt) {
         try {
-            // 从模板文件加载提示词
-            String template = promptTemplateService.loadPrompt("resume-parse.txt");
-            // 填充变量
-            return promptTemplateService.fillTemplate(template,
-                    java.util.Map.of("resume_text", resumeText));
-        } catch (Exception e) {
-            log.error("加载简历解析提示词模板失败", e);
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "加载提示词模板失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 调用GLM API
-     */
-    private String callGlmApi(String prompt) {
-        try {
-            log.info("调用GLM API进行简历解析");
-
+            log.info("调用GLM API");
             // 使用Spring AI的ChatClient调用GLM API
             String response = chatClient.prompt()
                     .user(prompt)
@@ -80,13 +54,29 @@ public class GlmApiService {
     }
 
     /**
-     * 调用GLM API（带系统提示）
-     *
-     * @param systemPrompt 系统提示
-     * @param userPrompt   用户提示
-     * @return AI响应内容
+     * 实现抽象方法：加载提示词模板
      */
-    public String callWithSystemPrompt(String systemPrompt, String userPrompt) {
+    @Override
+    protected String loadPromptTemplate() {
+        return RESUME_PARSE_TEMPLATE;
+    }
+
+    /**
+     * 获取当前使用的LLM提供商名称
+     */
+    @Override
+    public String getProvider() {
+        return "GLM";
+    }
+
+    /**
+     * 带系统提示词的LLM调用（GLM特有功能）
+     *
+     * @param systemPrompt 系统提示词（设定角色、规则等）
+     * @param userPrompt   用户提示词（具体问题或任务）
+     * @return LLM响应内容
+     */
+    public String chatWithSystem(String systemPrompt, String userPrompt) {
         try {
             log.info("调用GLM API（带系统提示）");
 
@@ -105,12 +95,12 @@ public class GlmApiService {
     }
 
     /**
-     * 直接调用GLM模型（可指定模型和参数）
+     * 直接调用LLM（可指定模型和参数）（GLM特有功能）
      *
      * @param message     消息内容
      * @param model       模型名称，默认glm-4.6
      * @param temperature 温度参数，默认0.7
-     * @return AI响应内容
+     * @return LLM响应内容
      */
     public String directCall(String message, String model, Double temperature) {
         try {
@@ -134,6 +124,4 @@ public class GlmApiService {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM模型失败: " + e.getMessage());
         }
     }
-
-
 }

@@ -108,11 +108,6 @@ const routes = [
                 component: () => import('../views/admin/manage-fair.vue'),
             },
             {
-                path: 'resume-test',
-                name: 'ResumeTest',
-                component: () => import('../views/admin/resume-parse-test.vue'),
-            },
-            {
                 path: 'resume-async',
                 name: 'ResumeTestAsync',
                 component: () => import('../views/admin/resume-parse-async.vue'),

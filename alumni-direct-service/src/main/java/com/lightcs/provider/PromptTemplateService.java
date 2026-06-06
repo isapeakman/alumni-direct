@@ -1,5 +1,8 @@
 package com.lightcs.provider;
 
+import com.lightcs.enums.ErrorCode;
+import com.lightcs.exception.BusinessException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -12,22 +15,26 @@ import java.util.Map;
  * 提示词服务类
  */
 @Service
+@Slf4j
 public class PromptTemplateService {
-
+    /**
+     * 提示词文件夹路径
+     */
     private static final String PROMPT_BASE_PATH = "prompts/";
-    private static final String PROMPT_INTERVIEW = PROMPT_BASE_PATH + "resume-prompt.st";
-
-//    // 使用 @Value 注解加载资源文件
-//    @Value("classpath:/prompts/resume-prompt.st")
-//    private Resource interviewPromptResource;
+    private static final String PROMPT_INTERVIEW = "resume-prompt.st";
 
 
     /**
      * 读取提示词模板文件
      */
-    public String loadPrompt(String relativePath) throws IOException {
+    public String loadPrompt(String relativePath) {
         ClassPathResource resource = new ClassPathResource(PROMPT_BASE_PATH + relativePath);
-        return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        try {
+            return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log.error("加载提示词模板失败: {}", relativePath);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "加载提示词模板失败: " + relativePath);
+        }
     }
 
     /**
@@ -52,6 +59,21 @@ public class PromptTemplateService {
         String template = loadPrompt(PROMPT_INTERVIEW);
         Map<String, String> variables = new HashMap<>();
         variables.put("job_title", jobTitle);
+        return fillTemplate(template, variables);
+    }
+
+    /**
+     * 获取简历解析提示词
+     *
+     * @param promptFilePath 提示词文件路径
+     * @param ocrText        OCR识别文本
+     * @return String 提示词文本
+     * @throws IOException
+     */
+    public String getResumeParsePrompt(String promptFilePath, String ocrText) {
+        String template = loadPrompt(promptFilePath);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("resume_text", ocrText);
         return fillTemplate(template, variables);
     }
 }

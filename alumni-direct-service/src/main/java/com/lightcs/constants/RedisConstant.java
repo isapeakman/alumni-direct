@@ -13,4 +13,6 @@ package com.lightcs.constants;/**
  */
 public interface RedisConstant {
     String TOKEN_PREFIX = "user:token:";
+    String TASK_KEY_PREFIX = "resume:parse:task:";
+    long TASK_EXPIRE_TIME = 30; // 任务保留30分钟
 }

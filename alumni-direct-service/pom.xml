@@ -6,7 +6,7 @@
         <groupId>com.lightcs</groupId>
         <artifactId>alumni-direct</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>alumni-direct-service</artifactId>

@@ -1,11 +1,10 @@
 package com.lightcs.controller;
 
 
+import com.lightcs.component.AbstractLLMService;
 import com.lightcs.exception.BusinessException;
 import com.lightcs.model.vo.AsyncTaskStatusVO;
-import com.lightcs.model.vo.ResumeDTO;
 import com.lightcs.provider.PromptTemplateService;
-import com.lightcs.provider.ResumeParseService;
 import com.lightcs.result.BaseResponse;
 import com.lightcs.result.ResultBuilder;
 import com.lightcs.service.AsyncResumeParseService;
@@ -28,30 +27,31 @@ public class AiInterviewController {
     private final ChatClient chatClient;
     private final ZhiPuAiChatModel chatModel;
     private final PromptTemplateService promptTemplateService;
-    private final ResumeParseService resumeParseService;
     private final AsyncResumeParseService asyncResumeParseService;
+    private final AbstractLLMService llmService;
 
     public AiInterviewController(ChatClient.Builder chatClientBuilder,
                                  ZhiPuAiChatModel chatModel,
                                  PromptTemplateService promptTemplateService,
-                                 ResumeParseService resumeParseService,
-                                 AsyncResumeParseService asyncResumeParseService) {
+                                 AsyncResumeParseService asyncResumeParseService,
+                                 AbstractLLMService llmService) {
         this.chatClient = chatClientBuilder.build();
         this.chatModel = chatModel;
         this.promptTemplateService = promptTemplateService;
-        this.resumeParseService = resumeParseService;
         this.asyncResumeParseService = asyncResumeParseService;
+        this.llmService = llmService;
     }
 
     @GetMapping("/ai")
     String generation(String userInput, String jobTitle) throws Exception {
         // 根据职位获取特定的系统提示
         String jobSpecificPrompt = promptTemplateService.getJobSpecificPrompt(jobTitle);
-        return this.chatClient.prompt()
-                .system(jobSpecificPrompt)
-                .user(userInput)
-                .call()
-                .content();
+        return llmService.callApi(jobSpecificPrompt);
+//        return this.chatClient.prompt()
+//                .system(jobSpecificPrompt)
+//                .user(userInput)
+//                .call()
+//                .content();
     }
 
     @GetMapping("/ai/stream")
@@ -109,56 +109,6 @@ public class AiInterviewController {
                 ))
                 .doOnError(Throwable::printStackTrace);
     }
-
-    /**
-     * 简历解析接口 - 支持图片和PDF格式
-     *
-     * @param file 简历文件（支持图片、PDF等格式）
-     * @return 结构化的简历数据
-     */
-    @PostMapping("/ai/resume/parse")
-    public BaseResponse<Object> parseResume(@RequestPart MultipartFile file) {
-        try {
-            // 验证文件是否为空
-            if (file == null || file.isEmpty()) {
-                return ResultBuilder.fail("上传的文件不能为空");
-            }
-
-            // 验证文件类型
-            String originalFilename = file.getOriginalFilename();
-            if (originalFilename == null) {
-                return ResultBuilder.fail("文件名无效");
-            }
-
-            String lowerCaseFilename = originalFilename.toLowerCase();
-            boolean isSupportedFormat = lowerCaseFilename.endsWith(".pdf") ||
-                    lowerCaseFilename.endsWith(".jpg") ||
-                    lowerCaseFilename.endsWith(".jpeg") ||
-                    lowerCaseFilename.endsWith(".png") ||
-                    lowerCaseFilename.endsWith(".gif") ||
-                    lowerCaseFilename.endsWith(".bmp");
-
-            if (!isSupportedFormat) {
-                return ResultBuilder.fail("不支持的文件格式，请上传PDF或图片文件（JPG、PNG等）");
-            }
-
-            // 调用简历解析服务
-            ResumeDTO resumeDTO = resumeParseService.parseResume(file);
-
-            // 返回解析结果
-            return ResultBuilder.success(resumeDTO);
-
-        } catch (BusinessException e) {
-            // 业务异常，记录日志并返回失败响应
-            log.error("简历解析业务异常", e);
-            return ResultBuilder.fail(e.getMessage());
-        } catch (Exception e) {
-            // 其他异常，记录日志并返回失败响应
-            log.error("简历解析失败", e);
-            return ResultBuilder.fail("简历解析失败: " + e.getMessage());
-        }
-    }
-
     /**
      * 异步简历解析接口 - 提交任务
      *
@@ -193,7 +143,6 @@ public class AiInterviewController {
 
             // 提交异步任务
             String taskId = asyncResumeParseService.submitParseTask(file);
-            log.info("提交简历解析任务成功，任务ID: {}", taskId);
             // 返回任务ID
             return ResultBuilder.success(java.util.Map.of("taskId", taskId));
 

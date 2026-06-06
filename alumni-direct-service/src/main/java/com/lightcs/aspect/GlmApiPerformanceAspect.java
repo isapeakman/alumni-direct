@@ -19,7 +19,7 @@ public class GlmApiPerformanceAspect {
     /**
      * 环绕通知：监控GlmApiService所有公共方法的执行时间
      */
-    @Around("execution(public * com.lightcs.component.GlmApiService.*(..))")
+    @Around("execution(public * com.lightcs.component.impl.GlmApiService.*(..))")
     public Object monitorPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
 

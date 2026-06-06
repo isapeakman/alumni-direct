@@ -202,6 +202,12 @@ const pollTaskStatus = async (taskId) => {
           ElMessage.error('简历解析失败: ' + (response.data.data.errorMessage || '未知错误'))
         }
       }
+
+      if (response.data.data.status === 'COMPLETED') {
+        ElMessage.success('简历解析完成！')
+      } else {
+        ElMessage.error('简历解析失败: ' + (response.data.data.errorMessage || '未知错误'))
+      }
     }
   } catch (error) {
     console.error('查询任务状态失败:', error)
@@ -247,18 +253,14 @@ const getStatusType = (status) => {
 
 // 获取状态文本
 const getStatusText = (status) => {
-  switch (status) {
-    case 'PENDING':
-      return '等待中'
-    case 'PROCESSING':
-      return '处理中'
-    case 'COMPLETED':
-      return '已完成'
-    case 'FAILED':
-      return '失败'
-    default:
-      return '未知'
+  const textMap = {
+    'PENDING': '等待中',
+    'PROCESSING': '处理中',
+    'COMPLETED': '已完成',
+    'FAILED': '失败'
   }
+
+  return textMap[status] || '未知'
 }
 
 // 查看结果
@@ -337,4 +339,4 @@ onUnmounted(() => {
     }
   }
 }
-</style>
+</style scoped>

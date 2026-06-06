@@ -65,7 +65,7 @@
     </appender>
 
     <!-- GLM API相关类的日志专门输出到glm-api.log -->
-    <logger name="com.lightcs.component.GlmApiService" level="INFO" additivity="false">
+    <logger name="com.lightcs.component.impl.GlmApiService" level="INFO" additivity="false">
         <appender-ref ref="FILE_GLM"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
