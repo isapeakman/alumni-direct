@@ -234,3 +234,37 @@ create table user_intention
 create index user_index
     on user_intention (user_id);
 
+-- ==================== API调用监控相关表 ====================
+
+-- API调用耗时日志表
+create table api_call_log
+(
+    id              bigint auto_increment
+        primary key,
+    service_name    varchar(100)                       not null comment '服务名称（如GLM:BaiduOcrServiceImpl）',
+    method_name     varchar(100)                       not null comment '方法名称',
+    duration        bigint                             not null comment '耗时（毫秒）',
+    success         tinyint(1)                         not null comment '是否成功：0 失败 1 成功',
+    error_message   varchar(500)                       null comment '错误信息',
+    request_params  text                               null comment '请求参数',
+    response_length int                                null comment '响应长度',
+    created_at      datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    index idx_created_at (created_at),
+    index idx_service_name (service_name)
+)
+    comment 'API调用耗时日志表';
+
+-- GLM Token消耗日志表
+create table glm_token_log
+(
+    id                bigint auto_increment
+        primary key,
+    api_call_log_id   bigint                             null comment '关联的API调用日志ID',
+    prompt_tokens     int                                not null comment '输入Token数',
+    completion_tokens int                                not null comment '输出Token数',
+    total_tokens      int                                not null comment '总Token数',
+    model             varchar(50)                        not null comment '模型名称',
+    created_at        datetime default CURRENT_TIMESTAMP not null comment '创建时间'
+)
+    comment 'GLM Token消耗日志表';
+
