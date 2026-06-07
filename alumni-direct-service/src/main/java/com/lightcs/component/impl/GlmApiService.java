@@ -1,5 +1,7 @@
 package com.lightcs.component.impl;
 
+import com.lightcs.annotation.ApiPerformanceMonitor;
+import com.lightcs.annotation.TokenUsageMonitor;
 import com.lightcs.component.LLMApiStrategy;
 import com.lightcs.enums.ErrorCode;
 import com.lightcs.exception.BusinessException;
@@ -40,6 +42,9 @@ public class GlmApiService implements LLMApiStrategy {
     /**
      * 调用GLM API并返回Token信息（使用Spring AI标准API）
      */
+    @Override
+    @ApiPerformanceMonitor(serviceType = "GLM")
+    @TokenUsageMonitor
     public ApiCallResult callApiWithTokenInfo(String prompt) {
         try {
             log.info("调用GLM API");
@@ -115,6 +120,8 @@ public class GlmApiService implements LLMApiStrategy {
     /**
      * 带系统提示词的LLM调用并返回Token信息
      */
+    @ApiPerformanceMonitor(serviceType = "GLM")
+    @TokenUsageMonitor
     public ApiCallResult chatWithSystemWithTokenInfo(String systemPrompt, String userPrompt) {
         try {
             log.info("调用GLM API（带系统提示）");
@@ -148,6 +155,8 @@ public class GlmApiService implements LLMApiStrategy {
     /**
      * 直接调用LLM并返回Token信息
      */
+    @ApiPerformanceMonitor(serviceType = "GLM")
+    @TokenUsageMonitor
     public ApiCallResult directCallWithTokenInfo(String message, String model, Double temperature) {
         try {
             String targetModel = model != null ? model : "glm-4.6";

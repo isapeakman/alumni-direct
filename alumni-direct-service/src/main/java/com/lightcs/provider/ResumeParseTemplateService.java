@@ -30,7 +30,7 @@ public class ResumeParseTemplateService {
         // 2.加载提示词
         String prompt = promptTemplateService.getResumeParsePrompt(template, resumeText);
         // 3：根据提示词调用LLM API
-        String jsonResult = strategy.callApi(prompt);
+        String jsonResult = strategy.callApiWithTokenInfo(prompt).getContent();
 
         log.info("[{}] 简历解析完成", strategy.getProvider());
         return jsonResult;

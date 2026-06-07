@@ -2,6 +2,7 @@ package com.lightcs.component.impl;
 
 
 import com.baidu.aip.ocr.AipOcr;
+import com.lightcs.annotation.ApiPerformanceMonitor;
 import com.lightcs.component.OcrService;
 import com.lightcs.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class BaiduOcrServiceImpl implements OcrService {
     private final AipOcr aipOcrClient;
 
     @Override
+    @ApiPerformanceMonitor(serviceType = "OCR")
     public String recognizeText(byte[] imageBytes) {
         try {
             // 传入可选参数调用接口
@@ -59,6 +61,7 @@ public class BaiduOcrServiceImpl implements OcrService {
     }
 
     @Override
+    @ApiPerformanceMonitor(serviceType = "OCR")
     public String recognizePdfText(byte[] pdfBytes) {
         // PDF需要先转换为图片，这里使用高精度OCR接口
         // 实际应用中可能需要使用PDF转图片工具（如Apache PDFBox + Java2D）

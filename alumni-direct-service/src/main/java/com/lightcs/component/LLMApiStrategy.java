@@ -1,5 +1,7 @@
 package com.lightcs.component;
 
+import com.lightcs.model.dto.ApiCallResult;
+
 public interface LLMApiStrategy {
     /**
      * 调用LLM API的核心方法
@@ -9,6 +11,14 @@ public interface LLMApiStrategy {
      * @return LLM响应内容
      */
     String callApi(String prompt);
+
+    /**
+     * 调用LLM API并返回Token信息
+     *
+     * @param prompt 提示词
+     * @return ApiCallResult 包含Token信息
+     */
+    ApiCallResult callApiWithTokenInfo(String prompt);
 
     /**
      * 获取当前使用的LLM提供商名称

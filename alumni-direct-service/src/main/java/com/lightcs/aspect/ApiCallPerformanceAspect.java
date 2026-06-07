@@ -1,6 +1,7 @@
 package com.lightcs.aspect;
 
 import com.alibaba.fastjson2.JSON;
+import com.lightcs.annotation.ApiPerformanceMonitor;
 import com.lightcs.model.pojo.ApiCallLog;
 import com.lightcs.service.ApiCallLogService;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 /**
- * API调用性能监控切面（通用）
- * 用于统计外部API调用的耗时，可用于GLM调用和OCR调用
+ * API调用性能监控切面（基于注解）
+ * 用于统计外部API调用的耗时
  */
 @Slf4j
 @Aspect
@@ -24,30 +25,19 @@ public class ApiCallPerformanceAspect {
     private final ApiCallLogService apiCallLogService;
 
     /**
-     * 监控GLM API调用
+     * 监控带有@ApiPerformanceMonitor注解的方法
      */
-    @Around("execution(public * com.lightcs.component.impl.GlmApiService.*(..))")
-    public Object monitorGlmApiPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
-        return monitorPerformance(joinPoint, "GLM");
-    }
-
-    /**
-     * 监控OCR API调用
-     */
-    @Around("execution(public * com.lightcs.component.impl.BaiduOcrServiceImpl.*(..))")
-    public Object monitorOcrApiPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
-        return monitorPerformance(joinPoint, "OCR");
-    }
-
-    /**
-     * 通用性能监控方法
-     */
-    private Object monitorPerformance(ProceedingJoinPoint joinPoint, String serviceType) throws Throwable {
+    @Around("@annotation(com.lightcs.annotation.ApiPerformanceMonitor)")
+    public Object monitorApiPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String methodName = signature.getName();
         String className = joinPoint.getTarget().getClass().getSimpleName();
+
+        // 获取注解参数
+        ApiPerformanceMonitor annotation = signature.getMethod().getAnnotation(ApiPerformanceMonitor.class);
+        String serviceType = annotation != null ? annotation.serviceType() : "DEFAULT";
 
         try {
             log.info("🚀 [{}监控] 开始调用 {}.{} | 参数数量: {}",

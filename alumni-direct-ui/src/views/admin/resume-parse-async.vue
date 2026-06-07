@@ -97,7 +97,9 @@
                 @click="handleSubmitTask"
                 class="parse-btn"
             >
-              {{ isProcessing ? 'Parsing...' : 'Parse Resume' }}
+              {{
+                isProcessing ? 'Parsing...' : (taskStatus?.status === 'COMPLETED' ? 'Re-parse Resume' : 'Parse Resume')
+              }}
             </el-button>
 
             <el-button
@@ -427,6 +429,7 @@ const handleFileChange = (file) => {
   taskStatus.value = null
   resumeData.value = null
   parseTime.value = 0
+  isProcessing.value = false
 }
 
 // 清除文件
@@ -641,6 +644,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    overflow-y: auto;
 
     .upload-card {
       flex-shrink: 0;
@@ -744,9 +748,21 @@ onUnmounted(() => {
       .task-status {
         margin-bottom: 15px;
 
+        :deep(.el-progress) {
+          width: 100%;
+        }
+
         .status-info {
           margin-top: 15px;
           text-align: center;
+
+          :deep(.el-tag) {
+            min-width: 120px;
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            display: inline-block;
+          }
 
           .stage-text {
             margin-top: 10px;

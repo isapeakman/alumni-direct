@@ -12,8 +12,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 /**
- * Token使用量统计切面（专门用于LLM调用）
- * 用于统计GLM等LLM模型的Token消耗
+ * Token使用量统计切面（基于注解）
+ * 用于统计LLM模型的Token消耗
  */
 @Slf4j
 @Aspect
@@ -24,9 +24,9 @@ public class TokenUsageAspect {
     private final ApiCallLogService apiCallLogService;
 
     /**
-     * 监控GLM API调用，统计Token使用量
+     * 监控带有@TokenUsageMonitor注解的方法
      */
-    @Around("execution(public * com.lightcs.component.impl.GlmApiService.*WithTokenInfo(..))")
+    @Around("@annotation(com.lightcs.annotation.TokenUsageMonitor)")
     public Object monitorTokenUsage(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String methodName = signature.getName();
