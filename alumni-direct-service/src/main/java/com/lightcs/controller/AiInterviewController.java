@@ -25,16 +25,19 @@ import reactor.core.publisher.Flux;
 @RestController
 public class AiInterviewController {
 
-    private final ChatClient chatClient;
+    private final ChatClient generalChatClient;
+    private final ChatClient aiInterviewChatClient;
     private final ZhiPuAiChatModel chatModel;
     private final PromptTemplateService promptTemplateService;
     private final AsyncResumeParseService asyncResumeParseService;
 
-    public AiInterviewController(ChatClient.Builder chatClientBuilder,
+    public AiInterviewController(ChatClient generalChatClient,
+                                 ChatClient aiInterviewChatClient,
                                  ZhiPuAiChatModel chatModel,
                                  PromptTemplateService promptTemplateService,
                                  AsyncResumeParseService asyncResumeParseService) {
-        this.chatClient = chatClientBuilder.build();
+        this.generalChatClient = generalChatClient;
+        this.aiInterviewChatClient = aiInterviewChatClient;
         this.chatModel = chatModel;
         this.promptTemplateService = promptTemplateService;
         this.asyncResumeParseService = asyncResumeParseService;
@@ -42,9 +45,9 @@ public class AiInterviewController {
 
     @GetMapping("/ai")
     String generation(String userInput, String jobTitle, String resumeText) throws Exception {
-        // 根据职位获取特定的系统提示
+        // 使用 AI面试场景的 ChatClient，但传入自定义提示词会覆盖预设
         String jobSpecificPrompt = promptTemplateService.getJobSpecificPrompt(jobTitle, resumeText);
-        return this.chatClient.prompt()
+        return aiInterviewChatClient.prompt()
                 .system(jobSpecificPrompt)
                 .user(userInput)
                 .call()
@@ -75,8 +78,8 @@ public class AiInterviewController {
                     resumeInfo
             );
 
-            // 调用GLM API生成内容
-            String result = chatClient.prompt()
+            // 使用通用场景的 ChatClient
+            String result = generalChatClient.prompt()
                     .user(prompt)
                     .call()
                     .content();
@@ -95,7 +98,8 @@ public class AiInterviewController {
 
     @GetMapping("/ai/stream")
     Flux<String> generationByStream(String userInput) {
-        return this.chatClient.prompt()
+        // 使用通用场景的 ChatClient
+        return this.generalChatClient.prompt()
                 .user(userInput)
                 .stream()
                 .content();

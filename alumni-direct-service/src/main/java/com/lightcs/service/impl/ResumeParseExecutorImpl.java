@@ -9,7 +9,6 @@ import com.lightcs.enums.ErrorCode;
 import com.lightcs.exception.BusinessException;
 import com.lightcs.model.vo.AsyncTaskStatusVO;
 import com.lightcs.model.vo.ResumeDTO;
-import com.lightcs.provider.ResumeParseTemplateService;
 import com.lightcs.service.ResumeParseExecutor;
 import com.lightcs.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,6 @@ import static com.lightcs.constants.RedisConstant.TASK_KEY_PREFIX;
 public class ResumeParseExecutorImpl implements ResumeParseExecutor {
 
     private final OcrService ocrService;
-    private final ResumeParseTemplateService resumeParseTemplateService;
     private final LLMApiStrategy llmApiStrategy;
     private final RedisUtil redisUtil;
 
@@ -97,9 +95,9 @@ public class ResumeParseExecutorImpl implements ResumeParseExecutor {
             // 2. 文本预处理（轻微清理，保留原始特征供GLM纠错）
             String cleanedText = cleanText(rawText, taskId);
 
-            // 3. GLM结构化：纠正OCR错误并提取结构化信息
+            // 3. GLM结构化：纠正OCR错误并提取结构化信息（系统提示词已在ChatClient中预设）
             log.info("[任务: {}] 🤖 调用GLM进行OCR纠错和结构化解析...", taskId);
-            String jsonResult = resumeParseTemplateService.parseResumeToJson(cleanedText, llmApiStrategy);
+            String jsonResult = llmApiStrategy.parseResume(cleanedText);
             log.info("[任务: {}] ✅ GLM解析完成，返回JSON长度: {} 字符", taskId, jsonResult.length());
             updateTaskStatus(taskId, AsyncTaskStatusEnum.PROCESSING.getValue(), 90,
                     AsyncTaskStageEnum.GLM_PARSING.getValue(), null, null);

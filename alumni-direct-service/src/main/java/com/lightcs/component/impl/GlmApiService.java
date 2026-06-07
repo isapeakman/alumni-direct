@@ -10,69 +10,84 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
-import org.springframework.ai.zhipuai.ZhiPuAiChatOptions;
 import org.springframework.stereotype.Service;
 
 /**
  * GLM API服务类
- * 用于调用GLM大模型进行文本处理和JSON结构化
+ * 实现LLMApiStrategy接口，提供简历解析和AI面试两个核心业务方法
  */
 @Slf4j
 @Service
 public class GlmApiService implements LLMApiStrategy {
 
-    private final ChatClient chatClient;
+    private final ChatClient resumeParseChatClient;
+    private final ChatClient aiInterviewChatClient;
     private final ZhiPuAiChatModel chatModel;
-    private static final String RESUME_PARSE_TEMPLATE = "resume-parse.txt";
 
-    public GlmApiService(ChatClient.Builder chatClientBuilder,
+    public GlmApiService(ChatClient resumeParseChatClient,
+                         ChatClient aiInterviewChatClient,
                          ZhiPuAiChatModel chatModel) {
-        this.chatClient = chatClientBuilder.build();
+        this.resumeParseChatClient = resumeParseChatClient;
+        this.aiInterviewChatClient = aiInterviewChatClient;
         this.chatModel = chatModel;
     }
 
-    /**
-     * 实现抽象方法：调用GLM API
-     */
+    // ============ 业务方法（返回 String，供业务层调用） ============
+
     @Override
-    public String callApi(String prompt) {
-        return callApiWithTokenInfo(prompt).getContent();
+    public String parseResume(String resumeText) {
+        log.info("调用GLM进行简历解析");
+        return parseResumeWithToken(resumeText).getContent();
+    }
+
+    @Override
+    public String interview(String userInput) {
+        log.info("调用GLM进行AI模拟面试");
+        return interviewWithToken(userInput).getContent();
+    }
+
+    @Override
+    public String getProvider() {
+        return "GLM-4.5-air";
     }
 
     /**
-     * 调用GLM API并返回Token信息（使用Spring AI标准API）
+     * 简历解析（带Token统计）- 被切面修饰
      */
-    @Override
-    @ApiPerformanceMonitor(serviceType = "GLM")
+    @ApiPerformanceMonitor(serviceType = "GLM-RESUME-PARSE")
     @TokenUsageMonitor
-    public ApiCallResult callApiWithTokenInfo(String prompt) {
-        try {
-            log.info("调用GLM API");
+    public ApiCallResult parseResumeWithToken(String resumeText) {
+        return callWithClient(resumeParseChatClient, resumeText, "resume-parse");
+    }
 
-            // 使用Spring AI标准API获取完整响应
-            ChatResponse response = chatClient.prompt()
+    /**
+     * AI面试（带Token统计）- 被切面修饰
+     */
+    @ApiPerformanceMonitor(serviceType = "GLM-INTERVIEW")
+    @TokenUsageMonitor
+    public ApiCallResult interviewWithToken(String userInput) {
+        return callWithClient(aiInterviewChatClient, userInput, "ai-interview");
+    }
+
+    // ============ 内部辅助方法 ============
+
+    private ApiCallResult callWithClient(ChatClient client, String prompt, String scenario) {
+        try {
+            ChatResponse response = client.prompt()
                     .user(prompt)
                     .call()
                     .chatResponse();
-
             String content = response.getResult().getOutput().getText();
-
-            // 获取Token用量
             ApiCallResult result = extractTokenUsage(response, content);
-
-            log.info("GLM API调用成功，返回结果长度: {}, 输入Token: {}, 输出Token: {}, 总Token: {}",
-                    content.length(), result.getPromptTokens(), result.getCompletionTokens(), result.getTotalTokens());
-
+            log.info("GLM {}调用成功，返回长度: {}, 输入Token: {}, 输出Token: {}",
+                    scenario, content.length(), result.getPromptTokens(), result.getCompletionTokens());
             return result;
         } catch (Exception e) {
-            log.error("调用GLM API失败", e);
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM API失败: " + e.getMessage());
+            log.error("调用GLM {}失败", scenario, e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM失败: " + e.getMessage());
         }
     }
 
-    /**
-     * 提取Token使用信息
-     */
     private ApiCallResult extractTokenUsage(ChatResponse response, String content) {
         var metadata = response.getMetadata();
         if (metadata != null && metadata.getUsage() != null) {
@@ -92,96 +107,5 @@ public class GlmApiService implements LLMApiStrategy {
                 .totalTokens(null)
                 .model(this.getProvider())
                 .build();
-    }
-
-    /**
-     * 实现抽象方法：加载提示词模板
-     */
-    @Override
-    public String loadPromptTemplate() {
-        return RESUME_PARSE_TEMPLATE;
-    }
-
-    /**
-     * 获取当前使用的LLM提供商名称
-     */
-    @Override
-    public String getProvider() {
-        return "GLM-4.5-air";
-    }
-
-    /**
-     * 带系统提示词的LLM调用（GLM特有功能）
-     */
-    public String chatWithSystem(String systemPrompt, String userPrompt) {
-        return chatWithSystemWithTokenInfo(systemPrompt, userPrompt).getContent();
-    }
-
-    /**
-     * 带系统提示词的LLM调用并返回Token信息
-     */
-    @ApiPerformanceMonitor(serviceType = "GLM")
-    @TokenUsageMonitor
-    public ApiCallResult chatWithSystemWithTokenInfo(String systemPrompt, String userPrompt) {
-        try {
-            log.info("调用GLM API（带系统提示）");
-
-            ChatResponse response = chatClient.prompt()
-                    .system(systemPrompt)
-                    .user(userPrompt)
-                    .call()
-                    .chatResponse();
-
-            String content = response.getResult().getOutput().getText();
-            ApiCallResult result = extractTokenUsage(response, content);
-
-            log.info("GLM API调用成功，输入Token: {}, 输出Token: {}, 总Token: {}",
-                    result.getPromptTokens(), result.getCompletionTokens(), result.getTotalTokens());
-
-            return result;
-        } catch (Exception e) {
-            log.error("调用GLM API失败", e);
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM API失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 直接调用LLM（可指定模型和参数）
-     */
-    public String directCall(String message, String model, Double temperature) {
-        return directCallWithTokenInfo(message, model, temperature).getContent();
-    }
-
-    /**
-     * 直接调用LLM并返回Token信息
-     */
-    @ApiPerformanceMonitor(serviceType = "GLM")
-    @TokenUsageMonitor
-    public ApiCallResult directCallWithTokenInfo(String message, String model, Double temperature) {
-        try {
-            String targetModel = model != null ? model : "glm-4.6";
-            log.info("直接调用GLM模型: {}, temperature: {}", targetModel, temperature);
-
-            ChatResponse response = chatClient.prompt()
-                    .user(message)
-                    .options(ZhiPuAiChatOptions.builder()
-                            .model(targetModel)
-                            .temperature(temperature != null ? temperature : 0.7)
-                            .build())
-                    .call()
-                    .chatResponse();
-
-            String content = response.getResult().getOutput().getText();
-            ApiCallResult result = extractTokenUsage(response, content);
-            result.setModel(targetModel);
-
-            log.info("GLM模型调用成功，输入Token: {}, 输出Token: {}, 总Token: {}",
-                    result.getPromptTokens(), result.getCompletionTokens(), result.getTotalTokens());
-
-            return result;
-        } catch (Exception e) {
-            log.error("调用GLM模型失败", e);
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM模型失败: " + e.getMessage());
-        }
     }
 }

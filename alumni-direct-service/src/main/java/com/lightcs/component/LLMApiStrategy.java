@@ -1,24 +1,23 @@
 package com.lightcs.component;
 
-import com.lightcs.model.dto.ApiCallResult;
-
 public interface LLMApiStrategy {
-    /**
-     * 调用LLM API的核心方法
-     * 子类需要实现具体的API调用逻辑
-     *
-     * @param prompt 提示词
-     * @return LLM响应内容
-     */
-    String callApi(String prompt);
 
     /**
-     * 调用LLM API并返回Token信息
+     * 简历解析 - 使用预设的简历解析系统提示词
      *
-     * @param prompt 提示词
-     * @return ApiCallResult 包含Token信息
+     * @param resumeText OCR识别的简历文本
+     * @return 结构化JSON字符串
      */
-    ApiCallResult callApiWithTokenInfo(String prompt);
+    String parseResume(String resumeText);
+
+    /**
+     * AI模拟面试 - 使用预设的面试系统提示词
+     *
+     * @param userInput 用户输入（问题或回答）
+     * @return 面试回复文本
+     */
+    String interview(String userInput);
+
 
     /**
      * 获取当前使用的LLM提供商名称
@@ -26,12 +25,4 @@ public interface LLMApiStrategy {
      * @return 提供商名称（如：GLM、OpenAI、Qwen等）
      */
     String getProvider();
-
-    /**
-     * 加载提示词模板
-     * 子类可以指定使用哪个模板文件
-     *
-     * @return 模板文件名
-     */
-    String loadPromptTemplate();
 }
