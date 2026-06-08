@@ -43,13 +43,24 @@ public class ChatClientConfig {
 
     /**
      * AI模拟面试场景 ChatClient
-     * 预加载 resume-prompt.st 系统提示词
      */
     @Bean("aiInterviewChatClient")
     public ChatClient aiInterviewChatClient(ChatClient.Builder chatClientBuilder) {
         log.info("初始化AI模拟面试场景 ChatClient");
         String systemPrompt = promptTemplateService.loadInterviewSystemPrompt();
         // TODO 配置温度、最大Token数等参数
+        return chatClientBuilder
+                .defaultSystem(systemPrompt)
+                .build();
+    }
+
+    /**
+     * AI面试评估场景 ChatClient
+     */
+    @Bean("aiInterviewEvaluationChatClient")
+    public ChatClient aiInterviewEvaluationChatClient(ChatClient.Builder chatClientBuilder) {
+        log.info("初始化AI面试评估场景 ChatClient");
+        String systemPrompt = promptTemplateService.loadInterviewEvaluationPrompt();
         return chatClientBuilder
                 .defaultSystem(systemPrompt)
                 .build();

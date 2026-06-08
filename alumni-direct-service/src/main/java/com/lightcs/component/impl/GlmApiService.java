@@ -23,23 +23,27 @@ public class GlmApiService implements LLMApiStrategy {
 
     private final ChatClient resumeParseChatClient;
     private final ChatClient aiInterviewChatClient;
+    private final ChatClient aiInterviewEvaluationChatClient;
+
     private final ZhiPuAiChatModel chatModel;
 
     /**
      * Constructor for GlmApiService class.
      * Initializes the service with required chat clients and chat model.
      *
-     * @param resumeParseChatClient ChatClient instance for parsing resumes
-     * @param aiInterviewChatClient ChatClient instance for AI interview functionality
-     * @param chatModel             ZhiPuAiChatModel instance for chat operations
+     * @param resumeParseChatClient           ChatClient instance for parsing resumes
+     * @param aiInterviewChatClient           ChatClient instance for AI interview functionality
+     * @param aiInterviewEvaluationChatClient
+     * @param chatModel                       ZhiPuAiChatModel instance for chat operations
      */
     public GlmApiService(ChatClient resumeParseChatClient,
                          ChatClient aiInterviewChatClient,
-                         ZhiPuAiChatModel chatModel) {
+                         ChatClient aiInterviewEvaluationChatClient, ZhiPuAiChatModel chatModel) {
         // Initialize resume parsing chat client
         this.resumeParseChatClient = resumeParseChatClient;
         // Initialize AI interview chat client
         this.aiInterviewChatClient = aiInterviewChatClient;
+        this.aiInterviewEvaluationChatClient = aiInterviewEvaluationChatClient;
         // Initialize chat model
         this.chatModel = chatModel;
     }
@@ -63,12 +67,19 @@ public class GlmApiService implements LLMApiStrategy {
     }
 
     @Override
-    public String interviewWithSystemPrompt(String systemPrompt, String userPrompt) {
-        log.info("调用GLM进行AI模拟面试（系统提示词+用户提示词分开）");
+    public String evaluateInterview(String userInput) {
+        log.info("调用GLM进行AI面试评价");
         // 获取代理对象，调用被切面修饰的方法
         GlmApiService glmApiService = (GlmApiService) AopContext.currentProxy();
-        return glmApiService.interviewWithSystemPromptAndToken(systemPrompt, userPrompt).getContent();
+        return glmApiService.evaluateInterviewWithToken(userInput).getContent();
     }
+
+    @ApiPerformanceMonitor(serviceType = "GLM-INTERVIEW-EVALUATE")
+    @TokenUsageMonitor
+    private ApiCallResult evaluateInterviewWithToken(String userInput) {
+        return callWithClient(aiInterviewEvaluationChatClient, userInput, "interview-evaluate");
+    }
+
 
     @Override
     public String getProvider() {
@@ -93,28 +104,6 @@ public class GlmApiService implements LLMApiStrategy {
         return callWithClient(aiInterviewChatClient, userInput, "ai-interview");
     }
 
-    /**
-     * AI面试（带Token统计）- 系统提示词和用户提示词分开
-     */
-    @ApiPerformanceMonitor(serviceType = "GLM-INTERVIEW")
-    @TokenUsageMonitor
-    public ApiCallResult interviewWithSystemPromptAndToken(String systemPrompt, String userPrompt) {
-        try {
-            ChatResponse response = aiInterviewChatClient.prompt()
-                    .system(systemPrompt)
-                    .user(userPrompt)
-                    .call()
-                    .chatResponse();
-            String content = response.getResult().getOutput().getText();
-            ApiCallResult result = extractTokenUsage(response, content);
-            log.info("GLM ai-interview（分离提示词）调用成功，返回长度: {}, 输入Token: {}, 输出Token: {}",
-                    content.length(), result.getPromptTokens(), result.getCompletionTokens());
-            return result;
-        } catch (Exception e) {
-            log.error("调用GLM ai-interview（分离提示词）失败", e);
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM失败: " + e.getMessage());
-        }
-    }
 
     // ============ 内部辅助方法 ============
 
@@ -135,6 +124,13 @@ public class GlmApiService implements LLMApiStrategy {
         }
     }
 
+    /**
+     * 获取Token使用情况
+     *
+     * @param response
+     * @param content
+     * @return
+     */
     private ApiCallResult extractTokenUsage(ChatResponse response, String content) {
         var metadata = response.getMetadata();
         if (metadata != null && metadata.getUsage() != null) {

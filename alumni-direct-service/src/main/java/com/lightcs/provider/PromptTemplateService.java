@@ -1,7 +1,5 @@
 package com.lightcs.provider;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.lightcs.enums.ErrorCode;
 import com.lightcs.exception.BusinessException;
 import jakarta.annotation.PostConstruct;
@@ -26,12 +24,11 @@ public class PromptTemplateService {
      * 提示词文件夹路径
      */
     private static final String PROMPT_BASE_PATH = "prompts/";
-    private static final String PROMPT_INTERVIEW = "resume-prompt.st";
     private static final String PROMPT_INTERVIEW_SYSTEM = "interview-system.txt";
     private static final String PROMPT_INTERVIEW_QUESTION = "interview-question.txt";
     private static final String PROMPT_INTERVIEW_SUMMARY = "interview-summary.txt";
+    private static final String PROMPT_INTERVIEW_SUMMARY_CONTENT = "interview-summary-content.txt";
     private static final String PROMPT_RESUME_PARSE = "resume-parse.txt";
-    private static final String PROMPT_RESUME_GENERATE = "resume-generate.txt";
 
     /**
      * 内存缓存 - 存储已加载的提示词模板
@@ -50,12 +47,10 @@ public class PromptTemplateService {
     public void init() {
         log.info("开始预加载提示词模板到内存...");
         try {
-            preloadPrompt(PROMPT_INTERVIEW);
             preloadPrompt(PROMPT_INTERVIEW_SYSTEM);
             preloadPrompt(PROMPT_INTERVIEW_QUESTION);
             preloadPrompt(PROMPT_INTERVIEW_SUMMARY);
             preloadPrompt(PROMPT_RESUME_PARSE);
-            preloadPrompt(PROMPT_RESUME_GENERATE);
 
             // 预加载面试系统提示词（单独的系统提示词文件）
             interviewSystemPrompt = loadPromptFromCache(PROMPT_INTERVIEW_SYSTEM);
@@ -88,6 +83,13 @@ public class PromptTemplateService {
      */
     public String loadInterviewSystemPrompt() {
         return loadPromptFromCache(PROMPT_INTERVIEW_SYSTEM);
+    }
+
+    /**
+     * 加载面试评估提示词
+     */
+    public String loadInterviewEvaluationPrompt() {
+        return loadPromptFromCache(PROMPT_INTERVIEW_SUMMARY);
     }
 
     /**
@@ -194,80 +196,11 @@ public class PromptTemplateService {
      * @return 填充后的提示词
      */
     public String getInterviewSummaryPrompt(String resumeContent, String history) {
-        String template = loadPromptFromCache(PROMPT_INTERVIEW_SUMMARY);
+        String template = loadPromptFromCache(PROMPT_INTERVIEW_SUMMARY_CONTENT);
         Map<String, String> variables = new HashMap<>();
         variables.put("resume_content", resumeContent);
         variables.put("conversation_history", history);
         return fillTemplate(template, variables);
-    }
-
-    /**
-     * 获取简历生成提示词
-     *
-     * @param jobTitle   求职岗位
-     * @param resumeInfo 简历信息（JSON格式）
-     * @return 填充后的提示词
-     */
-    public String getResumeGeneratePrompt(String jobTitle, String resumeInfo) {
-        String template = loadPromptFromCache(PROMPT_RESUME_GENERATE);
-        Map<String, String> variables = new HashMap<>();
-        variables.put("job_title", jobTitle);
-        variables.put("resume_info", resumeInfo);
-        return fillTemplate(template, variables);
-    }
-
-    /**
-     * 动态构建面试系统提示词（包含简历个人信息）
-     * 将简历中的关键个人信息动态追加到系统提示词中
-     *
-     * @param resumeContent 简历内容（JSON格式）
-     * @return 完整的系统提示词
-     */
-    public String buildDynamicInterviewPrompt(String resumeContent) {
-        StringBuilder promptBuilder = new StringBuilder();
-
-        // 添加系统角色定义
-        promptBuilder.append("你是一名专业的技术面试官。\n\n");
-
-        // 动态追加简历中的个人信息
-        try {
-            JSONObject resumeJson = JSON.parseObject(resumeContent);
-
-            promptBuilder.append("【候选人信息】\n");
-
-            if (resumeJson.containsKey("name")) {
-                promptBuilder.append("姓名：").append(resumeJson.getString("name")).append("\n");
-            }
-            if (resumeJson.containsKey("desiredPosition")) {
-                promptBuilder.append("目标岗位：").append(resumeJson.getString("desiredPosition")).append("\n");
-            }
-            if (resumeJson.containsKey("experienceYears")) {
-                promptBuilder.append("工作年限：").append(resumeJson.getString("experienceYears")).append("年\n");
-            }
-            if (resumeJson.containsKey("education")) {
-                promptBuilder.append("学历：").append(resumeJson.getString("education")).append("\n");
-            }
-            if (resumeJson.containsKey("major")) {
-                promptBuilder.append("专业：").append(resumeJson.getString("major")).append("\n");
-            }
-            if (resumeJson.containsKey("skills")) {
-                promptBuilder.append("技能：").append(resumeJson.getJSONArray("skills").toJSONString()).append("\n");
-            }
-
-            promptBuilder.append("\n");
-        } catch (Exception e) {
-            log.warn("解析简历内容失败，使用默认提示词", e);
-        }
-
-        // 添加面试规则
-        promptBuilder.append("【面试规则】\n");
-        promptBuilder.append("1. 根据候选人的简历信息提出针对性问题\n");
-        promptBuilder.append("2. 每次只提出一个问题\n");
-        promptBuilder.append("3. 问题应覆盖技术栈深度、项目经验、解决问题能力\n");
-        promptBuilder.append("4. 根据用户回答进行追问\n");
-        promptBuilder.append("5. 语言简洁，直击要点\n");
-
-        return promptBuilder.toString();
     }
 
     /**

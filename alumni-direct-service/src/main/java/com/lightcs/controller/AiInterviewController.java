@@ -1,11 +1,9 @@
 package com.lightcs.controller;
 
 
-import com.alibaba.fastjson2.JSON;
 import com.lightcs.exception.BusinessException;
 import com.lightcs.model.dto.InterviewMessageDTO;
 import com.lightcs.model.dto.InterviewSessionDTO;
-import com.lightcs.model.dto.ResumeGenerationRequest;
 import com.lightcs.model.vo.AsyncTaskStatusVO;
 import com.lightcs.provider.PromptTemplateService;
 import com.lightcs.result.BaseResponse;
@@ -49,115 +47,6 @@ public class AiInterviewController {
         this.interviewService = interviewService;
     }
 
-    @GetMapping("/ai")
-    String generation(String userInput, String jobTitle, String resumeText) throws Exception {
-        // 使用 AI面试场景的 ChatClient，但传入自定义提示词会覆盖预设
-        String jobSpecificPrompt = promptTemplateService.getJobSpecificPrompt(jobTitle, resumeText);
-        return aiInterviewChatClient.prompt()
-                .system(jobSpecificPrompt)
-                .user(userInput)
-                .call()
-                .content();
-    }
-
-    /**
-     * 简历生成接口
-     * 根据用户修改后的简历信息和求职岗位，生成求职材料
-     *
-     * @param request 简历信息和求职岗位
-     * @return 生成的求职材料（求职信、面试建议、技能匹配分析）
-     */
-    @PostMapping("/ai/resume/generate")
-    public BaseResponse<String> generateResumeMaterial(@RequestBody ResumeGenerationRequest request) {
-        try {
-            // 验证必填参数
-            if (request.getDesiredPosition() == null || request.getDesiredPosition().isBlank()) {
-                return ResultBuilder.fail("求职岗位不能为空");
-            }
-
-            // 将简历信息转换为JSON字符串
-            String resumeInfo = JSON.toJSONString(request);
-
-            // 获取提示词
-            String prompt = promptTemplateService.getResumeGeneratePrompt(
-                    request.getDesiredPosition(),
-                    resumeInfo
-            );
-
-            // 使用通用场景的 ChatClient
-            String result = generalChatClient.prompt()
-                    .user(prompt)
-                    .call()
-                    .content();
-
-            log.info("简历生成完成，求职岗位: {}", request.getDesiredPosition());
-            return ResultBuilder.success(result);
-
-        } catch (BusinessException e) {
-            log.error("简历生成业务异常", e);
-            return ResultBuilder.fail(e.getMessage());
-        } catch (Exception e) {
-            log.error("简历生成失败", e);
-            return ResultBuilder.fail("生成失败: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/ai/stream")
-    Flux<String> generationByStream(String userInput) {
-        // 使用通用场景的 ChatClient
-        return this.generalChatClient.prompt()
-                .user(userInput)
-                .stream()
-                .content();
-    }
-
-
-    /**
-     * glm 模型直接调用
-     *
-     * @return
-     */
-    @GetMapping("/call/chat")
-    public String callChat(@RequestParam String message, @RequestParam(defaultValue = "glm-4.6") String model) {
-        ChatResponse response = chatModel.call(
-                new Prompt(
-                        message,
-                        ZhiPuAiChatOptions.builder()
-                                .model(model)
-                                .temperature(0.7)
-                                .build()
-                ));
-        return response.getResult().getOutput().getText();
-    }
-
-    /**
-     * glm 模型流式调用
-     *
-     * @return
-     */
-    @GetMapping(value = "/stream/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<Object>> streamChat(@RequestParam String message, @RequestParam(defaultValue = "glm-4.6") String model) {
-        return chatModel.stream(
-                        new Prompt(message, ZhiPuAiChatOptions.builder().model(model).build())
-                )
-                .map(chatResponse -> {
-                    String text = chatResponse.getResults()
-                            .stream()
-                            .filter(r -> r.getOutput().getText() != null)
-                            .map(r -> r.getOutput().getText())
-                            .findFirst()
-                            .orElse("");
-                    return ServerSentEvent.builder()
-                            .data(text)
-                            .build();
-                })
-                .concatWith(Flux.just(
-                        ServerSentEvent.builder()
-                                .data("[DONE]")
-                                .build()
-                ))
-                .doOnError(Throwable::printStackTrace);
-    }
 
     /**
      * 异步简历解析接口 - 提交任务
@@ -278,4 +167,74 @@ public class AiInterviewController {
         String summary = interviewService.endInterview(sessionId);
         return ResultBuilder.success(summary);
     }
+
+    @GetMapping("/ai")
+    String generation(String userInput, String jobTitle, String resumeText) throws Exception {
+        // 使用 AI面试场景的 ChatClient，但传入自定义提示词会覆盖预设
+        String jobSpecificPrompt = promptTemplateService.getJobSpecificPrompt(jobTitle, resumeText);
+        return aiInterviewChatClient.prompt()
+                .system(jobSpecificPrompt)
+                .user(userInput)
+                .call()
+                .content();
+    }
+
+
+    @GetMapping("/ai/stream")
+    Flux<String> generationByStream(String userInput) {
+        // 使用通用场景的 ChatClient
+        return this.generalChatClient.prompt()
+                .user(userInput)
+                .stream()
+                .content();
+    }
+
+
+    /**
+     * glm 模型直接调用
+     *
+     * @return
+     */
+    @GetMapping("/call/chat")
+    public String callChat(@RequestParam String message, @RequestParam(defaultValue = "glm-4.6") String model) {
+        ChatResponse response = chatModel.call(
+                new Prompt(
+                        message,
+                        ZhiPuAiChatOptions.builder()
+                                .model(model)
+                                .temperature(0.7)
+                                .build()
+                ));
+        return response.getResult().getOutput().getText();
+    }
+
+    /**
+     * glm 模型流式调用
+     *
+     * @return
+     */
+    @GetMapping(value = "/stream/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<Object>> streamChat(@RequestParam String message, @RequestParam(defaultValue = "glm-4.6") String model) {
+        return chatModel.stream(
+                        new Prompt(message, ZhiPuAiChatOptions.builder().model(model).build())
+                )
+                .map(chatResponse -> {
+                    String text = chatResponse.getResults()
+                            .stream()
+                            .filter(r -> r.getOutput().getText() != null)
+                            .map(r -> r.getOutput().getText())
+                            .findFirst()
+                            .orElse("");
+                    return ServerSentEvent.builder()
+                            .data(text)
+                            .build();
+                })
+                .concatWith(Flux.just(
+                        ServerSentEvent.builder()
+                                .data("[DONE]")
+                                .build()
+                ))
+                .doOnError(Throwable::printStackTrace);
+    }
+
 }

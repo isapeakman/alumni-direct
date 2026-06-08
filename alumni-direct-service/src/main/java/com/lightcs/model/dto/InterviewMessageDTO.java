@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InterviewMessageDTO {
-
+    // TODO 注释
     private String id;
 
     private String role;

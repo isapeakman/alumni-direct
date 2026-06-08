@@ -152,27 +152,23 @@ public class InterviewServiceImpl implements InterviewService {
      * 生成第一个问题
      */
     private String generateFirstQuestion(String sessionId, String resumeContent) {
-        // 获取系统提示词（角色定义、职责、约束等）
-        String systemPrompt = promptTemplateService.getInterviewSystemPrompt();
         // 获取用户提示词（简历信息、对话历史、用户回答等）
         String userPrompt = promptTemplateService.getInterviewUserPrompt(resumeContent, "", "");
         // 调用AI，系统提示词和用户提示词分开传入
-        return llmApiStrategy.interviewWithSystemPrompt(systemPrompt, userPrompt);
+        return llmApiStrategy.interview(userPrompt);
     }
 
     /**
      * 生成AI回复
      */
     private String generateReply(String sessionId, String resumeContent, String userAnswer) {
+        // TODO 会话历史取最近20条，其他可摘要，可以用Memory组件和仓储仓接口
         List<InterviewMessage> messages = messageMapper.selectBySessionId(sessionId);
         String history = buildHistory(messages);
-
-        // 获取系统提示词（角色定义、职责、约束等）
-        String systemPrompt = promptTemplateService.getInterviewSystemPrompt();
         // 获取用户提示词（简历信息、对话历史、用户回答等）
         String userPrompt = promptTemplateService.getInterviewUserPrompt(resumeContent, history, userAnswer);
         // 调用AI，系统提示词和用户提示词分开传入
-        return llmApiStrategy.interviewWithSystemPrompt(systemPrompt, userPrompt);
+        return llmApiStrategy.interview(userPrompt);
     }
 
     /**
@@ -180,7 +176,7 @@ public class InterviewServiceImpl implements InterviewService {
      */
     private String generateSummary(String resumeContent, String history) {
         String prompt = promptTemplateService.getInterviewSummaryPrompt(resumeContent, history);
-        return llmApiStrategy.interview(prompt);
+        return llmApiStrategy.evaluateInterview(prompt);
     }
 
     /**
