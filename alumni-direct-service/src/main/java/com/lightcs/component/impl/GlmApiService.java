@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,11 +25,22 @@ public class GlmApiService implements LLMApiStrategy {
     private final ChatClient aiInterviewChatClient;
     private final ZhiPuAiChatModel chatModel;
 
+    /**
+     * Constructor for GlmApiService class.
+     * Initializes the service with required chat clients and chat model.
+     *
+     * @param resumeParseChatClient ChatClient instance for parsing resumes
+     * @param aiInterviewChatClient ChatClient instance for AI interview functionality
+     * @param chatModel             ZhiPuAiChatModel instance for chat operations
+     */
     public GlmApiService(ChatClient resumeParseChatClient,
                          ChatClient aiInterviewChatClient,
                          ZhiPuAiChatModel chatModel) {
+        // Initialize resume parsing chat client
         this.resumeParseChatClient = resumeParseChatClient;
+        // Initialize AI interview chat client
         this.aiInterviewChatClient = aiInterviewChatClient;
+        // Initialize chat model
         this.chatModel = chatModel;
     }
 
@@ -37,13 +49,17 @@ public class GlmApiService implements LLMApiStrategy {
     @Override
     public String parseResume(String resumeText) {
         log.info("调用GLM进行简历解析");
-        return parseResumeWithToken(resumeText).getContent();
+        // 获取代理对象，调用被切面修饰的方法
+        GlmApiService glmApiService = (GlmApiService) AopContext.currentProxy();
+        return glmApiService.parseResumeWithToken(resumeText).getContent();
     }
 
     @Override
     public String interview(String userInput) {
         log.info("调用GLM进行AI模拟面试");
-        return interviewWithToken(userInput).getContent();
+        // 获取代理对象，调用被切面修饰的方法
+        GlmApiService glmApiService = (GlmApiService) AopContext.currentProxy();
+        return glmApiService.interviewWithToken(userInput).getContent();
     }
 
     @Override
@@ -57,6 +73,7 @@ public class GlmApiService implements LLMApiStrategy {
     @ApiPerformanceMonitor(serviceType = "GLM-RESUME-PARSE")
     @TokenUsageMonitor
     public ApiCallResult parseResumeWithToken(String resumeText) {
+        // TODO 切面失效
         return callWithClient(resumeParseChatClient, resumeText, "resume-parse");
     }
 
@@ -66,6 +83,8 @@ public class GlmApiService implements LLMApiStrategy {
     @ApiPerformanceMonitor(serviceType = "GLM-INTERVIEW")
     @TokenUsageMonitor
     public ApiCallResult interviewWithToken(String userInput) {
+        // 动态追加系统提示词
+        aiInterviewChatClient.prompt().system(sp -> sp.text("当前候选人的简历信息："));
         return callWithClient(aiInterviewChatClient, userInput, "ai-interview");
     }
 
@@ -108,4 +127,6 @@ public class GlmApiService implements LLMApiStrategy {
                 .model(this.getProvider())
                 .build();
     }
+
+
 }

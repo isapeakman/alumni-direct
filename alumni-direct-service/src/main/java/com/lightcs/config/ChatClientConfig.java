@@ -35,6 +35,7 @@ public class ChatClientConfig {
     public ChatClient resumeParseChatClient(ChatClient.Builder chatClientBuilder) {
         log.info("初始化简历解析场景 ChatClient");
         String systemPrompt = promptTemplateService.loadPrompt("resume-parse.txt");
+        // TODO 配置温度、最大Token数等参数
         return chatClientBuilder
                 .defaultSystem(systemPrompt)
                 .build();
@@ -48,6 +49,7 @@ public class ChatClientConfig {
     public ChatClient aiInterviewChatClient(ChatClient.Builder chatClientBuilder) {
         log.info("初始化AI模拟面试场景 ChatClient");
         String systemPrompt = promptTemplateService.loadPrompt("resume-prompt.st");
+        // TODO 配置温度、最大Token数等参数
         return chatClientBuilder
                 .defaultSystem(systemPrompt)
                 .build();
