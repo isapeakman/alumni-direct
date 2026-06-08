@@ -116,6 +116,16 @@ const routes = [
                 path: 'resume-edit',
                 name: 'ResumeEdit',
                 component: () => import('../views/admin/resume-edit.vue'),
+            },
+            {
+                path: 'interview/:sessionId',
+                name: 'InterviewChat',
+                component: () => import('../views/admin/interview-chat.vue'),
+            },
+            {
+                path: 'interview',
+                name: 'InterviewChatNoId',
+                component: () => import('../views/admin/interview-chat.vue'),
             }
         ]
     }

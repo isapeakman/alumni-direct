@@ -76,7 +76,7 @@ public class GlmApiService implements LLMApiStrategy {
 
     @ApiPerformanceMonitor(serviceType = "GLM-INTERVIEW-EVALUATE")
     @TokenUsageMonitor
-    private ApiCallResult evaluateInterviewWithToken(String userInput) {
+    public ApiCallResult evaluateInterviewWithToken(String userInput) {
         return callWithClient(aiInterviewEvaluationChatClient, userInput, "interview-evaluate");
     }
 

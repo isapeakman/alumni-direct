@@ -445,9 +445,12 @@ import {
   VideoCamera,
   ArrowRight
 } from '@element-plus/icons-vue'
+import {useRouter} from 'vue-router'
 import {submitResumeParseTask, getResumeParseTaskStatus} from '@/api/resume'
 import {startInterview as startInterviewApi} from '@/api/interview'
 import ResumeEdit from './resume-edit.vue'
+
+const router = useRouter()
 
 // 响应式数据
 const uploadRef = ref(null)
@@ -690,17 +693,24 @@ const startInterview = async () => {
     const response = await startInterviewApi(resumeContent)
 
     if (response.data.code === 200) {
-      interviewSessionId.value = response.data.data.id
-      showInterviewDialog.value = false
+      const session = response.data.data
+      interviewSessionId.value = session.id
 
-      // 跳转到面试页面（需要创建面试页面或路由）
+      // 保存会话ID到localStorage，供面试页面使用
+      localStorage.setItem('interviewSessionId', session.id)
+
+      // 如果后端返回了第一个问题，保存到localStorage
+      if (session.currentQuestion) {
+        localStorage.setItem('interviewFirstQuestion', JSON.stringify(session.currentQuestion))
+      }
+
+      showInterviewDialog.value = false
       ElMessage.success('面试会话已创建，即将进入面试环节...')
 
-      // 这里可以跳转到面试页面或显示面试组件
-      // 暂时用消息提示
+      // 跳转到面试问答页面
       setTimeout(() => {
-        ElMessage.info(`面试会话ID: ${interviewSessionId.value}`)
-      }, 1000)
+        router.push(`/admin/interview/${session.id}`)
+      }, 500)
     } else {
       ElMessage.error(response.data.message || '创建面试会话失败')
     }
