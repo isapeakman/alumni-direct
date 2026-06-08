@@ -56,10 +56,18 @@ public class GlmApiService implements LLMApiStrategy {
 
     @Override
     public String interview(String userInput) {
-        log.info("调用GLM进行AI模拟面试");
+        log.info("调用GLM进行AI模拟面试（使用预设系统提示词）");
         // 获取代理对象，调用被切面修饰的方法
         GlmApiService glmApiService = (GlmApiService) AopContext.currentProxy();
         return glmApiService.interviewWithToken(userInput).getContent();
+    }
+
+    @Override
+    public String interviewWithSystemPrompt(String systemPrompt, String userPrompt) {
+        log.info("调用GLM进行AI模拟面试（系统提示词+用户提示词分开）");
+        // 获取代理对象，调用被切面修饰的方法
+        GlmApiService glmApiService = (GlmApiService) AopContext.currentProxy();
+        return glmApiService.interviewWithSystemPromptAndToken(systemPrompt, userPrompt).getContent();
     }
 
     @Override
@@ -73,19 +81,39 @@ public class GlmApiService implements LLMApiStrategy {
     @ApiPerformanceMonitor(serviceType = "GLM-RESUME-PARSE")
     @TokenUsageMonitor
     public ApiCallResult parseResumeWithToken(String resumeText) {
-        // TODO 切面失效
         return callWithClient(resumeParseChatClient, resumeText, "resume-parse");
     }
 
     /**
-     * AI面试（带Token统计）- 被切面修饰
+     * AI面试（带Token统计）- 使用预设系统提示词
      */
     @ApiPerformanceMonitor(serviceType = "GLM-INTERVIEW")
     @TokenUsageMonitor
     public ApiCallResult interviewWithToken(String userInput) {
-        // 动态追加系统提示词
-        aiInterviewChatClient.prompt().system(sp -> sp.text("当前候选人的简历信息："));
         return callWithClient(aiInterviewChatClient, userInput, "ai-interview");
+    }
+
+    /**
+     * AI面试（带Token统计）- 系统提示词和用户提示词分开
+     */
+    @ApiPerformanceMonitor(serviceType = "GLM-INTERVIEW")
+    @TokenUsageMonitor
+    public ApiCallResult interviewWithSystemPromptAndToken(String systemPrompt, String userPrompt) {
+        try {
+            ChatResponse response = aiInterviewChatClient.prompt()
+                    .system(systemPrompt)
+                    .user(userPrompt)
+                    .call()
+                    .chatResponse();
+            String content = response.getResult().getOutput().getText();
+            ApiCallResult result = extractTokenUsage(response, content);
+            log.info("GLM ai-interview（分离提示词）调用成功，返回长度: {}, 输入Token: {}, 输出Token: {}",
+                    content.length(), result.getPromptTokens(), result.getCompletionTokens());
+            return result;
+        } catch (Exception e) {
+            log.error("调用GLM ai-interview（分离提示词）失败", e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "调用GLM失败: " + e.getMessage());
+        }
     }
 
     // ============ 内部辅助方法 ============

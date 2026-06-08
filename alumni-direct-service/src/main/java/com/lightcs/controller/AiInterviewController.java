@@ -3,12 +3,15 @@ package com.lightcs.controller;
 
 import com.alibaba.fastjson2.JSON;
 import com.lightcs.exception.BusinessException;
+import com.lightcs.model.dto.InterviewMessageDTO;
+import com.lightcs.model.dto.InterviewSessionDTO;
 import com.lightcs.model.dto.ResumeGenerationRequest;
 import com.lightcs.model.vo.AsyncTaskStatusVO;
 import com.lightcs.provider.PromptTemplateService;
 import com.lightcs.result.BaseResponse;
 import com.lightcs.result.ResultBuilder;
 import com.lightcs.service.AsyncResumeParseService;
+import com.lightcs.service.InterviewService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -30,17 +33,20 @@ public class AiInterviewController {
     private final ZhiPuAiChatModel chatModel;
     private final PromptTemplateService promptTemplateService;
     private final AsyncResumeParseService asyncResumeParseService;
+    private final InterviewService interviewService;
 
     public AiInterviewController(ChatClient generalChatClient,
                                  ChatClient aiInterviewChatClient,
                                  ZhiPuAiChatModel chatModel,
                                  PromptTemplateService promptTemplateService,
-                                 AsyncResumeParseService asyncResumeParseService) {
+                                 AsyncResumeParseService asyncResumeParseService,
+                                 InterviewService interviewService) {
         this.generalChatClient = generalChatClient;
         this.aiInterviewChatClient = aiInterviewChatClient;
         this.chatModel = chatModel;
         this.promptTemplateService = promptTemplateService;
         this.asyncResumeParseService = asyncResumeParseService;
+        this.interviewService = interviewService;
     }
 
     @GetMapping("/ai")
@@ -152,6 +158,7 @@ public class AiInterviewController {
                 ))
                 .doOnError(Throwable::printStackTrace);
     }
+
     /**
      * 异步简历解析接口 - 提交任务
      *
@@ -213,5 +220,62 @@ public class AiInterviewController {
             log.error("查询任务状态失败: {}", taskId, e);
             return ResultBuilder.fail("查询任务状态失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 开始新面试
+     *
+     * @param resumeId      简历ID（可选）
+     * @param resumeContent 简历内容（JSON格式）
+     * @return 面试会话信息
+     */
+    @PostMapping("/interview/start")
+    public BaseResponse<InterviewSessionDTO> startInterview(
+            @RequestParam(required = false) String resumeId,
+            @RequestBody String resumeContent) {
+        log.info("开始新面试，简历ID: {}", resumeId != null ? resumeId : "未提供");
+        InterviewSessionDTO session = interviewService.startInterview(resumeId, resumeContent);
+        return ResultBuilder.success(session);
+    }
+
+    /**
+     * 发送消息（用户回答）
+     *
+     * @param sessionId  会话ID
+     * @param userAnswer 用户回答
+     * @return AI回复
+     */
+    @PostMapping("/interview/{sessionId}/message")
+    public BaseResponse<InterviewMessageDTO> sendMessage(
+            @PathVariable String sessionId,
+            @RequestBody String userAnswer) {
+        log.info("发送消息，会话ID: {}", sessionId);
+        InterviewMessageDTO message = interviewService.sendMessage(sessionId, userAnswer);
+        return ResultBuilder.success(message);
+    }
+
+    /**
+     * 获取会话详情
+     *
+     * @param sessionId 会话ID
+     * @return 会话详情
+     */
+    @GetMapping("/interview/{sessionId}")
+    public BaseResponse<InterviewSessionDTO> getSession(@PathVariable String sessionId) {
+        InterviewSessionDTO session = interviewService.getSession(sessionId);
+        return ResultBuilder.success(session);
+    }
+
+    /**
+     * 结束面试
+     *
+     * @param sessionId 会话ID
+     * @return 面试总结
+     */
+    @PostMapping("/interview/{sessionId}/end")
+    public BaseResponse<String> endInterview(@PathVariable String sessionId) {
+        log.info("结束面试，会话ID: {}", sessionId);
+        String summary = interviewService.endInterview(sessionId);
+        return ResultBuilder.success(summary);
     }
 }

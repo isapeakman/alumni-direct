@@ -18,6 +18,14 @@ public interface LLMApiStrategy {
      */
     String interview(String userInput);
 
+    /**
+     * AI模拟面试 - 系统提示词和用户提示词分开传入
+     *
+     * @param systemPrompt 系统提示词（角色定义、职责、约束等）
+     * @param userPrompt   用户提示词（简历信息、对话历史、用户回答等）
+     * @return 面试回复文本
+     */
+    String interviewWithSystemPrompt(String systemPrompt, String userPrompt);
 
     /**
      * 获取当前使用的LLM提供商名称

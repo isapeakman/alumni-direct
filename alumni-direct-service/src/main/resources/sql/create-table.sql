@@ -268,3 +268,33 @@ create table glm_token_log
 )
     comment 'GLM Token消耗日志表';
 
+-- 面试会话表
+create table interview_session
+(
+    id               varchar(36) not null
+        primary key comment '会话ID',
+    resume_id        varchar(36) null comment '简历ID',
+    resume_content   text        null comment '简历内容(JSON)',
+    status           varchar(20) not null comment '状态(ACTIVE/ENDED)',
+    current_question text        null comment '当前问题',
+    duration         int         null comment '会话时长(秒)',
+    created_at       datetime    not null comment '创建时间',
+    updated_at       datetime    not null comment '更新时间',
+    ended_at         datetime    null comment '结束时间'
+)
+    comment '面试会话表';
+
+-- 面试消息记录表
+create table interview_message
+(
+    id         varchar(36) not null
+        primary key comment '消息ID',
+    session_id varchar(36) not null comment '会话ID',
+    role       varchar(20) not null comment '角色(user/assistant)',
+    content    text        not null comment '消息内容',
+    sequence   int         not null comment '消息序号',
+    created_at datetime    not null comment '创建时间',
+    index idx_session_id (session_id)
+)
+    comment '面试消息记录表';
+

@@ -110,6 +110,19 @@
             >
               Cancel
             </el-button>
+
+            <!-- 进入面试按钮 -->
+            <el-button
+                v-if="taskStatus?.status === 'COMPLETED' && resumeData"
+                size="large"
+                @click="showInterviewDialog = true"
+                class="interview-btn"
+            >
+              <el-icon>
+                <VideoCamera/>
+              </el-icon>
+              Start AI Interview
+            </el-button>
           </div>
         </el-card>
 
@@ -377,14 +390,63 @@
         <el-button @click="showEditDialog = false">Cancel</el-button>
       </template>
     </el-dialog>
+
+    <!-- 进入面试确认对话框 -->
+    <el-dialog v-model="showInterviewDialog" title="Start AI Interview" width="450px" destroy-on-close>
+      <div class="interview-dialog-content">
+        <div class="interview-icon">
+          <el-icon>
+            <VideoCamera/>
+          </el-icon>
+        </div>
+        <h3>准备开始AI模拟面试</h3>
+        <p>系统将基于您的简历内容进行针对性提问，帮助您提前准备面试。</p>
+
+        <div class="resume-summary">
+          <h4>简历信息摘要</h4>
+          <div class="summary-item">
+            <span class="label">姓名</span>
+            <span class="value">{{ resumeData?.name || '未填写' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">目标岗位</span>
+            <span class="value">{{ resumeData?.desiredPosition || '未填写' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">工作年限</span>
+            <span class="value">{{ resumeData?.experienceYears || '未填写' }}</span>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="showInterviewDialog = false">Cancel</el-button>
+        <el-button type="primary" :loading="isStartingInterview" @click="startInterview">
+          <el-icon>
+            <ArrowRight/>
+          </el-icon>
+          Start Interview
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import {ref, computed, onUnmounted, onMounted} from 'vue'
-import {ElMessage} from 'element-plus'
-import {Document, Clock, User, Message, Briefcase, Folder, Collection} from '@element-plus/icons-vue'
+import {ElMessage, ElDialog} from 'element-plus'
+import {
+  Document,
+  Clock,
+  User,
+  Message,
+  Briefcase,
+  Folder,
+  Collection,
+  VideoCamera,
+  ArrowRight
+} from '@element-plus/icons-vue'
 import {submitResumeParseTask, getResumeParseTaskStatus} from '@/api/resume'
+import {startInterview as startInterviewApi} from '@/api/interview'
 import ResumeEdit from './resume-edit.vue'
 
 // 响应式数据
@@ -397,6 +459,11 @@ const showEditDialog = ref(false)
 const resumeEditRef = ref(null)
 const activeTab = ref('structured')
 const parseTime = ref(0)
+
+// 面试相关
+const showInterviewDialog = ref(false)
+const isStartingInterview = ref(false)
+const interviewSessionId = ref(null)
 
 let pollingTimer = null
 let parseTimer = null
@@ -607,6 +674,44 @@ const copyJson = () => {
   ElMessage.success('Copied to clipboard')
 }
 
+// 开始AI面试
+const startInterview = async () => {
+  if (!resumeData.value) {
+    ElMessage.error('请先解析简历')
+    return
+  }
+
+  isStartingInterview.value = true
+
+  try {
+    const resumeContent = JSON.stringify(resumeData.value)
+
+    // 使用封装的API
+    const response = await startInterviewApi(resumeContent)
+
+    if (response.data.code === 200) {
+      interviewSessionId.value = response.data.data.id
+      showInterviewDialog.value = false
+
+      // 跳转到面试页面（需要创建面试页面或路由）
+      ElMessage.success('面试会话已创建，即将进入面试环节...')
+
+      // 这里可以跳转到面试页面或显示面试组件
+      // 暂时用消息提示
+      setTimeout(() => {
+        ElMessage.info(`面试会话ID: ${interviewSessionId.value}`)
+      }, 1000)
+    } else {
+      ElMessage.error(response.data.message || '创建面试会话失败')
+    }
+  } catch (error) {
+    console.error('创建面试会话失败:', error)
+    ElMessage.error('创建面试会话失败: ' + (error.message || 'Unknown error'))
+  } finally {
+    isStartingInterview.value = false
+  }
+}
+
 // 取消任务
 const handleCancel = () => {
   stopPolling()
@@ -796,6 +901,21 @@ onUnmounted(() => {
           height: 48px;
           border-radius: 12px;
           font-weight: 600;
+        }
+
+        .interview-btn {
+          width: 100%;
+          height: 48px;
+          border-radius: 12px;
+          font-weight: 600;
+          margin-top: 10px;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          border: none;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+          }
         }
       }
     }
@@ -1289,6 +1409,74 @@ onUnmounted(() => {
         .json-actions {
           margin-top: 15px;
           text-align: right;
+        }
+      }
+    }
+  }
+
+  /* 面试确认对话框样式 */
+  .interview-dialog-content {
+    text-align: center;
+    padding: 20px 0;
+
+    .interview-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 36px;
+    }
+
+    h3 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    p {
+      margin: 0 0 20px 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .resume-summary {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: left;
+
+      h4 {
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .label {
+          font-size: 13px;
+          color: #999;
+        }
+
+        .value {
+          font-size: 13px;
+          font-weight: 500;
+          color: #333;
         }
       }
     }
