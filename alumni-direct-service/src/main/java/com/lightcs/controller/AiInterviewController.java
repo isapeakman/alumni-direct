@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 public class AiInterviewController {
@@ -153,6 +155,17 @@ public class AiInterviewController {
     public BaseResponse<InterviewSessionDTO> getSession(@PathVariable String sessionId) {
         InterviewSessionDTO session = interviewService.getSession(sessionId);
         return ResultBuilder.success(session);
+    }
+
+    /**
+     * 获取面试会话列表
+     *
+     * @return 会话列表
+     */
+    @GetMapping("/interview/list")
+    public BaseResponse<List<InterviewSessionDTO>> listSessions() {
+        List<InterviewSessionDTO> sessions = interviewService.listSessions();
+        return ResultBuilder.success(sessions);
     }
 
     /**

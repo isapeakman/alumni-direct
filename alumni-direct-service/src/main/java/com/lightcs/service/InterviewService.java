@@ -3,6 +3,8 @@ package com.lightcs.service;
 import com.lightcs.model.dto.InterviewMessageDTO;
 import com.lightcs.model.dto.InterviewSessionDTO;
 
+import java.util.List;
+
 /**
  * 面试服务接口
  */
@@ -33,6 +35,13 @@ public interface InterviewService {
      * @return 会话详情
      */
     InterviewSessionDTO getSession(String sessionId);
+
+    /**
+     * 获取面试会话列表
+     *
+     * @return 会话列表（按创建时间倒序）
+     */
+    List<InterviewSessionDTO> listSessions();
 
     /**
      * 结束面试

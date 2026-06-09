@@ -126,6 +126,11 @@ const routes = [
                 path: 'interview',
                 name: 'InterviewChatNoId',
                 component: () => import('../views/admin/interview-chat.vue'),
+            },
+            {
+                path: 'interview-list',
+                name: 'InterviewList',
+                component: () => import('../views/admin/interview-list.vue'),
             }
         ]
     }

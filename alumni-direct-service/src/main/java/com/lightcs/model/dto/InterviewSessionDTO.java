@@ -30,4 +30,14 @@ public class InterviewSessionDTO {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private String evaluationReport;
+
+    private String candidateName;
+
+    private String desiredPosition;
+
+    private Integer duration;
+
+    private LocalDateTime endedAt;
 }

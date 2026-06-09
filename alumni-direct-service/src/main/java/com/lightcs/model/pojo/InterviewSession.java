@@ -32,4 +32,10 @@ public class InterviewSession {
     private LocalDateTime updatedAt;
 
     private LocalDateTime endedAt;
+
+    private String evaluationReport;
+
+    private String candidateName;
+
+    private String desiredPosition;
 }

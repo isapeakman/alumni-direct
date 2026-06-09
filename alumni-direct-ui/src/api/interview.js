@@ -65,3 +65,15 @@ export function endInterview(sessionId) {
         timeout: INTERVIEW_TIMEOUT
     })
 }
+
+/**
+ * 获取面试会话列表
+ * @returns {Promise} 返回会话列表
+ */
+export function listSessions() {
+    return request({
+        url: '/ad/interview/list',
+        method: 'get',
+        timeout: INTERVIEW_TIMEOUT
+    })
+}

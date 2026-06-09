@@ -10,7 +10,7 @@
     <div class="stats-card">
       <div class="stat-item">
         <el-icon class="stat-icon">
-          <Briefcase/>
+          <component :is="Icons.Briefcase"/>
         </el-icon>
         <div class="stat-content">
           <span class="stat-value">{{ jobRecords.length }}</span>
@@ -19,7 +19,7 @@
       </div>
       <div class="stat-item">
         <el-icon class="stat-icon text-success">
-          <CheckCircle/>
+          <component :is="Icons.CheckCircle"/>
         </el-icon>
         <div class="stat-content">
           <span class="stat-value">{{ activeCount }}</span>
@@ -28,7 +28,7 @@
       </div>
       <div class="stat-item">
         <el-icon class="stat-icon text-warning">
-          <Clock/>
+          <component :is="Icons.Clock"/>
         </el-icon>
         <div class="stat-content">
           <span class="stat-value">{{ closedCount }}</span>
@@ -70,7 +70,7 @@
               </div>
               <div class="apply-time">
                 <el-icon>
-                  <Clock/>
+                  <component :is="Icons.Clock"/>
                 </el-icon>
                 <span>{{ formatDate(record.applyTime) }}</span>
               </div>
@@ -80,7 +80,7 @@
                 <el-avatar :size="24" :src="record.recruiterAvatar || defaultAvatar"/>
                 {{ record.recruiterName }}
               </span>
-              <span class="view-detail">查看详情 <el-icon><ChevronRight/></el-icon></span>
+              <span class="view-detail">查看详情 <el-icon><component :is="Icons.ChevronRight"/></el-icon></span>
             </div>
           </div>
         </div>
@@ -97,7 +97,7 @@
       <!-- 空状态 -->
       <div v-else class="empty-state">
         <el-icon size="64" color="#cbd5e1">
-          <FileText/>
+          <File/>
         </el-icon>
         <p>暂无投递记录</p>
         <p class="empty-hint">快去搜索并投递心仪的职位吧</p>
@@ -126,7 +126,7 @@
               class="chat-btn"
           >
             <el-icon>
-              <MessageCircle/>
+              <component :is="Icons.MessageCircle"/>
             </el-icon>
             发起沟通
           </el-button>
@@ -154,21 +154,21 @@
               </div>
               <div class="info-item">
                 <el-icon class="info-icon">
-                  <Calendar/>
+                  <component :is="Icons.Calendar"/>
                 </el-icon>
                 <span class="info-label">发布时间</span>
                 <span class="info-value">{{ formatDateTime(selectedJob.publishTime) }}</span>
               </div>
               <div class="info-item">
                 <el-icon class="info-icon">
-                  <Building/>
+                  <component :is="Icons.Building"/>
                 </el-icon>
                 <span class="info-label">公司名称</span>
                 <span class="info-value">{{ selectedJob.companyName }}</span>
               </div>
               <div class="info-item">
                 <el-icon class="info-icon">
-                  <User/>
+                  <component :is="Icons.User"/>
                 </el-icon>
                 <span class="info-label">招聘者</span>
                 <div class="recruiter-info">
@@ -198,22 +198,7 @@
 
 <script setup>
 import {ref, computed} from 'vue'
-import {
-  Location,
-  Warning,
-  Briefcase,
-  CheckCircle,
-  Clock,
-  Wallet,
-  ChevronRight,
-  FileText,
-  MapPin,
-  Calendar,
-  Building,
-  User,
-  MessageCircle,
-  Loading
-} from "@element-plus/icons-vue"
+import * as Icons from "@element-plus/icons-vue"
 import {getJobApplyRecord} from '@/api/job.js'
 import dayjs from 'dayjs'
 import router from '@/router/index.js'

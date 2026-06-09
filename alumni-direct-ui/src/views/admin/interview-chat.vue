@@ -4,7 +4,7 @@
     <div class="interview-header">
       <div class="header-left">
         <el-icon class="header-icon">
-          <VideoCamera/>
+          <component :is="Icons.VideoCamera"/>
         </el-icon>
         <div class="header-info">
           <h2>AI模拟面试</h2>
@@ -36,10 +36,10 @@
            :class="msg.role === 'assistant' ? 'message-ai' : 'message-user'">
         <div class="message-avatar" :class="msg.role === 'assistant' ? 'avatar-ai' : 'avatar-user'">
           <el-icon v-if="msg.role === 'assistant'">
-            <VideoCamera/>
+            <component :is="Icons.VideoCamera"/>
           </el-icon>
           <el-icon v-else>
-            <User/>
+            <component :is="Icons.User"/>
           </el-icon>
         </div>
         <div class="message-content">
@@ -59,7 +59,7 @@
       <div v-if="isAiThinking" class="message-wrapper message-ai">
         <div class="message-avatar avatar-ai">
           <el-icon>
-            <VideoCamera/>
+            <component :is="Icons.VideoCamera"/>
           </el-icon>
         </div>
         <div class="message-content">
@@ -94,7 +94,7 @@
             @click="handleSend"
         >
           <el-icon>
-            <ArrowRight/>
+            <component :is="Icons.ArrowRight"/>
           </el-icon>
           发送回答
         </el-button>
@@ -107,7 +107,7 @@
         <template #header>
           <div class="summary-header">
             <el-icon>
-              <Document/>
+              <component :is="Icons.Document"/>
             </el-icon>
             <span>面试总结</span>
           </div>
@@ -124,7 +124,7 @@
 import {ref, onMounted, nextTick} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {VideoCamera, User, ArrowRight, Document} from '@element-plus/icons-vue'
+import * as Icons from '@element-plus/icons-vue'
 import {
   getInterviewSession,
   sendInterviewMessage,

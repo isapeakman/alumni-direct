@@ -80,6 +80,12 @@ const menuData = [
     index: '/admin/fair',
     icon: 'Message',
     id: 4,
+  },
+  {
+    title: '面试记录',
+    index: '/admin/interview-list',
+    icon: 'VideoCamera',
+    id: 5,
   }
 ]
 const route = useRoute();

@@ -118,6 +118,18 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     @Override
+    public List<InterviewSessionDTO> listSessions() {
+        List<InterviewSession> sessions = sessionMapper.selectList(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<InterviewSession>()
+                        .orderByDesc(InterviewSession::getCreatedAt)
+        );
+
+        return sessions.stream()
+                .map(session -> buildSessionDTO(session, null))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public String endInterview(String sessionId) {
         log.info("结束面试，会话ID: {}", sessionId);
@@ -131,21 +143,49 @@ public class InterviewServiceImpl implements InterviewService {
         List<InterviewMessage> messages = messageMapper.selectBySessionId(sessionId);
         String history = buildHistory(messages);
 
-        // 生成总结
+        // 生成总结（评估报告）
         String summary = generateSummary(session.getResumeContent(), history);
 
         // 计算会话时长
         LocalDateTime endedAt = LocalDateTime.now();
         long duration = java.time.Duration.between(session.getCreatedAt(), endedAt).getSeconds();
 
-        // 更新会话状态
+        // 从简历内容中提取候选人信息
+        extractCandidateInfo(session);
+
+        // 更新会话状态，保存评估报告
         session.setStatus(STATUS_ENDED);
         session.setDuration((int) duration);
         session.setEndedAt(endedAt);
         session.setUpdatedAt(endedAt);
+        session.setEvaluationReport(summary);
         sessionMapper.updateById(session);
 
         return summary;
+    }
+
+    /**
+     * 从简历内容中提取候选人信息
+     */
+    private void extractCandidateInfo(InterviewSession session) {
+        String resumeContent = session.getResumeContent();
+        if (resumeContent == null || resumeContent.isEmpty()) {
+            return;
+        }
+
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            java.util.Map<String, Object> resume = mapper.readValue(resumeContent, java.util.Map.class);
+
+            if (resume.containsKey("name")) {
+                session.setCandidateName(String.valueOf(resume.get("name")));
+            }
+            if (resume.containsKey("desiredPosition")) {
+                session.setDesiredPosition(String.valueOf(resume.get("desiredPosition")));
+            }
+        } catch (Exception e) {
+            log.warn("解析简历内容提取候选人信息失败", e);
+        }
     }
 
     /**
@@ -218,6 +258,11 @@ public class InterviewServiceImpl implements InterviewService {
                 .messages(messages)
                 .createdAt(session.getCreatedAt())
                 .updatedAt(session.getUpdatedAt())
+                .evaluationReport(session.getEvaluationReport())
+                .candidateName(session.getCandidateName())
+                .desiredPosition(session.getDesiredPosition())
+                .duration(session.getDuration())
+                .endedAt(session.getEndedAt())
                 .build();
     }
 
